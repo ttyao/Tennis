@@ -21,7 +21,25 @@ export default class MatchRecorder extends React.Component {
   }
 
   handleMatchSubmit() {
+
+    if (!this.state.players.player1 ||
+        !this.state.players.player2 ||
+        this.state.players.player1.split(',').length != this.state.players.player2.split(',').length) {
+      return;
+    }
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
+
+    var match = {};
+    var matchId = "match:"+Date.now()+":"+this.state.players.player1;
+    match[matchId] = this.state;
+    var matchRef = ref.child('matches/'+matchId);
+    matchRef.set(match[matchId]);
+
+    var players = this.state.players.player1.split(',').concat(this.state.players.player2.split(','));
+    for (var i in players) {
+      matchRef = ref.child("users/"+players[i]+"/matches/"+matchId);
+      matchRef.set(match[matchId]);
+    }
   }
 
   handlePlayerChange(id, value) {
@@ -41,9 +59,7 @@ export default class MatchRecorder extends React.Component {
         <ScoreSelect id="set1" onChange={this.handleScoreChange} />
         <ScoreSelect id="set2" onChange={this.handleScoreChange} />
         <ScoreSelect id="set3" onChange={this.handleScoreChange} />
-        <form onSubmit={this.handleMatchSubmit}>
-          <button>Submit Score</button>
-        </form>
+        <button onClick={this.handleMatchSubmit}>Submit Score</button>
       </div>
     );
   }

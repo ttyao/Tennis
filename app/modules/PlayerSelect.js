@@ -25,29 +25,41 @@ var PlayerSelect = React.createClass({
 	toggleDisabled (e) {
 		this.setState({ 'disabled': e.target.checked });
 	},
+
+  loadOptions(input, callback) {
+  	var userRef = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users");
+		var ops = [];
+    userRef.orderByChild("displayName").on("value", function(snapshot) {
+      console.log(this);
+      console.log(snapshot.numChildren());
+      var object = snapshot.val();
+      for (var key in object) {
+      	var item = {};
+      	item.value = key;
+      	item.label = object[key].displayName;
+      	ops.push(item);
+      }
+      callback(null, {options: ops, complete: true});
+    }, function() {}, this);
+  },
+
 	render () {
-		var ops = [
-			{ label: 'Chocolate', value: 'chocolate' },
-			{ label: 'Vanilla', value: 'vanilla' },
-			{ label: 'Strawberry', value: 'strawberry' },
-			{ label: 'Caramel', value: 'caramel' },
-			{ label: 'Cookies and Cream', value: 'cookiescream' },
-			{ label: 'Peppermint', value: 'peppermint' }
-		];
 		return (
 			<table className="wholerow">
 				<tbody><tr>
 					<td className="playersection">
 						<span className="section">
-							<h3 className="section-heading">{this.props.label}</h3>
-							<Select multi value={this.state.player1} placeholder="Select player(s)" options={ops} onChange={this.handleSelectChange1} />
+							<Select multi value={this.state.player1} placeholder="Select player(s)" onChange={this.handleSelectChange1} asyncOptions={this.loadOptions} />
 						</span>
 					</td>
+				</tr>
+				<tr>
 					<td className="divider"> VS </td>
+				</tr>
+				<tr>
 					<td className="playersection">
 						<span className="section">
-							<h3 className="section-heading">{this.props.label}</h3>
-							<Select multi value={this.state.player2} placeholder="Select player(s)" options={ops} onChange={this.handleSelectChange2} />
+							<Select multi value={this.state.player2} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange2} />
 						</span>
 					</td>
 				</tr></tbody>

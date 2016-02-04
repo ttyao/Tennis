@@ -1,15 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Hello from './component.js';
 import MatchRecorder from './modules/MatchRecorder';
-// require('style!css!sass!react-select/less/default.less');
-
+import FirebaseModule from './modules/FirebaseModule';
 main();
 
 function main() {
   ReactDOM.render(
     <div>
-      <Hello />
+      <FirebaseModule />
       <MatchRecorder />
     </div>,
     document.getElementById('app')

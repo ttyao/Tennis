@@ -7,7 +7,6 @@ export default class ScoreSelect extends React.Component {
     this.state = {score1: 0, score2: 0};
     this.handleScore1Change = this.handleScore1Change.bind(this);
     this.handleScore2Change = this.handleScore2Change.bind(this);
-
   }
 
   getOtherScore(value) {
@@ -15,6 +14,7 @@ export default class ScoreSelect extends React.Component {
       case 6: return -1;
       case 7: return 6;
       case 5: return 7;
+      case 0: return -1;
       default: return 6;
     }
   }
