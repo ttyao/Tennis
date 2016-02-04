@@ -19,15 +19,67 @@ ref.onAuth(authDataCallback);
 
 var authData = ref.getAuth();
 if (authData) {
-  var usersRef = ref.child("web/data/users");
+  var userRef = ref.child("web/data/users/" + authData["uid"]);
   var user = {};
   user[authData["uid"]] = authData["facebook"];
   user[authData["uid"]]["loggedInAt"] = Date.now();
-  usersRef.set(user);
+  userRef.set(user[authData["uid"]]);
 }
 var name = authData ? authData.facebook.displayName : "anonymous";
 
+var dataRef = ref.child("/web/data");
+dataRef.child("users").orderByChild("displayName").on("value", function(snapshot) {
+  snapshot.forEach(function(data) {
+    console.log(data.val());
+  });
+});
+
+var HelloMessage = React.createClass({
+  render: function() {
+    return <h2>Welcome back, {this.props.name}</h2>;
+  }
+});
+
+var MatchRecorder = React.createClass({
+  getInitialState: function() {
+    return {players: [], scores: []};
+  },
+  handlePlayerSubmit: function() {
+
+  },
+  handleScoreSubmit: function() {
+
+  },
+  handleMatchSubmit: function() {
+
+  },
+
+  render: function() {
+    return (
+      <div>
+        <div>Players:</div>
+        <form onSubmit={this.handlePlayerSubmit}>
+          <input ></input>
+          <button>Add Player</button>
+        </form>
+        <div>Score:</div>
+        <form onSubmit={this.handleScoreSubmit}>
+          <input></input>
+          <button>Add Set</button>
+        </form>
+        <div/>
+        <form onSubmit={this.handleMatchSubmit}>
+          <button>Submit</button>
+        </form>
+      </div>
+    );
+  }
+});
+
 ReactDOM.render(
-  <h3>Welcome back, {name}</h3>,
+  <div>
+    <HelloMessage name={name} />
+    <MatchRecorder />
+  </div>,
   document.getElementById('content')
 );
