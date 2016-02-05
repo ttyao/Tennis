@@ -292,8 +292,8 @@ a:hover {
 .container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 400px;
-  padding: 0 30px;
+  max-width: 500px;
+  padding: 0 10px;
 }
 h1,
 h2,
@@ -321,6 +321,7 @@ h2,
 .h2 {
   font-size: 2em;
   font-weight: 300;
+  margin-bottom: 0;
 }
 h3,
 .h3 {
@@ -341,11 +342,13 @@ h6,
 .page-body,
 .page-footer,
 .page-header {
-  padding: 30px 0;
+  padding: 20px 0;
 }
 .page-header {
-  background-color: #007eff;
+  background: url(images/tennis.jpeg) no-repeat center;
+  opacity: 0.7;
   color: #bfdfff;
+  text-align: center;
 }
 .page-header h1,
 .page-header h2,
@@ -368,9 +371,8 @@ h6,
   text-decoration: none;
 }
 .page-subheader {
-  background-color: #e6f2ff;
   line-height: 20px;
-  padding: 30px 0;
+  padding: 5px 0;
 }
 .page-subheader__button {
   float: right;
@@ -462,6 +464,19 @@ h6,
 }
 .wholerow .rowlabel {
   width: 10%;
+}
+.centerContainer {
+  text-align: center;
+  padding: 5px;
+}
+.submitButton {
+  height: 40px;
+}
+.matchBriefBody {
+  border: 1px solid blue;
+  padding: 5px;
+  margin: 5px;
+  background-color: #ddeedd;
 }
 /*
 

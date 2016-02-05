@@ -21,7 +21,6 @@ export default class MatchRecorder extends React.Component {
   }
 
   handleMatchSubmit() {
-
     if (!this.state.players.player1 ||
         !this.state.players.player2 ||
         this.state.players.player1.split(',').length != this.state.players.player2.split(',').length) {
@@ -29,9 +28,19 @@ export default class MatchRecorder extends React.Component {
     }
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
 
+    var authData = ref.getAuth();
+
+    if (!authData) {
+      console.log("no authdata, can't save match");
+      return;
+    }
+
     var match = {};
-    var matchId = "match:"+Date.now()+":"+this.state.players.player1;
+    var matchTime = Date.now();
+    var matchId = "match:"+matchTime+":"+authData["uid"];
     match[matchId] = this.state;
+    match[matchId]["matchTime"] = matchTime;
+    match[matchId]["creator"] = authData["uid"];
     var matchRef = ref.child('matches/'+matchId);
     matchRef.set(match[matchId]);
 
@@ -59,7 +68,9 @@ export default class MatchRecorder extends React.Component {
         <ScoreSelect id="set1" onChange={this.handleScoreChange} />
         <ScoreSelect id="set2" onChange={this.handleScoreChange} />
         <ScoreSelect id="set3" onChange={this.handleScoreChange} />
-        <button onClick={this.handleMatchSubmit}>Submit Score</button>
+        <div className="centerContainer">
+          <button className="submitButton" onClick={this.handleMatchSubmit}>Submit Score</button>
+        </div>
       </div>
     );
   }
