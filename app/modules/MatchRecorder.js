@@ -6,32 +6,47 @@ import Notice from './Notice';
 export default class MatchRecorder extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {players: {}, scores: {}, message: ""};
+
+    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
+    var authData = ref.getAuth();
+    this.state = {players: {player1: authData["uid"]}, scores: [], message: ""};
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
+    this.handleMessageChange = this.handleMessageChange.bind(this);
   }
 
+  handleMessageChange(value) {
+    var newState = this.state;
+    newState.message = value;
+    this.setState(newState);
+  }
   handleScoreChange(id, value) {
     var newState = this.state;
-    newState.message = id;
     newState.scores[id] = value;
     this.setState(newState);
-    console.log(newState);
   }
-
+  onSetComplete(error) {
+    if (error) {
+      console.log(error);
+    }
+  }
   handleMatchSubmit() {
-    if (!this.state.players.player1 ||
-        !this.state.players.player2 ||
-        this.state.players.player1.split(',').length != this.state.players.player2.split(',').length) {
+    if (!this.state.players.player1 || !this.state.players.player2) {
+      alert("Please select players first.");
+      return;
+    } else if (this.state.players.player1 == this.state.players.player2) {
+      alert("不可以左右互搏.");
+      return;
+    } else if (this.state.scores.length < 1) {
+      alert("Please provide match scores.");
       return;
     }
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
 
     var authData = ref.getAuth();
-
     if (!authData) {
-      console.log("no authdata, can't save match");
+      alert("You have to login to submit match result.");
       return;
     }
 
@@ -41,22 +56,39 @@ export default class MatchRecorder extends React.Component {
     match[matchId] = this.state;
     match[matchId]["matchTime"] = matchTime;
     match[matchId]["creator"] = authData["uid"];
-    var matchRef = ref.child('matches/'+matchId);
-    matchRef.set(match[matchId]);
 
-    var players = this.state.players.player1.split(',').concat(this.state.players.player2.split(','));
-    for (var i in players) {
-      matchRef = ref.child("users/"+players[i]+"/matches/"+matchId);
-      matchRef.set(match[matchId]);
+    // There is no transaction support...
+
+    for (var i in this.state.players) {
+      if (this.state.players[i]) {
+        matchRef = ref.child("users/"+this.state.players[i]+"/matches/"+matchId);
+        matchRef.set(match[matchId], this.onSetComplete);
+      }
     }
+
+    var matchRef = ref.child('matches/'+matchId);
+    matchRef.set(match[matchId], function(error) {
+      if (error) {
+        alert("Can't save match.");
+        console.log(error);
+      } else {
+        location.reload();
+      }
+    });
+
   }
 
   handlePlayerChange(id, value) {
-    // this is silly...
     var newState = this.state;
-    newState.players[id] = value;
+    var players = value.split(",");
+    if (id == "player1") {
+      newState.players.player1 = players[0];
+      newState.players.player3 = players[1] ? players[1] : null;
+    } else {
+      newState.players.player2 = players[0];
+      newState.players.player4 = players[1] ? players[1] : null;
+    }
     this.setState(newState);
-    console.log(newState);
   }
 
   render() {
@@ -65,9 +97,9 @@ export default class MatchRecorder extends React.Component {
         <Notice notice={this.state.message} />
         <PlayerSelect label="players" onChange={this.handlePlayerChange} />
         <div>Score:</div>
-        <ScoreSelect id="set1" onChange={this.handleScoreChange} />
-        <ScoreSelect id="set2" onChange={this.handleScoreChange} />
-        <ScoreSelect id="set3" onChange={this.handleScoreChange} />
+        <ScoreSelect id="0" onChange={this.handleScoreChange} />
+        <ScoreSelect id="1" onChange={this.handleScoreChange} />
+        <ScoreSelect id="2" onChange={this.handleScoreChange} />
         <div className="centerContainer">
           <button className="submitButton" onClick={this.handleMatchSubmit}>Submit Score</button>
         </div>

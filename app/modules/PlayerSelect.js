@@ -9,10 +9,9 @@ var PlayerSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return {
-      disabled: false,
-      value: {player1: [], player2: []}
-    };
+    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
+    var authData = ref.getAuth();
+    return { player1: authData["uid"], player2: null};
   },
   handleSelectChange1 (value, values) {
     this.setState({ player1: value });

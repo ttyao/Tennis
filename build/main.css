@@ -471,12 +471,44 @@ h6,
 }
 .submitButton {
   height: 40px;
+  background-color: rgba(0, 126, 255, 0.18);
+  border: 1px solid rgba(0, 126, 255, 0.03);
+  box-shadow: 2px 3px 2px #888888;
+  border-radius: 8px;
 }
 .matchBriefBody {
-  border: 1px solid blue;
-  padding: 5px;
+  padding: 8px;
+  border-radius: 10px;
+  margin: 8px;
+  background-color: rgba(0, 126, 255, 0.18);
+  border: 1px solid rgba(0, 126, 255, 0.03);
+  box-shadow: 2px 3px 2px #888888;
+}
+.loginButton {
+  height: 36px;
+  width: 60px;
+  border-radius: 2px;
   margin: 5px;
-  background-color: #ddeedd;
+}
+.fbLogin {
+  height: 36px;
+  border: 0px;
+  width: 80px;
+  background: url('images/fblogin.png');
+  background-size: 80px 36px;
+}
+.titleText {
+  text-shadow: 3px 3px 2px #0f0f0f;
+}
+.scoreSpan {
+  margin: 0 15px;
+}
+.winningPlayer {
+  color: green;
+  font-weight: bold;
+}
+.losingPlayer {
+  color: red;
 }
 /*
 

@@ -4,6 +4,7 @@ import Tabs from './Tabs';
 import MatchRecorder from './MatchRecorder';
 import MatchList from './MatchList';
 import Modal from 'react-modal';
+import Head2Head from './Head2Head';
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -25,10 +26,12 @@ export default class Menu extends React.Component {
 
   getLoginName() {
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
-
-    var name = 'haha';//authData ? authData.facebook.displayName : "anonymous";
-
-    return name;
+    var authData = ref.getAuth();
+    if (authData) {
+      return authData["uid"];
+    } else {
+      return 0;
+    }
   }
   logout() {
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
@@ -40,7 +43,7 @@ export default class Menu extends React.Component {
 
     return (
       <div>
-        <Tabs tabActive={2} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
+        <Tabs tabActive={1} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
           <Tabs.Panel title='最新战报'>
             <MatchList value={this.state.scores} />
           </Tabs.Panel>
@@ -49,7 +52,7 @@ export default class Menu extends React.Component {
           </Tabs.Panel>
           <Tabs.Panel title="赛场风采">
             <h2>敬请期待</h2>
-            <button onClick={this.logout} >logout</button>
+            <button className="submitButton" onClick={this.logout} >logout</button>
           </Tabs.Panel>
         </Tabs>
       </div>
