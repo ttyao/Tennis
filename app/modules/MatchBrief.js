@@ -2,17 +2,26 @@ import React from 'react';
 import PlayerName from './PlayerName';
 import Timestamp from 'react-timestamp';
 var ReactFireMixin = require('reactfire');
+var TimerMixin = require('react-timer-mixin');
+
 
 var MatchBrief = React.createClass({
   propTypes: {
     matchId: React.PropTypes.string,
-    onChange: React.PropTypes.func,
+    onAfterLoad: React.PropTypes.func,
+    visible: React.PropTypes.bool
   },
 
   getInitialState () {
     return {};
   },
-  mixins: [ReactFireMixin],
+  getDefaultProps () {
+    return {
+      visible: true
+    };
+  },
+  mixins: [ReactFireMixin, TimerMixin],
+
   componentWillMount () {
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/matches/"+this.props.matchId);
     this.bindAsObject(ref, "match");
@@ -37,34 +46,41 @@ var MatchBrief = React.createClass({
   },
   render() {
     if (this.state.match) {
-      var date = new Date(this.state.match.matchTime);
-      var winSetNum = this.getWinSetNum();
-      return (
-        <div className="matchBriefBody">
-          <div>
-            <table>
-              <tbody><tr>
-                <td>
-                  <PlayerName winSetNum={winSetNum} key={this.state.match.players.player1} playerId={this.state.match.players.player1} />
-                  <PlayerName winSetNum={winSetNum} key={this.state.match.players.player3} playerId={this.state.match.players.player3} />
-                </td>
-                <td>VS</td>
-                <td>
-                  <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player2} playerId={this.state.match.players.player2} />
-                  <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player4} playerId={this.state.match.players.player4} />
-                </td>
-              </tr></tbody>
-            </table>
+      if (this.props.onAfterLoad) {
+        this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
+      }
+      if (this.props.visible) {
+        var date = new Date(this.state.match.matchTime);
+        var winSetNum = this.getWinSetNum();
+        return (
+          <div className="matchBriefBody">
+            <div>
+              <table>
+                <tbody><tr>
+                  <td>
+                    <PlayerName winSetNum={winSetNum} key={this.state.match.players.player1} playerId={this.state.match.players.player1} />
+                    <PlayerName winSetNum={winSetNum} key={this.state.match.players.player3} playerId={this.state.match.players.player3} />
+                  </td>
+                  <td>VS</td>
+                  <td>
+                    <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player2} playerId={this.state.match.players.player2} />
+                    <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player4} playerId={this.state.match.players.player4} />
+                  </td>
+                </tr></tbody>
+              </table>
+            </div>
+            <div className="dividerDiv">
+              {this.getScore()}
+            </div>
+            <div>
+            {this.state.match.message}
+            </div>
+            <Timestamp time={date.toISOString()} />
           </div>
-          <div>
-            {this.getScore()}
-          </div>
-          <Timestamp time={date.toISOString()} />
-        </div>
-      );
-    } else {
-      return (<div/>);
+        );
+      }
     }
+    return (<div/>);
   }
 });
 
