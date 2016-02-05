@@ -22,7 +22,4 @@ function main() {
 
 var appElement = document.getElementById('modal');
 
-Modal.setAppElement(appElement);
-
-
 ReactDOM.render(<Login/>, appElement);

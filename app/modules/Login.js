@@ -10,10 +10,12 @@ var Login = React.createClass({
   getInitialState: function() {
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
     var authData = ref.getAuth();
-    if (authData && authData.facebook) {
-      console.log(authData);
+    if (authData) {
       var userRef = ref.child("web/data/users/"+authData["uid"]);
-      userRef.child("displayName").set(authData.facebook.displayName);
+      userRef.child("loggedInAt").set(Date.now());
+      if (authData.facebook) {
+        userRef.child("displayName").set(authData.facebook.displayName);
+      }
     }
     return { unauthed: !authData, firebaseUrl: "https://blistering-torch-8342.firebaseio.com" };
   },
@@ -38,6 +40,7 @@ var Login = React.createClass({
           switch (error.code) {
             case "EMAIL_TAKEN":
               alert("The new user account cannot be created because the email is already in use.");
+              location.reload();
               break;
             case "INVALID_EMAIL":
               alert("The specified email is not a valid email.");
@@ -46,11 +49,6 @@ var Login = React.createClass({
               alert("Error creating user.");
           }
         } else {
-          var userRef = ref.child("web/data/users/"+userData["uid"]);
-          userRef.set({
-            displayName: displayName,
-            createdAt: Date.now()
-          });
           ref.authWithPassword({
             "email": email,
             "password": password
@@ -58,7 +56,15 @@ var Login = React.createClass({
               if (error) {
                 alert("Login Failed!");
               } else {
-                location.reload();
+                var userRef = ref.child("web/data/users/"+userData["uid"]);
+                userRef.set({
+                  displayName: displayName,
+                  createdAt: Date.now()
+                }, function(error){
+                  if (!error) {
+                    location.reload();
+                  }
+                });
               }
           });
         }
@@ -130,9 +136,10 @@ var Login = React.createClass({
             </table>
             </div>
             <div className="modal-footer centerContainer">
-              <button type="button" className="btn btn-primary" onClick={this.handleRegisterClicked}>Register</button>
-              <button type="button" className="btn btn-primary" onClick={this.handleLoginClicked}>Login</button>
-              <button type="button" className="btn btn-primary" onClick={this.handleFacebookLoginClicked}>Facebook</button>
+              <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
+              <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
+              <button type="button" className="btn btn-primary loginButton fbLogin" onClick={this.handleFacebookLoginClicked}>.</button>
+
             </div>
           </div>
         </Modal>

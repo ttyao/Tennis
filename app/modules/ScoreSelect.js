@@ -4,37 +4,32 @@ import Select from 'react-select';
 export default class ScoreSelect extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {score1: 0, score2: 0};
+    this.state = {scores: [0, 0]};
     this.handleScore1Change = this.handleScore1Change.bind(this);
     this.handleScore2Change = this.handleScore2Change.bind(this);
   }
 
-  getOtherScore(value) {
+  getOtherScore(value, otherScore) {
+    if (otherScore) {
+      return otherScore;
+    }
     switch (value) {
-      case 6: return -1;
+      case 6: return otherScore;
       case 7: return 6;
       case 5: return 7;
-      case 0: return -1;
+      case 0: return otherScore;
       default: return 6;
     }
   }
 
   handleScore1Change(value) {
-    var otherScore = this.getOtherScore(value);
-    if (otherScore > 0) {
-      this.setState({score1: value, score2: otherScore}, this.callback);
-    } else {
-      this.setState({score1: value}, this.callback);
-    }
+    var otherScore = this.getOtherScore(value, this.state.scores[1]);
+    this.setState({scores: [value, otherScore]}, this.callback);
   }
 
   handleScore2Change(value) {
-    var otherScore = this.getOtherScore(value);
-    if (otherScore > 0) {
-      this.setState({score1: otherScore, score2: value}, this.callback);
-    } else {
-      this.setState({score2: value}, this.callback);
-    }
+    var otherScore = this.getOtherScore(value, this.state.scores[0]);
+    this.setState({scores: [otherScore, value]}, this.callback);
   }
 
   callback() {
@@ -59,11 +54,11 @@ export default class ScoreSelect extends React.Component {
             {this.props.label}
           </td>
           <td className="scoresection">
-            <Select options={options} value={this.state.score1} onChange={this.handleScore1Change}/>
+            <Select options={options} value={this.state.scores[0]} onChange={this.handleScore1Change}/>
           </td>
           <td className="divider">:</td>
           <td className="scoresection">
-            <Select options={options} value={this.state.score2} onChange={this.handleScore2Change} />
+            <Select options={options} value={this.state.scores[1]} onChange={this.handleScore2Change} />
           </td>
           <td className="rowlabel"></td>
         </tr></tbody>

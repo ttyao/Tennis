@@ -1,22 +1,20 @@
 import React from 'react';
 import MatchBrief from './MatchBrief';
-import ScoreSelect from './ScoreSelect';
-import Notice from './Notice';
 var ReactFireMixin = require('reactfire');
 
-
-var MatchList = React.createClass({
+var Head2Head = React.createClass({
   getInitialState () {
     return {matches : {}};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/matches");
+    console.log(this.props.player1);
+    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+this.props.player1+"/matches");
     this.bindAsArray(ref, "matches");
   },
   render() {
     var matches = this.state.matches.map(function(match) {
-      // console.log(match.scores);
+      console.log(match['.key']);
       return (
         <MatchBrief key={match['.key']} matchId={match['.key']} />
       );
@@ -25,4 +23,4 @@ var MatchList = React.createClass({
   }
 });
 
-module.exports = MatchList;
+module.exports = Head2Head;
