@@ -101,6 +101,9 @@ var Login = React.createClass({
       alert("Login Failed!");
     });
   },
+  handleModalCloseRequest() {
+    this.setState({unauthed:false});
+  },
 
   render: function() {
     return (
@@ -139,7 +142,9 @@ var Login = React.createClass({
               <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
               <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
               <button type="button" className="btn btn-primary loginButton fbLogin" onClick={this.handleFacebookLoginClicked}>.</button>
-
+            </div>
+            <div className="centerContainer">
+              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>先不注册, 随便看看</button>
             </div>
           </div>
         </Modal>

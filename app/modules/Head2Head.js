@@ -5,14 +5,12 @@ var ReactFireMixin = require('reactfire');
 
 var Head2Head = React.createClass({
   getInitialState () {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
-    var authData = ref.getAuth();
-    return {player1: this.props.player1, player2: this.props.player2, win1: 0, win2: 0};
+    return {player1: this.props.player1 ? this.props.player1 : "facebook:539060618", player2: this.props.player2, win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    if (this.props.player1) {
-      var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+this.props.player1+"/matches");
+    if (this.state.player1) {
+      var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+this.state.player1+"/matches");
       this.bindAsArray(ref, "matches");
     }
   },
@@ -105,7 +103,7 @@ var Head2Head = React.createClass({
         <table className="wholerow">
           <tbody><tr>
             <td>
-              <PlayerSelect key="player1" player={authData? authData["uid"]: null} onChange={this.onPlayer1Change} />
+              <PlayerSelect key="player1" player={this.state.player1} onChange={this.onPlayer1Change} />
             </td>
             <td>
               <PlayerSelect key="player2" player="" onChange={this.onPlayer2Change} />

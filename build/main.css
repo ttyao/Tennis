@@ -490,6 +490,12 @@ h6,
   border-radius: 2px;
   margin: 5px;
 }
+.nologinButton {
+  height: 36px;
+  width: 160px;
+  border-radius: 2px;
+  margin: 5px;
+}
 .fbLogin {
   height: 36px;
   border: 0px;
