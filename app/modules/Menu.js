@@ -50,9 +50,9 @@ export default class Menu extends React.Component {
           <Tabs.Panel title='输入战绩'>
             <MatchRecorder />
           </Tabs.Panel>
-          <Tabs.Panel title="赛场风采">
-            <h2>敬请期待</h2>
-            <button className="submitButton" onClick={this.logout} >logout</button>
+          <Tabs.Panel title="Head2Head">
+            <Head2Head player1={this.getLoginName()} player2="" />
+            <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
         </Tabs>
       </div>

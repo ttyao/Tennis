@@ -1,7 +1,10 @@
 import React from 'react';
-import PlayerSelect from './PlayerSelect';
+import PlayersSelect from './PlayersSelect';
 import ScoreSelect from './ScoreSelect';
 import Notice from './Notice';
+import DatePicker from 'react-datepicker';
+var moment = require('moment');
+require('react-datepicker/dist/react-datepicker.css');
 
 export default class MatchRecorder extends React.Component {
   constructor(props) {
@@ -9,17 +12,16 @@ export default class MatchRecorder extends React.Component {
 
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
     var authData = ref.getAuth();
-    this.state = {players: {player1: authData["uid"]}, scores: [], message: ""};
+    this.state = {players: {player1: authData["uid"]}, scores: [], message: "", matchTime: moment()};
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
     this.handleMessageChange = this.handleMessageChange.bind(this);
+    this.handleMatchTimeChange = this.handleMatchTimeChange.bind(this);
   }
 
   handleMessageChange(value) {
-    var newState = this.state;
-    newState.message = value;
-    this.setState(newState);
+    this.setState({message: this.refs.message.value});
   }
   handleScoreChange(id, value) {
     var newState = this.state;
@@ -51,10 +53,10 @@ export default class MatchRecorder extends React.Component {
     }
 
     var match = {};
-    var matchTime = Date.now();
-    var matchId = "match:"+matchTime+":"+authData["uid"];
+    var createdTime = Date.now();
+    var matchId = "match:"+createdTime+":"+authData["uid"];
     match[matchId] = this.state;
-    match[matchId]["matchTime"] = matchTime;
+    match[matchId]["matchTime"] = this.state.matchTime.unix()*1000;
     match[matchId]["creator"] = authData["uid"];
 
     // There is no transaction support...
@@ -75,7 +77,12 @@ export default class MatchRecorder extends React.Component {
         location.reload();
       }
     });
+  }
 
+  handleMatchTimeChange(date) {
+    this.setState({
+      matchTime: date
+    });
   }
 
   handlePlayerChange(id, value) {
@@ -94,12 +101,22 @@ export default class MatchRecorder extends React.Component {
   render() {
     return (
       <div>
-        <Notice notice={this.state.message} />
-        <PlayerSelect label="players" onChange={this.handlePlayerChange} />
+        <PlayersSelect label="players" onChange={this.handlePlayerChange} />
         <div>Score:</div>
         <ScoreSelect id="0" onChange={this.handleScoreChange} />
         <ScoreSelect id="1" onChange={this.handleScoreChange} />
         <ScoreSelect id="2" onChange={this.handleScoreChange} />
+        <div className="centerContainer">
+          Match Date:
+          <DatePicker selected={this.state.matchTime} onChange={this.handleMatchTimeChange} />
+        </div>
+        <div className="centerContainer">
+          <div>Note:</div>
+          <textarea className="messageText"
+            onChange={this.handleMessageChange}
+            ref="message"
+            defaultValue={this.state.message} />
+        </div>
         <div className="centerContainer">
           <button className="submitButton" onClick={this.handleMatchSubmit}>Submit Score</button>
         </div>
