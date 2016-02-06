@@ -12,7 +12,7 @@ export default class MatchRecorder extends React.Component {
 
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
     var authData = ref.getAuth();
-    this.state = {players: {player1: authData["uid"]}, scores: [], message: "", matchTime: moment()};
+    this.state = {players: {player1: authData ? authData["uid"]:null}, scores: [], message: "", matchTime: moment()};
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
@@ -34,6 +34,13 @@ export default class MatchRecorder extends React.Component {
     }
   }
   handleMatchSubmit() {
+    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
+    var authData = ref.getAuth();
+    if (!authData) {
+      alert("You have to login to submit match result.");
+      return;
+    }
+
     if (!this.state.players.player1 || !this.state.players.player2) {
       alert("Please select players first.");
       return;
@@ -44,13 +51,7 @@ export default class MatchRecorder extends React.Component {
       alert("Please provide match scores.");
       return;
     }
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
 
-    var authData = ref.getAuth();
-    if (!authData) {
-      alert("You have to login to submit match result.");
-      return;
-    }
 
     var match = {};
     var createdTime = Date.now();
