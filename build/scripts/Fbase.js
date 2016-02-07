@@ -14,6 +14,8 @@ window.Fbase = {
   getRef: function(path) {
     if (path && path[0] != '/') {
       path = "/" + path;
+    } else {
+      path = "";
     }
     return new Firebase(this.baseUrl+path);
   },

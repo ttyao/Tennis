@@ -11,7 +11,7 @@ var Login = React.createClass({
     var ref = window.Fbase.getRef();
     var authData = ref.getAuth();
     if (authData) {
-      var userRef = ref.child("web/data/users/"+authData["uid"]);
+      var userRef = ref.child("/web/data/users/"+authData["uid"]);
       userRef.child("loggedInAt").set(Date.now());
       if (authData.facebook) {
         userRef.child("displayName").set(authData.facebook.displayName);
@@ -56,7 +56,7 @@ var Login = React.createClass({
               if (error) {
                 alert("Login Failed!");
               } else {
-                var userRef = ref.child("web/data/users/"+userData["uid"]);
+                var userRef = ref.child("/web/data/users/"+userData["uid"]);
                 userRef.set({
                   displayName: displayName,
                   createdAt: Date.now()
