@@ -1,6 +1,7 @@
 import React from 'react';
 import PlayerName from './PlayerName';
 import Timestamp from 'react-timestamp';
+import ScoreBoard from './ScoreBoard';
 var ReactFireMixin = require('reactfire');
 var TimerMixin = require('react-timer-mixin');
 
@@ -37,15 +38,21 @@ var MatchBrief = React.createClass({
     }
     return winningSet;
   },
-  getScore() {
-    var index = 0;
-    return this.state.match.scores.map(function(score) {
-      index+=1;
-      return <span key={index} className="scoreSpan">{score.scores[0]}:{score.scores[1]}</span>;
-    });
+  onScoresChange(event, index) {
+    var match = this.state.match;
+    match.scores[Math.floor(index/2)].scores[index%2] = event.target.value;
+    this.setState({match:match});
+    window.Fbase.updateMatch(match);
+  },
+  completeMatch() {
+    var match = this.state.match;
+    match.isLive = false;
+    this.setState({match:match});
+    window.Fbase.updateMatch(match);
   },
   render() {
     if (this.state.match) {
+      var match = this.state.match;
       if (this.props.onAfterLoad) {
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
@@ -55,27 +62,38 @@ var MatchBrief = React.createClass({
         return (
           <div className="matchBriefBody">
             <div>
-              <table>
+              <table className="wholerow">
                 <tbody><tr>
-                  <td>
+                  <td className="playersection centerContainer">
                     <PlayerName winSetNum={winSetNum} key={this.state.match.players.player1} playerId={this.state.match.players.player1} />
                     <PlayerName winSetNum={winSetNum} key={this.state.match.players.player3} playerId={this.state.match.players.player3} />
                   </td>
-                  <td>VS</td>
-                  <td>
+                  <td className="scoresection">
+                    <ScoreBoard scores={this.state.match.scores} onChange={this.onScoresChange} editable={this.state.match.creator==window.Fbase.authUid() && this.state.match.isLive} />
+                  </td>
+                  <td className="playersection centerContainer">
                     <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player2} playerId={this.state.match.players.player2} />
                     <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player4} playerId={this.state.match.players.player4} />
                   </td>
                 </tr></tbody>
               </table>
             </div>
-            <div className="dividerDiv">
-              {this.getScore()}
+            <div>
+            <div>
+              {this.state.match.message}
+            </div>
             </div>
             <div>
-            {this.state.match.message}
+              <Timestamp time={date.toISOString()} />
+              <div className='floatright'>
+                { match.isLive ?
+                    match.creator == window.Fbase.authUid() ?
+                      <button onClick={this.completeMatch} >Complete</button> :
+                      "正在现场直播!" :
+                    ''
+                }
+              </div>
             </div>
-            <Timestamp time={date.toISOString()} />
           </div>
         );
       }

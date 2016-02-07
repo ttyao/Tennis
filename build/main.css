@@ -452,6 +452,7 @@ h6,
 }
 .wholerow {
   width: 100%;
+  margin: 0 auto;
 }
 .wholerow .divider {
   text-align: center;
@@ -460,6 +461,10 @@ h6,
   width: 85%;
 }
 .wholerow .scoresection {
+  width: 40%;
+  margin: 0 auto;
+}
+.wholerow .playersection {
   width: 30%;
 }
 .wholerow .rowlabel {
@@ -468,6 +473,7 @@ h6,
 .centerContainer {
   text-align: center;
   padding: 5px;
+  margin: 0 auto;
 }
 .submitButton {
   height: 40px;
@@ -523,6 +529,23 @@ h6,
 .dividerDiv {
   border-top: 1px solid rgba(126, 126, 126, 0.3);
   border-bottom: 1px solid rgba(126, 126, 126, 0.3);
+}
+
+.scoreBoardContainer {
+  border-radius: 3px;
+  margin: 0 auto;
+  border: 1px solid rgba(126, 126, 126, 0.3);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+.scoreBoardDiv {
+  border-bottom: 1px solid rgba(126, 126, 126, 0.3);
+}
+.scoreBoardInput {
+  width: 10px;
+}
+.floatright {
+  display: inline;
+  float: right;
 }
 /*
 

@@ -10,16 +10,23 @@ export default class MatchRecorder extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {players: {player1: window.Fbase.authUid()}, scores: [], message: "", matchTime: moment()};
+    this.state = {
+      players: {player1: window.Fbase.authUid()},
+      scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
+      message: "",
+      matchMoment: moment(),
+      isLive: false
+    };
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
     this.handleMessageChange = this.handleMessageChange.bind(this);
     this.handleMatchTimeChange = this.handleMatchTimeChange.bind(this);
+    this.handleLiveMatchSubmit = this.handleLiveMatchSubmit.bind(this);
   }
 
   handleMessageChange(value) {
-    this.setState({message: this.refs.message.value});
+    this.setState({message: this.refs.message.value });
   }
   handleScoreChange(id, value) {
     var newState = this.state;
@@ -42,9 +49,26 @@ export default class MatchRecorder extends React.Component {
         this.createGuestPlayers(index+1);
       }
     } else {
-      console.log(this.state);
       window.Fbase.createMatch(this.state);
     }
+  }
+  handleLiveMatchSubmit() {
+    if (!window.Fbase.authUid()) {
+      alert("You have to login to create live match.");
+      return;
+    }
+
+    if (!this.state.players.player1 || !this.state.players.player2) {
+      alert("Please select players first.");
+      return;
+    } else if (this.state.players.player1 == this.state.players.player2) {
+      alert("不可以左右互搏.");
+      return;
+    } else if (window.Fbase.authUid() != "facebook:539060618") {
+      alert("System in beta, you can't create match yet");
+      return;
+    }
+    this.setState({isLive: true}, function() {this.createGuestPlayers(1)}, this);
   }
   handleMatchSubmit() {
     if (!window.Fbase.authUid()) {
@@ -65,14 +89,12 @@ export default class MatchRecorder extends React.Component {
       alert("System in beta, you can't create match yet");
       return;
     }
-
-    this.createGuestPlayers(1);
-
+    this.setState({isLive: false}, function() {this.createGuestPlayers(1)}, this);
   }
 
   handleMatchTimeChange(date) {
     this.setState({
-      matchTime: date
+      matchMoment: date
     });
   }
 
@@ -99,7 +121,7 @@ export default class MatchRecorder extends React.Component {
         <ScoreSelect id="2" onChange={this.handleScoreChange} />
         <div className="centerContainer">
           Match Date:
-          <DatePicker selected={this.state.matchTime} onChange={this.handleMatchTimeChange} />
+          <DatePicker selected={this.state.matchMoment} onChange={this.handleMatchTimeChange} />
         </div>
         <div className="centerContainer">
           <div>Note:</div>
@@ -109,6 +131,7 @@ export default class MatchRecorder extends React.Component {
             defaultValue={this.state.message} />
         </div>
         <div className="centerContainer">
+          <button className="submitButton" onClick={this.handleLiveMatchSubmit}>Live Match</button>
           <button className="submitButton" onClick={this.handleMatchSubmit}>Submit Score</button>
         </div>
       </div>
