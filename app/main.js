@@ -52,27 +52,32 @@ window.Fbase = {
     }
   },
   createMatch: function(match) {
-    var matches = {};
+    var m = {};
     var createdTime = Date.now();
     var matchId = "match:"+createdTime+":"+this.authUid();
-    matches[matchId] = match;
-    matches[matchId]["matchTime"] = match.matchTime.unix()*1000;
-    matches[matchId]["creator"] = this.authUid();
+    m["players"] = match.players;
+    m["scores"] = match.scores;
+    m["message"] = match.message;
 
     // There is no transaction support...
 
-    // console.log(matches[matchId]);
+    // console.log(m);
     // return;
     for (var i in match.players) {
       var player = match.players[i];
       if (player) {
         let playerRef = this.getRef("web/data/users/"+player+"/matches/"+matchId);
-        playerRef.set(matches[matchId]);
+        playerRef.set(m);
       }
     }
 
+    m["creator"] = this.authUid();
+    m["updateTime"] = createdTime;
+    m["isLive"] = match.isLive;
+    m["matchTime"] = match.matchMoment.unix()*1000;
+
     var matchRef = this.getRef('web/data/matches/'+matchId);
-    matchRef.set(matches[matchId], function(error) {
+    matchRef.set(m, function(error) {
       if (error) {
         alert("Can't save match.");
         console.log(error);
@@ -81,8 +86,24 @@ window.Fbase = {
       }
     });
   },
-};
+  updateMatch: function(match) {
+    var m = {};
+    var createdTime = Date.now();
+    var matchId = match['.key'];
+    m["players"] = match.players;
+    m["scores"] = match.scores;
+    m["message"] = match.message;
+    m["matchTime"] = match.matchMoment.unix()*1000;
+    m["creator"] = this.authUid();
+    m["updateTime"] = createdTime;
+    m["isLive"] = match.isLive;
+    // There is no transaction support...
 
+
+    var matchRef = this.getRef('web/data/matches/'+matchId);
+    matchRef.set(m);
+  },
+};
 
 main();
 

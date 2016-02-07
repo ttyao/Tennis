@@ -41,11 +41,9 @@ var PlayersSelect = React.createClass({
         }
       });
       input = input.split(",").slice(-1)[0].split(":")[0];
-      console.log(current);
       var object = snapshot.val();
       for (var key in object) {
         if (object[key]) {
-          console.log(object[key]);
           if (current.toLowerCase() == object[key].displayName.toLowerCase()) {
             ops[inputs.length - 1].value = key;
           } else {
