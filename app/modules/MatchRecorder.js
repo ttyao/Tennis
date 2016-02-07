@@ -47,15 +47,10 @@ export default class MatchRecorder extends React.Component {
     }
   }
   handleMatchSubmit() {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
-    var authData = ref.getAuth();
-    if (!authData) {
+    if (!window.Fbase.authUid()) {
       alert("You have to login to submit match result.");
       return;
     }
-
-    this.createGuestPlayers(1);
-    return;
 
     if (!this.state.players.player1 || !this.state.players.player2) {
       alert("Please select players first.");
@@ -66,7 +61,13 @@ export default class MatchRecorder extends React.Component {
     } else if (this.state.scores.length < 1) {
       alert("Please provide match scores.");
       return;
+    } else if (window.Fbase.authUid() != "facebook:539060618") {
+      alert("System in beta, you can't create match yet");
+      return;
     }
+
+    this.createGuestPlayers(1);
+
   }
 
   handleMatchTimeChange(date) {
