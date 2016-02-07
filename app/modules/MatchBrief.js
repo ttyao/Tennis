@@ -47,6 +47,14 @@ var MatchBrief = React.createClass({
   completeMatch() {
     var match = this.state.match;
     match.isLive = false;
+    match.updateTime = Date.now();
+    this.setState({match:match});
+    window.Fbase.updateMatch(match);
+  },
+  editMatch() {
+    var match = this.state.match;
+    match.isLive = true;
+    match.updateTime = Date.now();
     this.setState({match:match});
     window.Fbase.updateMatch(match);
   },
@@ -57,7 +65,7 @@ var MatchBrief = React.createClass({
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
-        var date = new Date(this.state.match.matchTime);
+        var date = new Date(match.updateTime ? match.updateTime : match.matchTime);
         var winSetNum = this.getWinSetNum();
         return (
           <div className="matchBriefBody">
@@ -89,8 +97,10 @@ var MatchBrief = React.createClass({
                 { match.isLive ?
                     match.creator == window.Fbase.authUid() ?
                       <button onClick={this.completeMatch} >Complete</button> :
-                      "正在现场直播!" :
-                    ''
+                      match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" : "正在现场直播!" :
+                    match.creator == window.Fbase.authUid() ?
+                      <button onClick={this.editMatch} >Edit</button> :
+                      ""
                 }
               </div>
             </div>

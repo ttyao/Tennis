@@ -457,15 +457,15 @@ h6,
 .wholerow .divider {
   text-align: center;
 }
-.wholerow .playersection {
-  width: 85%;
+.wholerow .scoreselect {
+  width: 90px;
 }
 .wholerow .scoresection {
-  width: 40%;
+  width: 30%;
   margin: 0 auto;
 }
 .wholerow .playersection {
-  width: 30%;
+  width: 35%;
 }
 .wholerow .rowlabel {
   width: 10%;

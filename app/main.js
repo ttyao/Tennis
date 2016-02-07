@@ -87,18 +87,10 @@ window.Fbase = {
     });
   },
   updateMatch: function(match) {
-    var m = {};
-    var createdTime = Date.now();
+    var m = match;
     var matchId = match['.key'];
-    m["players"] = match.players;
-    m["scores"] = match.scores;
-    m["message"] = match.message;
-    m["matchTime"] = match.matchMoment.unix()*1000;
-    m["creator"] = this.authUid();
-    m["updateTime"] = createdTime;
-    m["isLive"] = match.isLive;
-    // There is no transaction support...
-
+    m["updateTime"] = Date.now();
+    delete m['.key'];
 
     var matchRef = this.getRef('web/data/matches/'+matchId);
     matchRef.set(m);
