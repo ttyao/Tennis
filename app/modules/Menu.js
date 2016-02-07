@@ -14,7 +14,7 @@ export default class Menu extends React.Component {
 
   authDataCallback(authData) {
     if (!authData) {
-      var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
+      var ref = window.Fbase.getRef();
       ref.authWithOAuthRedirect("facebook", function (error) {
         console.log("Login Failed!", error);
       });
@@ -24,17 +24,8 @@ export default class Menu extends React.Component {
     }
   }
 
-  getLoginName() {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
-    var authData = ref.getAuth();
-    if (authData) {
-      return authData["uid"];
-    } else {
-      return 0;
-    }
-  }
   logout() {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
+    var ref = window.Fbase.getRef();
     ref.unauth();
     location.reload();
   }
@@ -50,8 +41,8 @@ export default class Menu extends React.Component {
           <Tabs.Panel title='输入战绩'>
             <MatchRecorder />
           </Tabs.Panel>
-          <Tabs.Panel title="Head2Head">
-            <Head2Head player1={this.getLoginName()} player2="" />
+          <Tabs.Panel title="H2H">
+            <Head2Head player1={window.Fbase.authUid()} player2="" />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
         </Tabs>

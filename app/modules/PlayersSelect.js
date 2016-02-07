@@ -1,0 +1,88 @@
+import React from 'react';
+import Select from 'react-select';
+
+var PlayersSelect = React.createClass({
+  displayName: 'PlayerSelect',
+  propTypes: {
+    label: React.PropTypes.string,
+    value: React.PropTypes.array,
+    onChange: React.PropTypes.func,
+  },
+  getInitialState () {
+    return { player1: window.Fbase.authUid(), player2: ""};
+  },
+  handleSelectChange1 (value, values) {
+    this.setState({ player1: value });
+    this.props.onChange("player1", value);
+  },
+  handleSelectChange2 (value, values) {
+    this.setState({ player2: value });
+    this.props.onChange("player2", value);
+  },
+  toggleDisabled (e) {
+    this.setState({ 'disabled': e.target.checked });
+  },
+
+  loadOptions(input, callback) {
+    var userRef = window.Fbase.getRef("web/data/users");
+    userRef.orderByChild("displayName").once("value", function(snapshot) {
+      var inputs = input.split(",");
+      var ops = [];
+      var current = inputs.length ? inputs[inputs.length-1] : "";
+      inputs.forEach(function(input) {
+        if (input.slice(0, 6) == "guest:") {
+          var displayName = input.split(":")[1];
+          if (input == inputs[inputs.length - 1]) {
+            current = displayName;
+          }
+          ops.push({value : "guest:"+displayName, label : displayName});
+        } else if (input.split(":")[0].split("-")[0] == input) { // unchanged displayname
+          ops.push({value : "guest:"+input, label : input});
+        }
+      });
+      input = input.split(",").slice(-1)[0].split(":")[0];
+      console.log(current);
+      var object = snapshot.val();
+      for (var key in object) {
+        if (object[key]) {
+          console.log(object[key]);
+          if (current.toLowerCase() == object[key].displayName.toLowerCase()) {
+            ops[inputs.length - 1].value = key;
+          } else {
+            var item = {};
+            item.value = key;
+            item.label = object[key].displayName;
+            ops.push(item);
+          }
+        }
+      }
+      callback(null, {options: ops, complete: false});
+    }, function() {}, this);
+  },
+
+  render () {
+    return (
+      <table className="wholerow">
+        <tbody><tr>
+          <td className="playersection">
+            <span className="section">
+              <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" onChange={this.handleSelectChange1} asyncOptions={this.loadOptions} />
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="divider"> VS </td>
+        </tr>
+        <tr>
+          <td className="playersection">
+            <span className="section">
+              <Select multi key="player2" value={this.state.player2} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange2} />
+            </span>
+          </td>
+        </tr></tbody>
+      </table>
+    );
+  }
+});
+
+module.exports = PlayersSelect;

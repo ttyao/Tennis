@@ -12,7 +12,7 @@ var PlayerName = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var playerRef = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+this.props.playerId);
+    var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
     this.bindAsObject(playerRef, "player");
   },
   render() {

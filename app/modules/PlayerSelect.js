@@ -16,7 +16,7 @@ var PlayerSelect = React.createClass({
   },
 
   loadOptions(input, callback) {
-    var userRef = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users");
+    var userRef = window.Fbase.getRef("web/data/users");
     userRef.orderByChild("displayName").once("value", function(snapshot) {
       var ops = [];
       var object = snapshot.val();
