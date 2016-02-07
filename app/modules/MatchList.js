@@ -11,14 +11,14 @@ var MatchList = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/matches");
+    var ref = window.Fbase.getRef("web/data/matches");
     this.bindAsArray(ref, "matches");
   },
   render() {
     var matches = this.state.matches.map(function(match) {
       // console.log(match.scores);
       return (
-        <MatchBrief key={match['.key']} matchId={match['.key']} />
+        <MatchBrief visible={true} key={match['.key']} matchId={match['.key']} />
       );
     });
     return <div>{ matches.reverse() }</div>;

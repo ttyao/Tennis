@@ -10,9 +10,7 @@ export default class MatchRecorder extends React.Component {
   constructor(props) {
     super(props);
 
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
-    var authData = ref.getAuth();
-    this.state = {players: {player1: authData ? authData["uid"]:null}, scores: [], message: "", matchTime: moment()};
+    this.state = {players: {player1: window.Fbase.authUid()}, scores: [], message: "", matchTime: moment()};
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
@@ -33,6 +31,21 @@ export default class MatchRecorder extends React.Component {
       console.log(error);
     }
   }
+  createGuestPlayers(index) {
+    if (index <= 4) {
+      if (this.state.players["player"+index] && this.state.players["player"+index].slice(0, 6) == "guest:") {
+        window.Fbase.createUser(this.state.players["player"+index].split(":")[1], function() {
+          this.createGuestPlayers(index+1);
+        }, this);
+        return;
+      } else {
+        this.createGuestPlayers(index+1);
+      }
+    } else {
+      console.log(this.state);
+      window.Fbase.createMatch(this.state);
+    }
+  }
   handleMatchSubmit() {
     var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data");
     var authData = ref.getAuth();
@@ -40,6 +53,9 @@ export default class MatchRecorder extends React.Component {
       alert("You have to login to submit match result.");
       return;
     }
+
+    this.createGuestPlayers(1);
+    return;
 
     if (!this.state.players.player1 || !this.state.players.player2) {
       alert("Please select players first.");
@@ -51,33 +67,6 @@ export default class MatchRecorder extends React.Component {
       alert("Please provide match scores.");
       return;
     }
-
-
-    var match = {};
-    var createdTime = Date.now();
-    var matchId = "match:"+createdTime+":"+authData["uid"];
-    match[matchId] = this.state;
-    match[matchId]["matchTime"] = this.state.matchTime.unix()*1000;
-    match[matchId]["creator"] = authData["uid"];
-
-    // There is no transaction support...
-
-    for (var i in this.state.players) {
-      if (this.state.players[i]) {
-        matchRef = ref.child("users/"+this.state.players[i]+"/matches/"+matchId);
-        matchRef.set(match[matchId], this.onSetComplete);
-      }
-    }
-
-    var matchRef = ref.child('matches/'+matchId);
-    matchRef.set(match[matchId], function(error) {
-      if (error) {
-        alert("Can't save match.");
-        console.log(error);
-      } else {
-        location.reload();
-      }
-    });
   }
 
   handleMatchTimeChange(date) {

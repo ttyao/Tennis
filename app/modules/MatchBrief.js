@@ -23,7 +23,7 @@ var MatchBrief = React.createClass({
   mixins: [ReactFireMixin, TimerMixin],
 
   componentWillMount () {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/matches/"+this.props.matchId);
+    var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
     this.bindAsObject(ref, "match");
   },
   getWinSetNum() {
@@ -49,7 +49,7 @@ var MatchBrief = React.createClass({
       if (this.props.onAfterLoad) {
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
-      if (this.props.visible) {
+      if (this.props.visible && this.state.match.players) {
         var date = new Date(this.state.match.matchTime);
         var winSetNum = this.getWinSetNum();
         return (

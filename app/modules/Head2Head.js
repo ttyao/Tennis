@@ -10,13 +10,12 @@ var Head2Head = React.createClass({
   mixins: [ReactFireMixin],
   componentWillMount () {
     if (this.state.player1) {
-      var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+this.state.player1+"/matches");
+      var ref = window.Fbase.getRef("web/data/users/"+this.state.player1+"/matches");
       this.bindAsArray(ref, "matches");
     }
   },
   onMatchBriefLoad(matchId, players) {
     var qualified = false;
-    // console.log(this.state);
 
     if (!this.state.player2) {
       return;
@@ -69,8 +68,6 @@ var Head2Head = React.createClass({
         }
       }
     });
-    // console.log("matchwin "+matchWin);
-    // console.log(this.state);
     this.setState({
       win1: matchWin,
       win2: totalMatch - matchWin
@@ -78,14 +75,14 @@ var Head2Head = React.createClass({
   },
   onPlayer1Change(value){
     this.setState({player1: value});
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+value+"/matches");
+    var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
     this.unbind("matches");
     this.bindAsArray(ref, "matches");
   },
   onPlayer2Change(value){
     console.log(value);
     this.setState({player2: value});
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/"+value+"/matches");
+    var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
     this.unbind("matches");
     this.bindAsArray(ref, "matches");
   },
@@ -96,8 +93,6 @@ var Head2Head = React.createClass({
         <MatchBrief key={match['.key']} matchId={match['.key']} visible={this.state["qualified"+[match['.key']]]} onAfterLoad={this.onMatchBriefLoad} />
       );
     }, this);
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
-    var authData = ref.getAuth();
     return (
       <div>
         <table className="wholerow">

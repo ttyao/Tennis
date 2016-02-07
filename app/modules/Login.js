@@ -8,7 +8,7 @@ Modal.setAppElement(appElement);
 
 var Login = React.createClass({
   getInitialState: function() {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com");
+    var ref = window.Fbase.getRef();
     var authData = ref.getAuth();
     if (authData) {
       var userRef = ref.child("web/data/users/"+authData["uid"]);
@@ -17,7 +17,7 @@ var Login = React.createClass({
         userRef.child("displayName").set(authData.facebook.displayName);
       }
     }
-    return { unauthed: !authData, firebaseUrl: "https://blistering-torch-8342.firebaseio.com" };
+    return { unauthed: !authData };
   },
 
   handleRegisterClicked() {
@@ -28,7 +28,7 @@ var Login = React.createClass({
     } else if (!this.state.displayName) {
       alert("Username is required for register.");
     } else {
-      var ref = new Firebase(this.state.firebaseUrl);
+      var ref = window.Fbase.getRef();
       var displayName = this.state.displayName;
       var email = this.state.email;
       var password = this.state.password;
@@ -73,7 +73,7 @@ var Login = React.createClass({
   },
 
   handleLoginClicked: function(e) {
-    var ref = new Firebase(this.state.firebaseUrl);
+    var ref = window.Fbase.getRef();
     ref.authWithPassword({
       "email": this.state.email,
       "password": this.state.password
@@ -96,7 +96,7 @@ var Login = React.createClass({
     this.setState({displayName: e.target.value});
   },
   handleFacebookLoginClicked() {
-    var ref = new Firebase(this.state.firebaseUrl);
+    var ref = window.Fbase.getRef();
     ref.authWithOAuthRedirect("facebook", function (error) {
       alert("Login Failed!");
     });
