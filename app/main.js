@@ -9,14 +9,47 @@ import Login from './modules/Login';
 
 window.Fbase = {
   baseUrl : "https://blistering-torch-8342.firebaseio.com",
-  authUid: function(){
+  Henry: "facebook:539060618",
+  isHenry: function() {
+    return this.Henry == this.authUid;
+  },
+  refreshDisplayNames: function(callback) {
+    var ref = this.getRef("web/data/users");
+    this.displayNames = {};
+    ref.once('value', function(snapshot) {
+      var data = snapshot.val();
+      for (let key in data) {
+        window.Fbase.displayNames[key] = data[key].displayName;
+      }
+      if (callback) {
+        callback();
+      }
+    });
+  },
+  init: function(callback) {
+    this.authUid = this.getAuthUid();
+    this.refreshDisplayNames(function() {
+      window.Fbase.log("init", "visit");
+      if (callback) {
+        callback();
+      }
+    });
+  },
+  getDisplayName: function(uid) {
+    if (this.displayNames[uid]) {
+      return this.displayNames[uid];
+    }
+    this.refreshDisplayNames();
+    return uid;
+  },
+  isDebug: function() {
+    return window.location.hostname == 'localhost';
+  },
+  getAuthUid: function() {
     var ref = new Firebase(this.baseUrl);
     var authData = ref.getAuth();
-    if (authData) {
-      return authData["uid"];
-    } else {
-      return "";
-    }
+    this.authUid = authData ? authData["uid"] : "";
+    return this.authUid;
   },
   getRef: function(path) {
     if (path && path[0] != '/') {
@@ -26,20 +59,36 @@ window.Fbase = {
     }
     return new Firebase(this.baseUrl+path);
   },
+
+  // async callback with displayName of uid
   onceUserName: function(uid, callback) {
     var ref = this.getRef("web/data/users/"+uid);
     ref.once('value', function(snapshot) {
       callback(snapshot.val() ? snapshot.val().displayName : null);
     });
   },
-  // TODO check username
+
+  // very inefficient now, need to look into index later
+  onceDisplayNameExists: function(displayName, callback) {
+    var ref = window.Fbase.getRef("web/data/users");
+    ref.once('value', function(snapshot){
+      var users = snapshot.val();
+      for (let key in users) {
+        if (users[key].displayName.toLowerCase() == displayName.toLowerCase()) {
+          callback.call(this, key);
+          return;
+        }
+      }
+      callback.call(this, null);
+    });
+  },
   createUser: function(displayName, onComplete, caller){
-    if (this.authUid()) {
+    if (this.authUid) {
       this.onceUserName("guest:"+displayName, function(username) {
         if (!username) {
           var ref = window.Fbase.getRef("web/data/users/guest:"+displayName);
           ref.set({
-            creator: window.Fbase.authUid(),
+            creator: window.Fbase.getAuthUid(),
             displayName: displayName
           }, function(error) {
             if(!error && onComplete) {
@@ -56,27 +105,24 @@ window.Fbase = {
   createMatch: function(match) {
     var m = {};
     var createdTime = Date.now();
-    var matchId = "match:"+createdTime+":"+this.authUid();
-    m["players"] = match.players;
-    m["scores"] = match.scores;
+    var matchId = "match:"+createdTime+":"+this.authUid;
     m["message"] = match.message;
+    m["creator"] = this.authUid;
 
     // There is no transaction support...
 
-    // console.log(m);
-    // return;
-    for (var i in match.players) {
-      var player = match.players[i];
+    match.players.forEach(function(player) {
       if (player) {
         let playerRef = this.getRef("web/data/users/"+player+"/matches/"+matchId);
         playerRef.set(m);
       }
-    }
+    }, this);
 
-    m["creator"] = this.authUid();
+    m["scores"] = match.scores;
     m["updateTime"] = createdTime;
     m["isLive"] = match.isLive;
     m["matchTime"] = match.matchMoment.unix()*1000;
+    m["players"] = match.players;
 
     var matchRef = this.getRef('web/data/matches/'+matchId);
     matchRef.set(m, function(error) {
@@ -86,8 +132,6 @@ window.Fbase = {
         location.reload();
       }
     });
-    this.log("create match: "+matchId, "write");
-
   },
   updateMatch: function(match) {
     var m = match;
@@ -99,12 +143,15 @@ window.Fbase = {
     matchRef.set(m);
     this.log("update match "+matchId, "write");
   },
-  log: function(message, type) {
-    var id = this.authUid();
+  log: function(message, type, subtype) {
+    var id = this.getDisplayName(this.authUid);
     if (!id) {
       id = this.sessionId;
     }
-    var logRef = this.getRef('web/data/logs/'+id+":"+Date.now());
+    if (id.slice(0,8) == "visitor:") {
+      id = "visitor/" + id.slice(8);
+    }
+    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+Date.now());
     logRef.set({
       message: message,
       creator: id,
@@ -119,11 +166,40 @@ window.Fbase = {
     }
     this.sessionId = "visitor:" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
-    console.log(this.sessionId);
   },
-};
+  mergeAccountA2B: function(fromId, toId) {
+    // change player ids in all matches.
+    var ref = window.Fbase.getRef("web/data/matches");
+    ref.once('value', function(snapshot){
+      var matches = snapshot.val();
+      for (let key in matches) {
+        var players = matches[key].players;
+        var changed = false;
+        for (let i = 0; i < 4; i++) {
+          if (players[i] == fromId) {
+            players[i] = toId;
+            changed = true;
+          }
+        }
+        if (changed) {
+          ref.child(key+"/players").set(players);
+        }
+      }
+    });
+  },
+  createComment: function(match, comment) {
+    var commentId = "comment:"+Date.now()+":"+this.authUid;
+    var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + commentId);
 
-main();
+    ref.set({
+      comment: comment,
+      creator: this.authUid,
+      createdTime: Date.now()
+    });
+    this.log("create comment", "write", "createComment");
+  }
+};
+window.Fbase.init(main);
 
 function main() {
   ReactDOM.render(

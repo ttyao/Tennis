@@ -2,9 +2,16 @@ import React from 'react';
 import PlayerName from './PlayerName';
 import Timestamp from 'react-timestamp';
 import ScoreBoard from './ScoreBoard';
+import CommentsBox from './CommentsBox';
 var ReactFireMixin = require('reactfire');
+import Linkify from 'react-linkify';
 var TimerMixin = require('react-timer-mixin');
 
+import Modal from 'react-modal';
+
+var appElement = document.getElementById('modal');
+
+Modal.setAppElement(appElement);
 
 var MatchBrief = React.createClass({
   propTypes: {
@@ -60,10 +67,26 @@ var MatchBrief = React.createClass({
     this.setState({match:match});
     window.Fbase.updateMatch(match);
   },
+  onNewCommentClick() {
+    if (!window.Fbase.authUid) {
+      alert("You need to login to leave a comment.");
+      return;
+    }
+    this.setState({showNewCommentsBox: true});
+  },
+  onNewCommentsBoxCloseClick() {
+    this.setState({showNewCommentsBox: false});
+  },
+
+  onNewCommentsBoxSendClick() {
+    window.Fbase.createComment(this.state.match, this.refs["newCommentsTextArea"].value);
+    this.setState({showNewCommentsBox: false});
+  },
 
   render() {
     if (this.state.match) {
       var match = this.state.match;
+      var matchId = match['.key'];
       if (this.props.onAfterLoad) {
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
@@ -72,34 +95,49 @@ var MatchBrief = React.createClass({
         var winSetNum = this.getWinSetNum();
         return (
           <div className="matchBriefBody">
+            { window.Fbase.isDebug() &&
+              <div>{match['.key']}</div>
+            }
             <div>
               <table className="wholerow">
                 <tbody><tr>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={winSetNum} key={this.state.match.players.player1} playerId={this.state.match.players.player1} />
-                    <PlayerName winSetNum={winSetNum} key={this.state.match.players.player3} playerId={this.state.match.players.player3} />
+                    <PlayerName winSetNum={winSetNum} key={match.players[0]} playerId={match.players[0]} />
+                    <PlayerName winSetNum={winSetNum} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
-                    <ScoreBoard scores={this.state.match.scores} onChange={this.onScoresChange} editable={this.state.match.creator==window.Fbase.authUid() && this.state.match.isLive} />
+                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} isLive={match.isLive} editable={match.creator==window.Fbase.authUid && match.isLive} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player2} playerId={this.state.match.players.player2} />
-                    <PlayerName winSetNum={-winSetNum} key={this.state.match.players.player4} playerId={this.state.match.players.player4} />
+                    <PlayerName winSetNum={-winSetNum} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={-winSetNum} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>
               </table>
             </div>
             <div>
-              {this.state.match.message}
+              <Linkify>{this.state.match.message}</Linkify>
+              <CommentsBox comments={match.comments} />
             </div>
             <div>
               <Timestamp time={date.toISOString()} />
               <div className='floatright'>
+                <button onClick={this.onNewCommentClick}>Comment</button>
+                <Modal
+                  className="Modal__Bootstrap modal-dialog"
+                  closeTimeoutMS={150}
+                  isOpen={this.state.showNewCommentsBox}
+                  onRequestClose={this.handleModalCloseRequest}
+                >
+                  <textarea className="newCommentsTextArea" ref="newCommentsTextArea" />
+                  <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Send</button>
+                  <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+                </Modal>
                 { match.isLive ?
-                    match.creator == window.Fbase.authUid() ?
+                    match.creator == window.Fbase.authUid ?
                       <button onClick={this.completeMatch} >Complete</button> :
                       match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" : "正在现场直播!" :
-                    match.creator == window.Fbase.authUid() ?
+                    match.creator == window.Fbase.authUid ?
                       <button onClick={this.editMatch} >Edit</button> :
                       ""
                 }
@@ -109,7 +147,7 @@ var MatchBrief = React.createClass({
         );
       }
     }
-    return (<div/>);
+    return null;
   }
 });
 

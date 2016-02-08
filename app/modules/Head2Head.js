@@ -21,14 +21,14 @@ var Head2Head = React.createClass({
       return;
     }
     if (!players) {
-      console.log("players not found");
+      console.log("players not found "+matchId);
       return;
     }
 
-    if (this.state.player1 == players.player1 || this.state.player1 == players.player3) {
-      qualified = (this.state.player2 == players.player2 || this.state.player2 == players.player4);
-    } else if (this.state.player1 == players.player2 || this.state.player1 == players.player4) {
-      qualified = (this.state.player2 == players.player1 || this.state.player2 == players.player3);
+    if (this.state.player1 == players[0] || this.state.player1 == players[2]) {
+      qualified = (this.state.player2 == players[1] || this.state.player2 == players[3]);
+    } else if (this.state.player1 == players[1] || this.state.player1 == players[3]) {
+      qualified = (this.state.player2 == players[0] || this.state.player2 == players[2]);
     }
 
     if (this.state["qualified"+matchId] != qualified) {
@@ -47,10 +47,10 @@ var Head2Head = React.createClass({
     this.state.matches.forEach(function(match) {
       var setWin = 0;
       var qualified = false;
-      if (player1 == match.players.player1 || player1 == match.players.player3) {
-        qualified = (player2 == match.players.player2 || player2 == match.players.player4);
-      } else if (player1 == match.players.player2 || player1 == match.players.player4) {
-        qualified = (player2 == match.players.player1 || player2 == match.players.player3);
+      if (player1 == match.players[0] || player1 == match.players[2]) {
+        qualified = (player2 == match.players[1] || player2 == match.players[3]);
+      } else if (player1 == match.players[1] || player1 == match.players[3]) {
+        qualified = (player2 == match.players[0] || player2 == match.players[2]);
       }
       if (qualified) {
         totalMatch++;
@@ -62,8 +62,8 @@ var Head2Head = React.createClass({
             setWin--;
           }
         });
-        if (setWin >= 0 && (player1 == match.players.player1 || player1 == match.players.player3 ) ||
-            setWin <= 0 && (player1 == match.players.player2 || player1 == match.players.player4 )) {
+        if (setWin >= 0 && (player1 == match.players[0] || player1 == match.players[2] ) ||
+            setWin <= 0 && (player1 == match.players[1] || player1 == match.players[3] )) {
           matchWin++;
         }
       }

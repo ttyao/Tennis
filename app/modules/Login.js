@@ -19,7 +19,6 @@ var Login = React.createClass({
     } else {
       window.Fbase.setSessionId();
     }
-    // window.Fbase.log("login", "visit");
     return { unauthed: !authData };
   },
 
@@ -35,40 +34,47 @@ var Login = React.createClass({
       var displayName = this.state.displayName;
       var email = this.state.email;
       var password = this.state.password;
-      ref.createUser({
-        email: this.state.email,
-        password: this.state.password,
-      }, function(error, userData) {
-        if (error) {
-          switch (error.code) {
-            case "EMAIL_TAKEN":
-              alert("The new user account cannot be created because the email is already in use.");
-              location.reload();
-              break;
-            case "INVALID_EMAIL":
-              alert("The specified email is not a valid email.");
-              break;
-            default:
-              alert("Error creating user.");
-          }
+      window.Fbase.onceDisplayNameExists(displayName, function(uid) {
+        if (uid && uid.slice(0, 6) != 'guest:') {
+          alert("username is already taken.");
+          return;
         } else {
-          ref.authWithPassword({
-            "email": email,
-            "password": password
-            }, function (error, authData) {
-              if (error) {
-                alert("Login Failed!");
-              } else {
-                var userRef = ref.child("/web/data/users/"+userData["uid"]);
-                userRef.set({
-                  displayName: displayName,
-                  createdAt: Date.now()
-                }, function(error){
-                  if (!error) {
-                    location.reload();
-                  }
-                });
+          ref.createUser({
+            email: this.state.email,
+            password: this.state.password,
+          }, function(error, userData) {
+            if (error) {
+              switch (error.code) {
+                case "EMAIL_TAKEN":
+                  alert("The new user account cannot be created because the email is already in use.");
+                  location.reload();
+                  break;
+                case "INVALID_EMAIL":
+                  alert("The specified email is not a valid email.");
+                  break;
+                default:
+                  alert("Error creating user.");
               }
+            } else {
+              ref.authWithPassword({
+                "email": email,
+                "password": password
+                }, function (error, authData) {
+                  if (error) {
+                    alert("Login Failed!");
+                  } else {
+                    var userRef = ref.child("/web/data/users/"+userData["uid"]);
+                    userRef.set({
+                      displayName: displayName,
+                      createdAt: Date.now()
+                    }, function(error){
+                      if (!error) {
+                        location.reload();
+                      }
+                    });
+                  }
+              });
+            }
           });
         }
       });
@@ -148,6 +154,9 @@ var Login = React.createClass({
             </div>
             <div className="centerContainer">
               <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>先不注册, 随便看看</button>
+            </div>
+            <div>
+              目前Facebook Login有点小问题, 如果点击一次没成功的话, 请多试两次就会成功.
             </div>
           </div>
         </Modal>

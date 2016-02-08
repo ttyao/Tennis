@@ -11,7 +11,7 @@ export default class MatchRecorder extends React.Component {
     super(props);
 
     this.state = {
-      players: {player1: window.Fbase.authUid()},
+      players: [window.Fbase.authUid, null, null, null],
       scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
       message: "",
       matchMoment: moment(),
@@ -39,9 +39,9 @@ export default class MatchRecorder extends React.Component {
     }
   }
   createGuestPlayers(index) {
-    if (index <= 4) {
-      if (this.state.players["player"+index] && this.state.players["player"+index].slice(0, 6) == "guest:") {
-        window.Fbase.createUser(this.state.players["player"+index].split(":")[1], function() {
+    if (index < 4) {
+      if (this.state.players[index] && this.state.players[index].slice(0, 6) == "guest:") {
+        window.Fbase.createUser(this.state.players[index].split(":")[1], function() {
           this.createGuestPlayers(index+1);
         }, this);
         return;
@@ -53,43 +53,43 @@ export default class MatchRecorder extends React.Component {
     }
   }
   handleLiveMatchSubmit() {
-    if (!window.Fbase.authUid()) {
+    if (!window.Fbase.authUid) {
       alert("You have to login to create live match.");
       return;
     }
 
-    if (!this.state.players.player1 || !this.state.players.player2) {
+    if (!this.state.players[0] || !this.state.players[1]) {
       alert("Please select players first.");
       return;
-    } else if (this.state.players.player1 == this.state.players.player2) {
+    } else if (this.state.players[0] == this.state.players[1]) {
       alert("不可以左右互搏.");
       return;
-    } else if (window.Fbase.authUid() != "facebook:539060618") {
+    } else if (window.Fbase.authUid != "facebook:539060618") {
       alert("System in beta, you can't create match yet");
       return;
     }
-    this.setState({isLive: true}, function() {this.createGuestPlayers(1)}, this);
+    this.setState({isLive: true}, function() {this.createGuestPlayers(0)}, this);
   }
   handleMatchSubmit() {
-    if (!window.Fbase.authUid()) {
+    if (!window.Fbase.authUid) {
       alert("You have to login to submit match result.");
       return;
     }
 
-    if (!this.state.players.player1 || !this.state.players.player2) {
+    if (!this.state.players[0] || !this.state.players[1]) {
       alert("Please select players first.");
       return;
-    } else if (this.state.players.player1 == this.state.players.player2) {
+    } else if (this.state.players[0] == this.state.players[1]) {
       alert("不可以左右互搏.");
       return;
     } else if (this.state.scores.length < 1) {
       alert("Please provide match scores.");
       return;
-    } else if (window.Fbase.authUid() != "facebook:539060618") {
+    } else if (window.Fbase.isHenry()) {
       alert("System in beta, you can't create match yet");
       return;
     }
-    this.setState({isLive: false}, function() {this.createGuestPlayers(1)}, this);
+    this.setState({isLive: false}, function() {this.createGuestPlayers(0)}, this);
   }
 
   handleMatchTimeChange(date) {
@@ -102,11 +102,11 @@ export default class MatchRecorder extends React.Component {
     var newState = this.state;
     var players = value.split(",");
     if (id == "player1") {
-      newState.players.player1 = players[0];
-      newState.players.player3 = players[1] ? players[1] : null;
+      newState.players[0] = players[0];
+      newState.players[2] = players[1] ? players[1] : null;
     } else {
-      newState.players.player2 = players[0];
-      newState.players.player4 = players[1] ? players[1] : null;
+      newState.players[1] = players[0];
+      newState.players[3] = players[1] ? players[1] : null;
     }
     this.setState(newState);
   }

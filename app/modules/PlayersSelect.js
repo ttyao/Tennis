@@ -9,7 +9,7 @@ var PlayersSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return { player1: window.Fbase.authUid(), player2: ""};
+    return { player1: window.Fbase.authUid, player2: ""};
   },
   handleSelectChange1 (value, values) {
     this.setState({ player1: value });
@@ -43,7 +43,7 @@ var PlayersSelect = React.createClass({
       input = input.split(",").slice(-1)[0].split(":")[0];
       var object = snapshot.val();
       for (var key in object) {
-        if (object[key]) {
+        if (object[key] && object[key].displayName) {
           if (current.toLowerCase() == object[key].displayName.toLowerCase()) {
             ops[inputs.length - 1].value = key;
           } else {
