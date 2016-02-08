@@ -4,7 +4,8 @@ import Timestamp from 'react-timestamp';
 import ScoreBoard from './ScoreBoard';
 var ReactFireMixin = require('reactfire');
 var TimerMixin = require('react-timer-mixin');
-
+var Dropzone = require('react-dropzone');
+import ReactPlayer from 'react-player'
 
 var MatchBrief = React.createClass({
   propTypes: {
@@ -14,7 +15,9 @@ var MatchBrief = React.createClass({
   },
 
   getInitialState () {
-    return {};
+    return {
+      file: null
+    };
   },
   getDefaultProps () {
     return {
@@ -58,6 +61,10 @@ var MatchBrief = React.createClass({
     this.setState({match:match});
     window.Fbase.updateMatch(match);
   },
+  onUpload(files){
+    console.log(files);
+    this.setState({file: files[0].preview});
+  },
   render() {
     if (this.state.match) {
       var match = this.state.match;
@@ -87,12 +94,22 @@ var MatchBrief = React.createClass({
               </table>
             </div>
             <div>
-            <div>
               {this.state.match.message}
-            </div>
             </div>
             <div>
               <Timestamp time={date.toISOString()} />
+              { window.Fbase.authUid() && false &&
+                <div className='floatright'>
+                  <Dropzone onDrop={this.onUpload} className="pictureUpload">
+                    <div>Try</div>
+                  </Dropzone>
+                  <ReactPlayer
+                    className="player"
+                    url={this.state.file}
+                    playing={true}
+                  />
+                </div>
+              }
               <div className='floatright'>
                 { match.isLive ?
                     match.creator == window.Fbase.authUid() ?

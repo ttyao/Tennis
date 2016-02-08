@@ -16,7 +16,10 @@ var Login = React.createClass({
       if (authData.facebook) {
         userRef.child("displayName").set(authData.facebook.displayName);
       }
+    } else {
+      window.Fbase.setSessionId();
     }
+    // window.Fbase.log("login", "visit");
     return { unauthed: !authData };
   },
 

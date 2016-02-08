@@ -547,6 +547,18 @@ h6,
   display: inline;
   float: right;
 }
+.floatmiddle {
+  display: inline;
+  float: left;
+}
+.pictureUpload {
+  width: 40px;
+  height: 25px;
+}
+.player {
+  width: 300px;
+  height: 200px;
+}
 /*
 
 // include these styles to test normal form fields
