@@ -5,11 +5,14 @@ import MatchRecorder from './MatchRecorder';
 import MatchList from './MatchList';
 import Modal from 'react-modal';
 import Head2Head from './Head2Head';
+var Dropzone = require('react-dropzone');
+import ReactPlayer from 'react-player';
 
 export default class Menu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {authData: null};
+    this.onUpload = this.onUpload.bind(this);
   }
 
   authDataCallback(authData) {
@@ -30,6 +33,11 @@ export default class Menu extends React.Component {
     location.reload();
   }
 
+  onUpload(files){
+    console.log(files[0].preview);
+    this.setState({file: files[0].preview}, function() { console.log("???")});
+  }
+
   render() {
     return (
       <div>
@@ -44,6 +52,19 @@ export default class Menu extends React.Component {
             <Head2Head player1={window.Fbase.authUid()} player2="" />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
+          { window.Fbase.authUid() == "facebook:539060618" &&
+            <Tabs.Panel title="Admin">
+              <Dropzone onDrop={this.onUpload} className="pictureUpload">
+                <div>Try</div>
+              </Dropzone>
+              <img src={this.state.file} className="player" />
+              <ReactPlayer
+                className="player"
+                url={this.state.file}
+                playing={true}
+              />
+            </Tabs.Panel>
+          }
         </Tabs>
       </div>
     );
