@@ -32,6 +32,7 @@ window.Fbase = {
       callback(snapshot.val() ? snapshot.val().displayName : null);
     });
   },
+  // TODO check username
   createUser: function(displayName, onComplete, caller){
     if (this.authUid()) {
       this.onceUserName("guest:"+displayName, function(username) {
@@ -45,6 +46,7 @@ window.Fbase = {
               onComplete.call(caller, error);
             }
           });
+          window.Fbase.log("create user: "+displayName, "write");
         } else if (onComplete) {
           onComplete.call(caller);
         }
@@ -80,28 +82,44 @@ window.Fbase = {
     matchRef.set(m, function(error) {
       if (error) {
         alert("Can't save match.");
-        console.log(error);
       } else {
         location.reload();
       }
     });
+    this.log("create match: "+matchId, "write");
+
   },
   updateMatch: function(match) {
-    var m = {};
-    var createdTime = Date.now();
+    var m = match;
     var matchId = match['.key'];
-    m["players"] = match.players;
-    m["scores"] = match.scores;
-    m["message"] = match.message;
-    m["matchTime"] = match.matchMoment.unix()*1000;
-    m["creator"] = this.authUid();
-    m["updateTime"] = createdTime;
-    m["isLive"] = match.isLive;
-    // There is no transaction support...
-
+    m["updateTime"] = Date.now();
+    delete m['.key'];
 
     var matchRef = this.getRef('web/data/matches/'+matchId);
     matchRef.set(m);
+    this.log("update match "+matchId, "write");
+  },
+  log: function(message, type) {
+    var id = this.authUid();
+    if (!id) {
+      id = this.sessionId;
+    }
+    var logRef = this.getRef('web/data/logs/'+id+":"+Date.now());
+    logRef.set({
+      message: message,
+      creator: id,
+      type: type,
+    });
+  },
+  setSessionId: function () {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    this.sessionId = "visitor:" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+    console.log(this.sessionId);
   },
 };
 

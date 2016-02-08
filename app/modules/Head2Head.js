@@ -74,13 +74,14 @@ var Head2Head = React.createClass({
     });
   },
   onPlayer1Change(value){
+    window.Fbase.log("head2head 1st player changed to: " + value, "query");
     this.setState({player1: value});
     var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
     this.unbind("matches");
     this.bindAsArray(ref, "matches");
   },
   onPlayer2Change(value){
-    console.log(value);
+    window.Fbase.log("head2head 2nd player changed to: " + value, "query");
     this.setState({player2: value});
     var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
     this.unbind("matches");

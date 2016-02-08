@@ -4,7 +4,8 @@ import Timestamp from 'react-timestamp';
 import ScoreBoard from './ScoreBoard';
 var ReactFireMixin = require('reactfire');
 var TimerMixin = require('react-timer-mixin');
-
+var Dropzone = require('react-dropzone');
+import ReactPlayer from 'react-player'
 
 var MatchBrief = React.createClass({
   propTypes: {
@@ -14,7 +15,9 @@ var MatchBrief = React.createClass({
   },
 
   getInitialState () {
-    return {};
+    return {
+      file: null
+    };
   },
   getDefaultProps () {
     return {
@@ -47,8 +50,20 @@ var MatchBrief = React.createClass({
   completeMatch() {
     var match = this.state.match;
     match.isLive = false;
+    match.updateTime = Date.now();
     this.setState({match:match});
     window.Fbase.updateMatch(match);
+  },
+  editMatch() {
+    var match = this.state.match;
+    match.isLive = true;
+    match.updateTime = Date.now();
+    this.setState({match:match});
+    window.Fbase.updateMatch(match);
+  },
+  onUpload(files){
+    console.log(files);
+    this.setState({file: files[0].preview});
   },
   render() {
     if (this.state.match) {
@@ -57,7 +72,7 @@ var MatchBrief = React.createClass({
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
-        var date = new Date(this.state.match.matchTime);
+        var date = new Date(match.updateTime ? match.updateTime : match.matchTime);
         var winSetNum = this.getWinSetNum();
         return (
           <div className="matchBriefBody">
@@ -79,18 +94,30 @@ var MatchBrief = React.createClass({
               </table>
             </div>
             <div>
-            <div>
               {this.state.match.message}
-            </div>
             </div>
             <div>
               <Timestamp time={date.toISOString()} />
+              { window.Fbase.authUid() && false &&
+                <div className='floatright'>
+                  <Dropzone onDrop={this.onUpload} className="pictureUpload">
+                    <div>Try</div>
+                  </Dropzone>
+                  <ReactPlayer
+                    className="player"
+                    url={this.state.file}
+                    playing={true}
+                  />
+                </div>
+              }
               <div className='floatright'>
                 { match.isLive ?
                     match.creator == window.Fbase.authUid() ?
                       <button onClick={this.completeMatch} >Complete</button> :
-                      "正在现场直播!" :
-                    ''
+                      match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" : "正在现场直播!" :
+                    match.creator == window.Fbase.authUid() ?
+                      <button onClick={this.editMatch} >Edit</button> :
+                      ""
                 }
               </div>
             </div>

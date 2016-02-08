@@ -31,7 +31,6 @@ export default class Menu extends React.Component {
   }
 
   render() {
-
     return (
       <div>
         <Tabs tabActive={1} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>

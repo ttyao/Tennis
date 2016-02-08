@@ -22,12 +22,14 @@ export default class ScoreSelect extends React.Component {
     }
   }
 
-  handleScore1Change(value) {
+  handleScore1Change(event) {
+    var value = event.target.value;
     var otherScore = this.getOtherScore(value, this.state.scores[1]);
     this.setState({scores: [value, otherScore]}, this.callback);
   }
 
-  handleScore2Change(value) {
+  handleScore2Change(event) {
+    var value = event.target.value;
     var otherScore = this.getOtherScore(value, this.state.scores[0]);
     this.setState({scores: [otherScore, value]}, this.callback);
   }
@@ -53,12 +55,30 @@ export default class ScoreSelect extends React.Component {
           <td className="rowlabel">
             {this.props.label}
           </td>
-          <td className="scoresection">
-            <Select options={options} value={this.state.scores[0]} onChange={this.handleScore1Change}/>
+          <td>
+            <select className="scoreselect" value={this.state.scores[0]} onChange={this.handleScore1Change}>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
           </td>
           <td className="divider">:</td>
-          <td className="scoresection">
-            <Select options={options} value={this.state.scores[1]} onChange={this.handleScore2Change} />
+          <td>
+            <select className="scoreselect" value={this.state.scores[1]} onChange={this.handleScore2Change}>
+              <option value="0">0</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
           </td>
           <td className="rowlabel"></td>
         </tr></tbody>
