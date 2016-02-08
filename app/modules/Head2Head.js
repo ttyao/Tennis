@@ -34,7 +34,6 @@ var Head2Head = React.createClass({
     if (this.state["qualified"+matchId] != qualified) {
       var newState = {};
       newState["qualified"+matchId] = qualified;
-      console.log(newState);
       this.setState(newState);
       this.calculateWinLoss();
     }

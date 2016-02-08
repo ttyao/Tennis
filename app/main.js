@@ -119,7 +119,7 @@ window.Fbase = {
     }, this);
 
     m["scores"] = match.scores;
-    m["updateTime"] = createdTime;
+    m["updatedTime"] = createdTime;
     m["isLive"] = match.isLive;
     m["matchTime"] = match.matchMoment.unix()*1000;
     m["players"] = match.players;
@@ -133,15 +133,26 @@ window.Fbase = {
       }
     });
   },
-  updateMatch: function(match) {
-    var m = match;
+  updateMatchScores: function(match) {
+    var scores = match.scores;
     var matchId = match['.key'];
-    m["updateTime"] = Date.now();
-    delete m['.key'];
 
-    var matchRef = this.getRef('web/data/matches/'+matchId);
-    matchRef.set(m);
-    this.log("update match "+matchId, "write");
+    var matchRef = this.getRef('web/data/matches/'+matchId+"/scores");
+    matchRef.set(scores);
+
+    var ref = this.getRef('web/data/matches/'+matchId+"/updatedTime");
+    ref.set(Date.now());
+    this.log("update match "+matchId, "write", "updateMatchScores");
+  },
+  updateMatchStatus: function(match) {
+    var matchId = match['.key'];
+
+    var matchRef = this.getRef('web/data/matches/'+matchId+"/isLive");
+    matchRef.set(match.isLive);
+
+    var ref = this.getRef('web/data/matches/'+matchId+"/updatedTime");
+    ref.set(Date.now());
+    this.log("update match status to "+match.isLive+" -- "+matchId, "write", "updateMatchStatus");
   },
   log: function(message, type, subtype) {
     var id = this.getDisplayName(this.authUid);

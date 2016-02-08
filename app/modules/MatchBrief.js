@@ -50,22 +50,17 @@ var MatchBrief = React.createClass({
   onScoresChange(event, index) {
     var match = this.state.match;
     match.scores[Math.floor(index/2)].scores[index%2] = event.target.value;
-    this.setState({match:match});
-    window.Fbase.updateMatch(match);
+    window.Fbase.updateMatchScores(match);
   },
   completeMatch() {
     var match = this.state.match;
     match.isLive = false;
-    match.updateTime = Date.now();
-    this.setState({match:match});
-    window.Fbase.updateMatch(match);
+    window.Fbase.updateMatchStatus(match);
   },
   editMatch() {
     var match = this.state.match;
     match.isLive = true;
-    match.updateTime = Date.now();
-    this.setState({match:match});
-    window.Fbase.updateMatch(match);
+    window.Fbase.updateMatchStatus(match);
   },
   onNewCommentClick() {
     if (!window.Fbase.authUid) {
@@ -91,7 +86,7 @@ var MatchBrief = React.createClass({
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
-        var date = new Date(match.updateTime ? match.updateTime : match.matchTime);
+        var date = new Date(match.matchTime);
         var winSetNum = this.getWinSetNum();
         return (
           <div className="matchBriefBody">
@@ -117,7 +112,7 @@ var MatchBrief = React.createClass({
             </div>
             <div>
               <Linkify>{this.state.match.message}</Linkify>
-              <CommentsBox comments={match.comments} />
+              <CommentsBox isLive={match.isLive} comments={match.comments} />
             </div>
             <div>
               <Timestamp time={date.toISOString()} />
@@ -136,7 +131,8 @@ var MatchBrief = React.createClass({
                 { match.isLive ?
                     match.creator == window.Fbase.authUid ?
                       <button onClick={this.completeMatch} >Complete</button> :
-                      match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" : "正在现场直播!" :
+                      match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" :
+                        (match.matchTime > Date.now() || match.scores[0].scores[0] + match.scores[0].scores[1] == 0) ? "大战即将开始..." : "正在现场直播!" :
                     match.creator == window.Fbase.authUid ?
                       <button onClick={this.editMatch} >Edit</button> :
                       ""

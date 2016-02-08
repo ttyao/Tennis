@@ -22,7 +22,6 @@ export default class MatchRecorder extends React.Component {
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
     this.handleMessageChange = this.handleMessageChange.bind(this);
     this.handleMatchTimeChange = this.handleMatchTimeChange.bind(this);
-    this.handleLiveMatchSubmit = this.handleLiveMatchSubmit.bind(this);
   }
 
   handleMessageChange(value) {
@@ -52,24 +51,6 @@ export default class MatchRecorder extends React.Component {
       window.Fbase.createMatch(this.state);
     }
   }
-  handleLiveMatchSubmit() {
-    if (!window.Fbase.authUid) {
-      alert("You have to login to create live match.");
-      return;
-    }
-
-    if (!this.state.players[0] || !this.state.players[1]) {
-      alert("Please select players first.");
-      return;
-    } else if (this.state.players[0] == this.state.players[1]) {
-      alert("不可以左右互搏.");
-      return;
-    } else if (window.Fbase.authUid != "facebook:539060618") {
-      alert("System in beta, you can't create match yet");
-      return;
-    }
-    this.setState({isLive: true}, function() {this.createGuestPlayers(0)}, this);
-  }
   handleMatchSubmit() {
     if (!window.Fbase.authUid) {
       alert("You have to login to submit match result.");
@@ -82,14 +63,13 @@ export default class MatchRecorder extends React.Component {
     } else if (this.state.players[0] == this.state.players[1]) {
       alert("不可以左右互搏.");
       return;
-    } else if (this.state.scores.length < 1) {
-      alert("Please provide match scores.");
-      return;
-    } else if (window.Fbase.isHenry()) {
-      alert("System in beta, you can't create match yet");
+    } else if (!window.Fbase.isHenry()) {
+      alert("System in beta, you can't create match yet. Contact henryy艾特gmail.com");
       return;
     }
-    this.setState({isLive: false}, function() {this.createGuestPlayers(0)}, this);
+    var isLive = !this.state.scores[0].scores[0] && !this.state.scores[0].scores[1];
+
+    this.setState({isLive: isLive}, function() {this.createGuestPlayers(0)}, this);
   }
 
   handleMatchTimeChange(date) {
@@ -131,8 +111,7 @@ export default class MatchRecorder extends React.Component {
             defaultValue={this.state.message} />
         </div>
         <div className="centerContainer">
-          <button className="submitButton" onClick={this.handleLiveMatchSubmit}>Live Match</button>
-          <button className="submitButton" onClick={this.handleMatchSubmit}>Submit Score</button>
+          <button className="submitButton" onClick={this.handleMatchSubmit}>Create Match</button>
         </div>
       </div>
     );
