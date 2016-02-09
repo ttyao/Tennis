@@ -585,7 +585,7 @@ h6,
   height:350px;
 }
 .commentInput {
-  width: 90%;
+  width: 85%;
   margin: 0 0 5px 0;
 }
 .commenter {
@@ -593,7 +593,7 @@ h6,
   color: #888;
 }
 .pictureComment {
-  height: 250px;
+  height: 150px;
 }
 /*
 

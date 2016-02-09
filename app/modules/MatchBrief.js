@@ -87,6 +87,7 @@ var MatchBrief = React.createClass({
   onUploadPics(files) {
     if (files && window.Fbase.authUid) {
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
+      var matchId = this.state.match['.key'];
       files.forEach(function(file) {
         window.Fbase.log(file.type, "debug");
         var type = 'image';
@@ -100,8 +101,12 @@ var MatchBrief = React.createClass({
         var fileId = type+":"+Date.now()+":"+window.Fbase.authUid;
         var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
         bucket.upload(params, function (err, data) {
+          // console.log("upload succeeded", this, matchId);
           if (!err) {
-            window.Fbase.createPic(this.state.match, data.Location, type);
+            window.Fbase.createPic(matchId, data.Location, type);
+          } else {
+            console.log(err);
+            window.Fbase.log(err, "error");
           }
         });
       })

@@ -199,8 +199,9 @@ window.Fbase = {
     });
   },
   createPic: function(match, pic, type) {
+    console.log(match, pic, type);
     var picId = "comment:"+Date.now()+":"+this.authUid;
-    var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + picId);
+    var ref = this.getRef("web/data/matches/" + match + '/comments/' + picId);
 
     ref.set({
       URL: pic,
