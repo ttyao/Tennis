@@ -553,9 +553,14 @@ h6,
   float: left;
 }
 .pictureUpload {
-  width: 40px;
-  height: 25px;
+  width: 8%;
+  display: inline;
+  float: right;
 }
+.pictureUpload .cameraIcon {
+  width: 20px;
+}
+
 .player {
   width: 300px;
 }
@@ -577,15 +582,18 @@ h6,
   background-color: #eee;
   overflow:scroll;
   margin: 3px 0;
-  height:150px;
+  height:350px;
 }
 .commentInput {
-  width: 98%;
+  width: 90%;
   margin: 0 0 5px 0;
 }
 .commenter {
   font-size: smaller;
   color: #888;
+}
+.pictureComment {
+  height: 250px;
 }
 /*
 

@@ -1,11 +1,12 @@
 import React from 'react';
 import PlayerName from './PlayerName';
-import Timestamp from 'react-timestamp';
+import Timestamp from './Timestamp';
 import ScoreBoard from './ScoreBoard';
 import CommentsBox from './CommentsBox';
 var ReactFireMixin = require('reactfire');
 import Linkify from 'react-linkify';
 var TimerMixin = require('react-timer-mixin');
+var Dropzone = require('react-dropzone');
 
 import Modal from 'react-modal';
 
@@ -83,6 +84,29 @@ var MatchBrief = React.createClass({
       this.refs["commentInput"].value = "";
     }
   },
+  onUploadPics(files) {
+    if (files && window.Fbase.authUid) {
+      var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
+      files.forEach(function(file) {
+        window.Fbase.log(file.type, "debug");
+        var type = 'image';
+        if (file.type.slice(0,5) == 'video') {
+          type='video';
+          if (file.size > 10000000) {
+            alert("can not upload video file larger than 10MB");
+            return;
+          }
+        }
+        var fileId = type+":"+Date.now()+":"+window.Fbase.authUid;
+        var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
+        bucket.upload(params, function (err, data) {
+          if (!err) {
+            window.Fbase.createPic(this.state.match, data.Location, type);
+          }
+        });
+      })
+    }
+  },
 
   render() {
     if (this.state.match) {
@@ -103,15 +127,15 @@ var MatchBrief = React.createClass({
               <table className="wholerow">
                 <tbody><tr>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={winSetNum} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={winSetNum} key={match.players[2]} playerId={match.players[2]} />
+                    <PlayerName winSetNum={match.isLive ? 0 : winSetNum} key={match.players[0]} playerId={match.players[0]} />
+                    <PlayerName winSetNum={match.isLive ? 0 : winSetNum} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
                     <ScoreBoard scores={match.scores} onChange={this.onScoresChange} isLive={match.isLive} editable={match.creator==window.Fbase.authUid && match.isLive} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={-winSetNum} key={match.players[1]} playerId={match.players[1]} />
-                    <PlayerName winSetNum={-winSetNum} key={match.players[3]} playerId={match.players[3]} />
+                    <PlayerName winSetNum={match.isLive ? 0 : -winSetNum} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={match.isLive ? 0 : -winSetNum} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>
               </table>
@@ -120,6 +144,9 @@ var MatchBrief = React.createClass({
               <Linkify>{this.state.match.message}</Linkify>
               <CommentsBox isLive={match.isLive} comments={match.comments} />
               <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
+              <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
+                <img src="images/Camera-icon.png" className="cameraIcon" />
+              </Dropzone>
             </div>
             <div>
               <Timestamp time={date.toISOString()} />

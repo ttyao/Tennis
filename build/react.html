@@ -11,8 +11,15 @@
   <meta property="og:url" content="https://jedwatson.github.io/react-select">
   <meta property="og:site_name" content="React-Select">
   <meta property="og:type" content="article">
-  <link rel="stylesheet" href="example.css">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.2.33.min.js"></script>
+  <script type="text/javascript">
+    // See the Configuring section to configure credentials in the SDK
+    AWS.config.update({accessKeyId: 'AKIAJ2YMUOWC2IY7ZQMA', secretAccessKey: 'Ptj9mAYBW5/wKWKLhXcqtWB+sqK1deDjO0Nszfo0'});
+
+    // Configure your region
+    AWS.config.region = 'us-west-1';
+  </script>
 </head>
 <body>
   <header class="page-header">
@@ -22,27 +29,33 @@
     </div>
   </header>
   <div class="page-subheader">
-    <div class="container">
-      <a href="http://github.com/JedWatson/react-select" class="page-subheader__link" target="_blank">Code and Docs on GitHub</a>
-      <span class="page-subheader__button">
-        <a id="github-stars-button" class="github-button" data-style="" href="https://github.com/JedWatson/react-select" data-count-href="/JedWatson/react-select/stargazers" data-count-api="/repos/JedWatson/react-select#stargazers_count" data-count-aria-label="# stargazers on GitHub" aria-label="Star JedWatson/react-select on GitHub">Star</a>
-      </span>
-    </div>
-  </div>
-  <div class="page-body">
-    <div class="container">
-      <form>
-        <!-- uncomment this to test normal form fields alongside the select field -->
-        <!--
-        <label>Text input (for focus)</label>
-        <div class="form-input"><input type="text"></div>
-        -->
-        <!-- the React application is loaded in the #example element -->
-        <div id="tabs"></div>
+    <input type="file" id="file-chooser" />
+    <button id="upload-button">Upload to S3</button>
+    <div id="results"></div>
 
-        <!-- sample toolbar, just an additional element to focus in the form -->
-        <!-- <div class="form-toolbar"><button type="submit">Submit</button></div> -->
-      </form>
-    </div>
+    <script type="text/javascript">
+      // function createCORSRequest(method, url) {
+      //   var xhr = new XMLHttpRequest();
+      //   if ("withCredentials" in xhr) {
+      //     // XHR for Chrome/Firefox/Opera/Safari.
+      //     xhr.open(method, url, true);
+      //   } else if (typeof XDomainRequest != "undefined") {
+      //     // XDomainRequest for IE.
+      //     xhr = new XDomainRequest();
+      //     xhr.open(method, url);
+      //   } else {
+      //     // CORS not supported.
+      //     xhr = null;
+      //   }
+      //   return xhr;
+      // }
+      // var url = 'https://s3-us-west-1.amazonaws.com/baytennis/test';
+      // var xhr = createCORSRequest('PUT', url);
+      // // xhr.setRequestHeader('X-Custom-Header', 'value');
+      // xhr.setRequestHeader('Access-Control-Allow-Origin','*');
+      // xhr.send();
+
+
+    </script>
   </div>
 </body>

@@ -7,8 +7,6 @@ import Modal from 'react-modal';
 import Head2Head from './Head2Head';
 var Dropzone = require('react-dropzone');
 import ReactPlayer from 'react-player';
-var ReactS3Uploader = require('react-s3-uploader');
-import S3Upload from './S3Upload';
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -53,8 +51,24 @@ export default class Menu extends React.Component {
     // });
 
     // var ref = window.Fbase.mergeAccountA2B("guest:Junya Zhang","7062f35c-bc7e-48a1-a3f2-d2ca587cb644");
-    window.Fbase.createPic({".key": "match:1454970406422:facebook:539060618"}, files[0]);
-    this.setState({file: files[0].preview}, function() { console.log("???")});
+    var bucket = new AWS.S3({params: {Bucket: 'baytennis/firebase'}});
+
+    var file = files[0];
+    if (file) {
+      console.log(bucket, files);
+      var results = document.getElementById('results');
+      var fileId = "pic:"+Date.now()+":"+window.Fbase.authUid;
+      var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
+      bucket.upload(params, function (err, data) {
+        if (!err) {
+          console.log(data)
+          window.Fbase.createPic(
+            {".key" : "match:1454970406422:facebook:539060618"},
+            data.Location
+          );
+        }
+      });
+    }
   }
 
   render() {

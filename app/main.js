@@ -198,12 +198,13 @@ window.Fbase = {
       }
     });
   },
-  createPic: function(match, pic) {
+  createPic: function(match, pic, type) {
     var picId = "comment:"+Date.now()+":"+this.authUid;
-    var ref = this.getRef("web/data/matches/" + match['.key'] + '/pics/' + picId);
+    var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + picId);
 
     ref.set({
-      pic: pic,
+      URL: pic,
+      type: type,
       creator: this.authUid,
       createdTime: Date.now()
     });
