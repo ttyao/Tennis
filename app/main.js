@@ -15,7 +15,6 @@ window.Fbase = {
   },
   refreshDisplayNames: function(callback) {
     var ref = this.getRef("web/data/users");
-    this.displayNames = {};
     ref.once('value', function(snapshot) {
       var data = snapshot.val();
       for (let key in data) {
@@ -28,6 +27,7 @@ window.Fbase = {
   },
   init: function(callback) {
     this.authUid = this.getAuthUid();
+    this.displayNames = {};
     this.refreshDisplayNames(function() {
       window.Fbase.log("init", "visit");
       if (callback) {
@@ -197,6 +197,17 @@ window.Fbase = {
         }
       }
     });
+  },
+  createPic: function(match, pic) {
+    var picId = "comment:"+Date.now()+":"+this.authUid;
+    var ref = this.getRef("web/data/matches/" + match['.key'] + '/pics/' + picId);
+
+    ref.set({
+      pic: pic,
+      creator: this.authUid,
+      createdTime: Date.now()
+    });
+    this.log("create picture", "write", "createPic");
   },
   createComment: function(match, comment) {
     var commentId = "comment:"+Date.now()+":"+this.authUid;

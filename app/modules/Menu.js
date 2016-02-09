@@ -7,6 +7,8 @@ import Modal from 'react-modal';
 import Head2Head from './Head2Head';
 var Dropzone = require('react-dropzone');
 import ReactPlayer from 'react-player';
+var ReactS3Uploader = require('react-s3-uploader');
+import S3Upload from './S3Upload';
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -49,6 +51,9 @@ export default class Menu extends React.Component {
     //     mref.set(players);
     //   }
     // });
+
+    // var ref = window.Fbase.mergeAccountA2B("guest:Junya Zhang","7062f35c-bc7e-48a1-a3f2-d2ca587cb644");
+    window.Fbase.createPic({".key": "match:1454970406422:facebook:539060618"}, files[0]);
     this.setState({file: files[0].preview}, function() { console.log("???")});
   }
 
@@ -77,6 +82,7 @@ export default class Menu extends React.Component {
                 url={this.state.file}
                 playing={true}
               />
+
             </Tabs.Panel>
           }
         </Tabs>

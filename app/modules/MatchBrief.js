@@ -77,6 +77,12 @@ var MatchBrief = React.createClass({
     window.Fbase.createComment(this.state.match, this.refs["newCommentsTextArea"].value);
     this.setState({showNewCommentsBox: false});
   },
+  onCommentInputChange(event) {
+    if (event.key == 'Enter' && event.target.value) {
+      window.Fbase.createComment(this.state.match, event.target.value);
+      this.refs["commentInput"].value = "";
+    }
+  },
 
   render() {
     if (this.state.match) {
@@ -113,17 +119,18 @@ var MatchBrief = React.createClass({
             <div>
               <Linkify>{this.state.match.message}</Linkify>
               <CommentsBox isLive={match.isLive} comments={match.comments} />
+              <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
             </div>
             <div>
               <Timestamp time={date.toISOString()} />
               <div className='floatright'>
-                <button onClick={this.onNewCommentClick}>Comment</button>
                 <Modal
                   className="Modal__Bootstrap modal-dialog"
                   closeTimeoutMS={150}
                   isOpen={this.state.showNewCommentsBox}
                   onRequestClose={this.handleModalCloseRequest}
                 >
+                  <div>Leave comments:</div>
                   <textarea className="newCommentsTextArea" ref="newCommentsTextArea" />
                   <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Send</button>
                   <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
@@ -132,11 +139,12 @@ var MatchBrief = React.createClass({
                     match.creator == window.Fbase.authUid ?
                       <button onClick={this.completeMatch} >Complete</button> :
                       match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" :
-                        (match.matchTime > Date.now() || match.scores[0].scores[0] + match.scores[0].scores[1] == 0) ? "大战即将开始..." : "正在现场直播!" :
+                        (match.matchTime > Date.now() || match.scores[0].scores[0] + match.scores[0].scores[1] == 0) ? "大战倒计时中..." : "正在现场直播!" :
                     match.creator == window.Fbase.authUid ?
                       <button onClick={this.editMatch} >Edit</button> :
                       ""
                 }
+                { false && !match.isLive && <button onClick={this.onNewCommentClick}>Comment</button>}
               </div>
             </div>
           </div>
