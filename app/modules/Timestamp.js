@@ -142,8 +142,15 @@ class Timestamp extends React.Component {
     _parseDate (date) {
         if (date === '' || date === false || date === null) return false;
 
+        if (parseInt(date) > 315532800) { // 1980/1/1
+            date = parseInt(date);
+            if (date < 315532800000) { // convert to millisec
+                date *= 1000
+            }
+        }
         if (typeof date === "number") {
-            date = new Date(date * 1000);
+            date = new Date(date);
+            return date;
         }
 
         if (date.toJSON) {
@@ -155,15 +162,11 @@ class Timestamp extends React.Component {
         for (var i in t) {
             if (t[i] !== '' && isNaN(parseInt(t[i], 10))) return false;
         }
-        var d = new Date("Sun Jan 01 00:00:00 UTC 2012");
+        if (t.length < 6) return false;
 
-        d.setUTCFullYear(t[0]);
-        d.setUTCMonth(t[1] - 1);
-        d.setUTCDate(t[2]);
-        d.setUTCHours(t[3]);
-        d.setUTCMinutes(t[4]);
-        d.setUTCSeconds(t[5]);
-
+        var d = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5], t[6]);
+        // offset from Pacific
+        d.setTime(d.getTime() - 8*60*60);
         return d;
     }
 

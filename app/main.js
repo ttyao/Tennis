@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Menu from './modules/Menu';
-import Timestamp from 'react-timestamp';
 import Modal from 'react-modal';
 import Login from './modules/Login';
 import moment from 'moment';
 
 require("./modules/ImageResizer.js");
-require("./modules/aws.js")
+require("./modules/aws.js");
 // 'use strict';
 
 window.now = function(timestamp) {
-  return moment(timestamp).unix()*1000;
+  // console.log(moment(timestamp).utcOffset(-8).format("YYYY-MM-DD-HH-mm-ss-SSS"));
+  return moment(timestamp).utcOffset(-8).format("YYYY-MM-DD-HH-mm-ss-SSS");
 };
 window.Fbase = {
   baseUrl : "https://blistering-torch-8342.firebaseio.com",
@@ -204,9 +204,14 @@ window.Fbase = {
       }
     });
   },
-  createPic: function(matchId, picId, picUrl) {
-    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId + "/URL");
-    baseRef.set(picUrl);
+  createPic: function(matchId, picId, picUrl, type) {
+    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
+    baseRef.child("URL").set(picUrl);
+    if (type == "video") {
+      baseRef.child("type").set(type);
+      baseRef.child("creator").set(this.authUid);
+      baseRef.child("createdTime").set(window.now());
+    }
     this.log("create picture", "write", "createPic");
   },
   createPicThumb:function(matchId, picId, thumbUrl, type) {

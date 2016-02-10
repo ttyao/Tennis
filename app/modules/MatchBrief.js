@@ -136,7 +136,7 @@ var MatchBrief = React.createClass({
           }).send(function (err, data) {
           if (!err) {
             console.log("pic", key, data);
-            window.Fbase.createPic(matchId, "comment:"+key, data.Location);
+            window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
           } else {
             console.log(err);
             alert("Upload failed, please try again.");
@@ -155,7 +155,6 @@ var MatchBrief = React.createClass({
         this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
-        var date = new Date(match.matchTime);
         var winSetNum = this.getWinSetNum();
         return (
           <div className="matchBriefBody">
@@ -188,7 +187,7 @@ var MatchBrief = React.createClass({
               </Dropzone>
             </div>
             <div>
-              <Timestamp time={date} className="floatleft" />
+              <Timestamp time={match.matchTime} className="floatleft" />
               <div className='floatright'>
                 <Modal
                   className="Modal__Bootstrap modal-dialog"

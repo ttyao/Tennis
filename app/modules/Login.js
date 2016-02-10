@@ -10,9 +10,9 @@ var Login = React.createClass({
   getInitialState: function() {
     var ref = window.Fbase.getRef();
     var authData = ref.getAuth();
-    if (authData) {
+    if (authData && authData.facebook) {
       var userRef = ref.child("/web/data/users/"+authData["uid"]);
-      userRef.child("loggedInAt").set(window.now());
+      // userRef.child("loggedInAt").set(window.now());
       if (authData.facebook) {
         userRef.child("displayName").set(authData.facebook.displayName);
       }

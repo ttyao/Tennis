@@ -6,7 +6,6 @@ import MatchList from './MatchList';
 import Modal from 'react-modal';
 import Head2Head from './Head2Head';
 var Dropzone = require('react-dropzone');
-import ReactPlayer from 'react-player';
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -91,12 +90,6 @@ export default class Menu extends React.Component {
                 <div>Try</div>
               </Dropzone>
               <img src={this.state.file} className="player" />
-              <ReactPlayer
-                className="player"
-                url={this.state.file}
-                playing={true}
-              />
-
             </Tabs.Panel>
           }
         </Tabs>
