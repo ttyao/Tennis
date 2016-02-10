@@ -12,7 +12,7 @@ var Login = React.createClass({
     var authData = ref.getAuth();
     if (authData) {
       var userRef = ref.child("/web/data/users/"+authData["uid"]);
-      userRef.child("loggedInAt").set(Date.now());
+      userRef.child("loggedInAt").set(window.now());
       if (authData.facebook) {
         userRef.child("displayName").set(authData.facebook.displayName);
       }
@@ -66,7 +66,7 @@ var Login = React.createClass({
                     var userRef = ref.child("/web/data/users/"+userData["uid"]);
                     userRef.set({
                       displayName: displayName,
-                      createdAt: Date.now()
+                      createdAt: window.now()
                     }, function(error){
                       if (!error) {
                         location.reload();

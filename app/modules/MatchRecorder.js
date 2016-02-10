@@ -15,7 +15,7 @@ export default class MatchRecorder extends React.Component {
       scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
       message: "",
       matchMoment: moment(),
-      isLive: false
+      status: "completed"
     };
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
@@ -67,14 +67,25 @@ export default class MatchRecorder extends React.Component {
       alert("System in beta, you can't create match yet. Contact henryy艾特gmail.com");
       return;
     }
-    var isLive = !this.state.scores[0].scores[0] && !this.state.scores[0].scores[1];
+    var status = "completed";
+    console.log(this.status, this.state.scores[0].scores[0] + this.state.scores[0].scores[1], this.state.matchMoment.unix()*1000, Date.now())
+    if (this.state.scores[0].scores[0] + this.state.scores[0].scores[1] > 0) {
+      if (this.state.matchMoment.unix()*1000 > Date.now()) {
+        alert("Date of completed match can't be in the future.");
+        return;
+      }
+    } else if (this.state.matchMoment.unix()*1000 > Date.now()) {
+      status = "pending";
+    } else {
+      status = "active";
+    }
 
-    this.setState({isLive: isLive}, function() {this.createGuestPlayers(0)}, this);
+    this.setState({status: status}, function() {this.createGuestPlayers(0)}, this);
   }
 
-  handleMatchTimeChange(date) {
+  handleMatchTimeChange(moment) {
     this.setState({
-      matchMoment: date
+      matchMoment: moment
     });
   }
 

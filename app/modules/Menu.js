@@ -57,7 +57,7 @@ export default class Menu extends React.Component {
     if (file) {
       console.log(bucket, files);
       var results = document.getElementById('results');
-      var fileId = "pic:"+Date.now()+":"+window.Fbase.authUid;
+      var fileId = "pic:"+window.now()+":"+window.Fbase.authUid;
       var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
       bucket.upload(params, function (err, data) {
         if (!err) {

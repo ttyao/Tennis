@@ -23,14 +23,14 @@ export default class ScoreSelect extends React.Component {
   }
 
   handleScore1Change(event) {
-    var value = event.target.value;
-    var otherScore = this.getOtherScore(value, this.state.scores[1]);
+    var value = parseInt(event.target.value);
+    var otherScore = this.getOtherScore(value, parseInt(this.state.scores[1]));
     this.setState({scores: [value, otherScore]}, this.callback);
   }
 
   handleScore2Change(event) {
-    var value = event.target.value;
-    var otherScore = this.getOtherScore(value, this.state.scores[0]);
+    var value = parseInt(event.target.value);
+    var otherScore = this.getOtherScore(value, parseInt(this.state.scores[0]));
     this.setState({scores: [otherScore, value]}, this.callback);
   }
 

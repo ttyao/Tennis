@@ -4,11 +4,15 @@ import Menu from './modules/Menu';
 import Timestamp from 'react-timestamp';
 import Modal from 'react-modal';
 import Login from './modules/Login';
+import moment from 'moment';
 
 require("./modules/ImageResizer.js");
 require("./modules/aws.js")
 // 'use strict';
 
+window.now = function(timestamp) {
+  return moment(timestamp).unix()*1000;
+};
 window.Fbase = {
   baseUrl : "https://blistering-torch-8342.firebaseio.com",
   Henry: "facebook:539060618",
@@ -106,7 +110,7 @@ window.Fbase = {
   },
   createMatch: function(match) {
     var m = {};
-    var createdTime = Date.now();
+    var createdTime = window.now();
     var matchId = "match:"+createdTime+":"+this.authUid;
     m["message"] = match.message;
     m["creator"] = this.authUid;
@@ -122,8 +126,8 @@ window.Fbase = {
 
     m["scores"] = match.scores;
     m["updatedTime"] = createdTime;
-    m["isLive"] = match.isLive;
-    m["matchTime"] = match.matchMoment.unix()*1000;
+    m["status"] = match.status;
+    m["matchTime"] = window.now(match.matchMoment.unix()*1000);
     m["players"] = match.players;
 
     var matchRef = this.getRef('web/data/matches/'+matchId);
@@ -143,18 +147,18 @@ window.Fbase = {
     matchRef.set(scores);
 
     var ref = this.getRef('web/data/matches/'+matchId+"/updatedTime");
-    ref.set(Date.now());
+    ref.set(window.now());
     this.log("update match "+matchId, "write", "updateMatchScores");
   },
   updateMatchStatus: function(match) {
     var matchId = match['.key'];
 
-    var matchRef = this.getRef('web/data/matches/'+matchId+"/isLive");
-    matchRef.set(match.isLive);
+    var matchRef = this.getRef('web/data/matches/'+matchId+"/status");
+    matchRef.set(match.status);
 
     var ref = this.getRef('web/data/matches/'+matchId+"/updatedTime");
-    ref.set(Date.now());
-    this.log("update match status to "+match.isLive+" -- "+matchId, "write", "updateMatchStatus");
+    ref.set(window.now());
+    this.log("update match status to "+match.status+" -- "+matchId, "write", "updateMatchStatus");
   },
   log: function(message, type, subtype) {
     var id = this.getDisplayName(this.authUid);
@@ -164,7 +168,7 @@ window.Fbase = {
     if (id.slice(0,8) == "visitor:") {
       id = "visitor/" + id.slice(8);
     }
-    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+Date.now());
+    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
     logRef.set({
       message: message,
       creator: id,
@@ -206,7 +210,7 @@ window.Fbase = {
     baseRef.child("URL").set(pic);
     baseRef.child("type").set(type);
     baseRef.child("creator").set(this.authUid);
-    baseRef.child("createdTime").set(Date.now());
+    baseRef.child("createdTime").set(window.now());
     this.log("create picture", "write", "createPic");
   },
   createPicThumb:function(matchId, picId, thumbUrl) {
@@ -215,13 +219,13 @@ window.Fbase = {
     this.log("create thumb", "write", "createThumb");
   },
   createComment: function(match, comment) {
-    var commentId = "comment:"+Date.now()+":"+this.authUid;
+    var commentId = "comment:"+window.now()+":"+this.authUid;
     var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + commentId);
 
     ref.set({
       comment: comment,
       creator: this.authUid,
-      createdTime: Date.now()
+      createdTime: window.now()
     });
     this.log("create comment", "write", "createComment");
   },

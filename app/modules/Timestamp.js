@@ -151,7 +151,6 @@ class Timestamp extends React.Component {
         } else {
             date = date.toString();
         }
-
         var t = date.split(/[:\-TZ\. ]/);
         for (var i in t) {
             if (t[i] !== '' && isNaN(parseInt(t[i], 10))) return false;

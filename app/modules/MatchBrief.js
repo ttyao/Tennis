@@ -52,15 +52,19 @@ var MatchBrief = React.createClass({
     var match = this.state.match;
     match.scores[Math.floor(index/2)].scores[index%2] = event.target.value;
     window.Fbase.updateMatchScores(match);
+    if (match.status == "pending") {
+      match.status = "active";
+      window.Fbase.updateMatchStatus(match);
+    }
   },
   completeMatch() {
     var match = this.state.match;
-    match.isLive = false;
+    match.status = "completed";
     window.Fbase.updateMatchStatus(match);
   },
   editMatch() {
     var match = this.state.match;
-    match.isLive = true;
+    match.status = "active";
     window.Fbase.updateMatchStatus(match);
   },
   onNewCommentClick() {
@@ -92,7 +96,7 @@ var MatchBrief = React.createClass({
     }
 
     if (files && window.Fbase.authUid) {
-      var time = Date.now();
+      var time = window.now();
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
       var matchId = this.state.match['.key'];
       for (let i in files) {
@@ -159,29 +163,29 @@ var MatchBrief = React.createClass({
               <table className="wholerow">
                 <tbody><tr>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.isLive ? 0 : winSetNum} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={match.isLive ? 0 : winSetNum} key={match.players[2]} playerId={match.players[2]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} key={match.players[0]} playerId={match.players[0]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
-                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} isLive={match.isLive} editable={match.creator==window.Fbase.authUid && match.isLive} />
+                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={match.creator==window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.isLive ? 0 : -winSetNum} key={match.players[1]} playerId={match.players[1]} />
-                    <PlayerName winSetNum={match.isLive ? 0 : -winSetNum} key={match.players[3]} playerId={match.players[3]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>
               </table>
             </div>
             <div>
               <Linkify>{this.state.match.message}</Linkify>
-              <CommentsBox isLive={match.isLive} comments={match.comments} />
+              <CommentsBox status={match.status} comments={match.comments} />
               <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
               <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
                 <img src="images/camera-icon.png" className="cameraIcon" />
               </Dropzone>
             </div>
             <div>
-              <Timestamp time={date.toISOString()} />
+              <Timestamp time={date} />
               <div className='floatright'>
                 <Modal
                   className="Modal__Bootstrap modal-dialog"
@@ -194,16 +198,14 @@ var MatchBrief = React.createClass({
                   <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Send</button>
                   <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
                 </Modal>
-                { match.isLive ?
-                    match.creator == window.Fbase.authUid ?
+                { match.creator == window.Fbase.authUid ?
+                    match.status == "active" ?
                       <button onClick={this.completeMatch} >Complete</button> :
-                      match.matchTime + 24 * 3600 * 1000 < Date.now() ? "" :
-                        (match.matchTime > Date.now() || match.scores[0].scores[0] + match.scores[0].scores[1] == 0) ? "大战倒计时中..." : "正在现场直播!" :
-                    match.creator == window.Fbase.authUid ?
                       <button onClick={this.editMatch} >Edit</button> :
-                      ""
+                    match.status == "pending" ?
+                      "大战倒计时中..." :
+                      match.status == "active" ? "正在现场直播!" : ""
                 }
-                { false && !match.isLive && <button onClick={this.onNewCommentClick}>Comment</button>}
               </div>
             </div>
           </div>
