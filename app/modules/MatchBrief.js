@@ -7,6 +7,7 @@ var ReactFireMixin = require('reactfire');
 import Linkify from 'react-linkify';
 var TimerMixin = require('react-timer-mixin');
 var Dropzone = require('react-dropzone');
+import Progress from './Progress';
 
 import Modal from 'react-modal';
 
@@ -94,6 +95,7 @@ var MatchBrief = React.createClass({
       var time = window.now();
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
       var matchId = this.state.match['.key'];
+      var self = this;
       files.forEach(function(file) {
         var i = files.indexOf(file);
         var type = 'image';
@@ -104,7 +106,7 @@ var MatchBrief = React.createClass({
             alert("Video file can not be uploaded with other files together.")
             return;
           }
-          if (file.size > 10000000) {
+          if (file.size > 10 * 1024 * 1024) {
             alert("can not upload video file larger than 10MB");
             return;
           }
@@ -132,16 +134,20 @@ var MatchBrief = React.createClass({
 
         var picparams = {Key: type+":"+key, ContentType: file.type, Body: file, ACL: "public-read"};
         bucket.upload(picparams).on('httpUploadProgress', function(evt) {
-            console.log('Progress:', evt.loaded / evt.total);
+            if (i == 0) {
+              self.setState({uploadPercentage: Math.floor(evt.loaded / evt.total *100)});
+            }
           }).send(function (err, data) {
-          if (!err) {
-            console.log("pic", key, data);
-            window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
-          } else {
-            console.log(err);
-            alert("Upload failed, please try again.");
-            window.Fbase.log(err, "error");
-          }
+            if (i == 0) {
+              self.setState({uploadPercentage: 0});
+            }
+            if (!err) {
+              window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
+            } else {
+              console.log(err);
+              alert("Upload failed, please try again.");
+              window.Fbase.log(err, "error");
+            }
         });
       });
     }
@@ -156,6 +162,11 @@ var MatchBrief = React.createClass({
       }
       if (this.props.visible && this.state.match.players) {
         var winSetNum = this.getWinSetNum();
+        var progressStyle = {
+          position: 'relative',
+          bottom: "90px",
+          float: "right",
+        };
         return (
           <div className="matchBriefBody">
             { window.Fbase.isDebug() &&
@@ -209,6 +220,9 @@ var MatchBrief = React.createClass({
                       match.status == "active" ? "正在现场直播!" : ""
                 }
               </div>
+            </div>
+            <div style={progressStyle} >
+              <Progress radius="20" strokeWidth="4" percentage={this.state.uploadPercentage}/>
             </div>
           </div>
         );
