@@ -223,6 +223,13 @@ window.Fbase = {
     baseRef.child("createdTime").set(window.now());
     this.log("create thumb", "write", "createThumb");
   },
+  updateVideoTitle:function(match, commentId, videoTitle) {
+    var key = "web/data/matches/" + match['.key'] + '/comments/' + commentId + "/title";
+    console.log(match, commentId, videoTitle, key);
+    var ref = this.getRef(key);
+    ref.set(videoTitle);
+    this.log(key, "write", "createVideoTitle");
+  },
   createComment: function(match, comment) {
     var commentId = "comment:"+window.now()+":"+this.authUid;
     var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + commentId);

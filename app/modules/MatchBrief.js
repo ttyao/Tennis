@@ -79,8 +79,9 @@ var MatchBrief = React.createClass({
     this.setState({showNewCommentsBox: false});
   },
 
-  onNewCommentsBoxSendClick() {
-    window.Fbase.createComment(this.state.match, this.refs["newCommentsTextArea"].value);
+  onNewCommentsBoxSendClick(event) {
+    console.log("title:", event, this.refs["newVideoTitle"])
+    window.Fbase.updateVideoTitle(this.state.match, this.state.latestVideoId, this.refs["newVideoTitle"].value);
     this.setState({showNewCommentsBox: false});
   },
   onCommentInputChange(event) {
@@ -90,7 +91,6 @@ var MatchBrief = React.createClass({
     }
   },
   onUploadPics(files) {
-
     if (files && window.Fbase.authUid) {
       var time = window.now();
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
@@ -143,6 +143,12 @@ var MatchBrief = React.createClass({
             }
             if (!err) {
               window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
+              if (type == "video") {
+                self.setState({
+                  showNewCommentsBox: true,
+                  latestVideoId: "comment:"+key
+                });
+              }
             } else {
               console.log(err);
               alert("Upload failed, please try again.");
@@ -206,9 +212,9 @@ var MatchBrief = React.createClass({
                   isOpen={this.state.showNewCommentsBox}
                   onRequestClose={this.handleModalCloseRequest}
                 >
-                  <div>Leave comments:</div>
-                  <textarea className="newCommentsTextArea" ref="newCommentsTextArea" />
-                  <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Send</button>
+                  <div>Video Title:</div>
+                  <input ref="newVideoTitle" />
+                  <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
                   <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
                 </Modal>
                 { match.creator == window.Fbase.authUid ?
