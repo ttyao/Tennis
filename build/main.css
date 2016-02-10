@@ -572,9 +572,10 @@ h6,
   border:1px solid #ccc; border-bottom-style:inset;border-top-style:inset;border-right-style:inset;
   padding: 3px;
   background-color: #eee;
-  overflow:scroll;
+  width: 95%;
+  /*overflow:scroll;*/
   margin: 3px 0;
-  height:350px;
+  /*height:350px;*/
 }
 .commentsBoxBodyLive {
   border:1px solid #ccc; border-bottom-style:inset;border-top-style:inset;border-right-style:inset;
@@ -593,7 +594,7 @@ h6,
   color: #888;
 }
 .pictureComment {
-  height: 150px;
+  height: 140px;
 }
 /*
 

@@ -204,18 +204,18 @@ window.Fbase = {
       }
     });
   },
-  createPic: function(matchId, picId, pic, type) {
+  createPic: function(matchId, picId, picUrl) {
+    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId + "/URL");
+    baseRef.set(picUrl);
+    this.log("create picture", "write", "createPic");
+  },
+  createPicThumb:function(matchId, picId, thumbUrl, type) {
     var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
-    console.log(matchId, picId, pic, type);
-    baseRef.child("URL").set(pic);
+
+    baseRef.child("thumbURL").set(thumbUrl);
     baseRef.child("type").set(type);
     baseRef.child("creator").set(this.authUid);
     baseRef.child("createdTime").set(window.now());
-    this.log("create picture", "write", "createPic");
-  },
-  createPicThumb:function(matchId, picId, thumbUrl) {
-    var ref = this.getRef("web/data/matches/" + matchId + '/comments/' + picId + "/thumbURL");
-    ref.set(thumbUrl);
     this.log("create thumb", "write", "createThumb");
   },
   createComment: function(match, comment) {

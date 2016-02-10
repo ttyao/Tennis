@@ -90,33 +90,35 @@ var MatchBrief = React.createClass({
   },
   onUploadPics(files) {
 
-    if ( !( window.File && window.FileReader && window.FileList && window.Blob ) ) {
-      alert('The File APIs are not fully supported in this browser.');
-      return false;
-    }
-
     if (files && window.Fbase.authUid) {
       var time = window.now();
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
       var matchId = this.state.match['.key'];
-      for (let i in files) {
-        var file = files[i];
+      files.forEach(function(file) {
+        var i = files.indexOf(file);
         var type = 'image';
         var key = time+":"+window.Fbase.authUid+":"+i;
         if (file.type.slice(0,5) == 'video') {
           type='video';
+          if (files.length > 1) {
+            alert("Video file can not be uploaded with other files together.")
+            return;
+          }
           if (file.size > 10000000) {
             alert("can not upload video file larger than 10MB");
             return;
           }
         } else if(file.type.slice(0, 5) == 'image') {
-          window.ImageResizer.resizeImage(file, key, function(imageKey, dataUrl) {
-            console.log(imageKey);
-            var params = {Key: "thumb:"+imageKey, ContentType: "image/jpeg", Body: dataUrl, ACL: "public-read"};
+          if ( !( window.File && window.FileReader && window.FileList && window.Blob ) ) {
+            alert('The File APIs are not fully supported in this browser.');
+            return false;
+          }
+          window.ImageResizer.resizeImage(file, function(dataUrl) {
+            var params = {Key: "thumb:"+key, ContentType: "image/jpeg", Body: dataUrl, ACL: "public-read"};
             bucket.upload(params, function (err, data) {
               if (!err) {
-                console.log("thumb", imageKey, data);
-                window.Fbase.createPicThumb(matchId, "comment:"+imageKey, data.Location);
+                console.log("thumb", key, data);
+                window.Fbase.createPicThumb(matchId, "comment:"+key, data.Location, type);
               } else {
                 console.log(err);
                 window.Fbase.log(err, "error");
@@ -127,20 +129,21 @@ var MatchBrief = React.createClass({
           alert("File format is not supported.");
           return;
         }
-        var picbucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
 
-// SO CONFUSED!!!! WHY THE DATA KEY CHANGED
         var picparams = {Key: type+":"+key, ContentType: file.type, Body: file, ACL: "public-read"};
-        picbucket.upload(picparams, function (err, data) {
+        bucket.upload(picparams).on('httpUploadProgress', function(evt) {
+            console.log('Progress:', evt.loaded / evt.total);
+          }).send(function (err, data) {
           if (!err) {
-            console.log("pic", key, data)
-            window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
+            console.log("pic", key, data);
+            window.Fbase.createPic(matchId, "comment:"+key, data.Location);
           } else {
             console.log(err);
+            alert("Upload failed, please try again.");
             window.Fbase.log(err, "error");
           }
         });
-      }
+      });
     }
   },
 
@@ -185,7 +188,7 @@ var MatchBrief = React.createClass({
               </Dropzone>
             </div>
             <div>
-              <Timestamp time={date} />
+              <Timestamp time={date} className="floatleft" />
               <div className='floatright'>
                 <Modal
                   className="Modal__Bootstrap modal-dialog"
