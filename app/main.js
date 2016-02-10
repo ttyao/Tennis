@@ -5,6 +5,8 @@ import Timestamp from 'react-timestamp';
 import Modal from 'react-modal';
 import Login from './modules/Login';
 
+require("./modules/ImageResizer.js");
+require("./modules/aws.js")
 // 'use strict';
 
 window.Fbase = {
@@ -198,18 +200,19 @@ window.Fbase = {
       }
     });
   },
-  createPic: function(match, pic, type) {
-    console.log(match, pic, type);
-    var picId = "comment:"+Date.now()+":"+this.authUid;
-    var ref = this.getRef("web/data/matches/" + match + '/comments/' + picId);
-
-    ref.set({
-      URL: pic,
-      type: type,
-      creator: this.authUid,
-      createdTime: Date.now()
-    });
+  createPic: function(matchId, picId, pic, type) {
+    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
+    console.log(matchId, picId, pic, type);
+    baseRef.child("URL").set(pic);
+    baseRef.child("type").set(type);
+    baseRef.child("creator").set(this.authUid);
+    baseRef.child("createdTime").set(Date.now());
     this.log("create picture", "write", "createPic");
+  },
+  createPicThumb:function(matchId, picId, thumbUrl) {
+    var ref = this.getRef("web/data/matches/" + matchId + '/comments/' + picId + "/thumbURL");
+    ref.set(thumbUrl);
+    this.log("create thumb", "write", "createThumb");
   },
   createComment: function(match, comment) {
     var commentId = "comment:"+Date.now()+":"+this.authUid;
@@ -221,8 +224,9 @@ window.Fbase = {
       createdTime: Date.now()
     });
     this.log("create comment", "write", "createComment");
-  }
+  },
 };
+
 window.Fbase.init(main);
 
 function main() {

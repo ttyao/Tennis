@@ -72,6 +72,7 @@ var Login = React.createClass({
                         location.reload();
                       }
                     });
+                    window.Fbase.log("trying to create user: "+displayName, "write", "createUser");
                   }
               });
             }

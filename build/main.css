@@ -574,7 +574,7 @@ h6,
   background-color: #eee;
   overflow:scroll;
   margin: 3px 0;
-  height:100px;
+  height:350px;
 }
 .commentsBoxBodyLive {
   border:1px solid #ccc; border-bottom-style:inset;border-top-style:inset;border-right-style:inset;

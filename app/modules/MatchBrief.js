@@ -85,31 +85,58 @@ var MatchBrief = React.createClass({
     }
   },
   onUploadPics(files) {
+
+    if ( !( window.File && window.FileReader && window.FileList && window.Blob ) ) {
+      alert('The File APIs are not fully supported in this browser.');
+      return false;
+    }
+
     if (files && window.Fbase.authUid) {
+      var time = Date.now();
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
       var matchId = this.state.match['.key'];
-      files.forEach(function(file) {
-        window.Fbase.log(file.type, "debug");
+      for (let i in files) {
+        var file = files[i];
         var type = 'image';
+        var key = time+":"+window.Fbase.authUid+":"+i;
         if (file.type.slice(0,5) == 'video') {
           type='video';
           if (file.size > 10000000) {
             alert("can not upload video file larger than 10MB");
             return;
           }
+        } else if(file.type.slice(0, 5) == 'image') {
+          window.ImageResizer.resizeImage(file, key, function(imageKey, dataUrl) {
+            console.log(imageKey);
+            var params = {Key: "thumb:"+imageKey, ContentType: "image/jpeg", Body: dataUrl, ACL: "public-read"};
+            bucket.upload(params, function (err, data) {
+              if (!err) {
+                console.log("thumb", imageKey, data);
+                window.Fbase.createPicThumb(matchId, "comment:"+imageKey, data.Location);
+              } else {
+                console.log(err);
+                window.Fbase.log(err, "error");
+              }
+            });
+          });
+        } else {
+          alert("File format is not supported.");
+          return;
         }
-        var fileId = type+":"+Date.now()+":"+window.Fbase.authUid;
-        var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
-        bucket.upload(params, function (err, data) {
-          // console.log("upload succeeded", this, matchId);
+        var picbucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
+
+// SO CONFUSED!!!! WHY THE DATA KEY CHANGED
+        var picparams = {Key: type+":"+key, ContentType: file.type, Body: file, ACL: "public-read"};
+        picbucket.upload(picparams, function (err, data) {
           if (!err) {
-            window.Fbase.createPic(matchId, data.Location, type);
+            console.log("pic", key, data)
+            window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
           } else {
             console.log(err);
             window.Fbase.log(err, "error");
           }
         });
-      })
+      }
     }
   },
 
@@ -150,7 +177,7 @@ var MatchBrief = React.createClass({
               <CommentsBox isLive={match.isLive} comments={match.comments} />
               <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
               <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
-                <img src="images/Camera-icon.png" className="cameraIcon" />
+                <img src="images/camera-icon.png" className="cameraIcon" />
               </Dropzone>
             </div>
             <div>
