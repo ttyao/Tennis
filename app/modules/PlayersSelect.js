@@ -9,15 +9,15 @@ var PlayersSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return { player1: window.Fbase.authUid, player2: ""};
+    return { player0: window.Fbase.authUid, player1: ""};
   },
   handleSelectChange1 (value, values) {
-    this.setState({ player1: value });
-    this.props.onChange("player1", value);
+    this.setState({ player0: value });
+    this.props.onChange("player0", value);
   },
   handleSelectChange2 (value, values) {
-    this.setState({ player2: value });
-    this.props.onChange("player2", value);
+    this.setState({ player1: value });
+    this.props.onChange("player1", value);
   },
   toggleDisabled (e) {
     this.setState({ 'disabled': e.target.checked });
@@ -64,7 +64,7 @@ var PlayersSelect = React.createClass({
         <tbody><tr>
           <td className="playersection">
             <span className="section">
-              <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" onChange={this.handleSelectChange1} asyncOptions={this.loadOptions} />
+              <Select multi key="player0" value={this.state.player0} placeholder="Select player(s)" onChange={this.handleSelectChange0} asyncOptions={this.loadOptions} />
             </span>
           </td>
         </tr>
@@ -74,7 +74,7 @@ var PlayersSelect = React.createClass({
         <tr>
           <td className="playersection">
             <span className="section">
-              <Select multi key="player2" value={this.state.player2} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange2} />
+              <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange1} />
             </span>
           </td>
         </tr></tbody>

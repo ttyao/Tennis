@@ -4,7 +4,9 @@ var ReactFireMixin = require('reactfire');
 var PlayerName = React.createClass({
   propTypes: {
     playerId: React.PropTypes.string,
+    playerName: React.PropTypes.string,
     winSetNum: React.PropTypes.number,
+    status: React.PropTypes.string,
   },
 
   getInitialState () {
@@ -12,19 +14,23 @@ var PlayerName = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
-    this.bindAsObject(playerRef, "player");
+    if (!this.props.playerName) {
+      var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
+      this.bindAsObject(playerRef, "player");
+    }
   },
   render() {
     var cls = "";
-    if (this.props.winSetNum > 0) {
+    if (this.props.status == "completed" && this.props.winSetNum > 0) {
       cls = "winningPlayer";
-    } else if (this.props.winSetNum < 0) {
+    } else if (this.props.status == "completed" && this.props.winSetNum < 0) {
       cls = "losingPlayer";
     }
     return (
       <div className={cls}>
-        {this.state.player? this.state.player.displayName : "n/a"}
+        {window.Fbase.isValidDisplayName(this.props.playerName) ?
+          this.props.playerName :
+          this.state.player? this.state.player.displayName : "n/a"}
       </div>
     );
   }

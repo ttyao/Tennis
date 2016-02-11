@@ -344,7 +344,7 @@ h6,
   padding: 20px 0;
 }
 .page-header {
-  background: url(images/tennis.jpeg) no-repeat center;
+  background: url(/images/tennis.jpeg) no-repeat center;
   opacity: 0.7;
   color: #bfdfff;
   text-align: center;
@@ -505,7 +505,7 @@ h6,
   height: 36px;
   border: 0px;
   width: 80px;
-  background: url('images/fblogin.png');
+  background: url('/images/fblogin.png');
   background-size: 80px 36px;
 }
 .titleText {

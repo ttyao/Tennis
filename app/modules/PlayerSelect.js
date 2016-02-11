@@ -8,7 +8,7 @@ var PlayerSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return { player: this.props.player};
+    return { player: this.props.player || ""};
   },
   handleSelectChange (value, values) {
     this.setState({ player: value });
@@ -16,6 +16,7 @@ var PlayerSelect = React.createClass({
   },
 
   loadOptions(input, callback) {
+
     var userRef = window.Fbase.getRef("web/data/users");
     userRef.orderByChild("displayName").once("value", function(snapshot) {
       var ops = [];

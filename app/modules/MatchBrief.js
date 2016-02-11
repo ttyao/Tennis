@@ -93,6 +93,8 @@ var MatchBrief = React.createClass({
   onUploadPics(files) {
     if (files && window.Fbase.authUid) {
       var time = window.now();
+      window.Fbase.log(files[0].size + ","+files[0].type, "debug");
+
       var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
       var matchId = this.state.match['.key'];
       var self = this;
@@ -183,15 +185,15 @@ var MatchBrief = React.createClass({
               <table className="wholerow">
                 <tbody><tr>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} key={match.players[2]} playerId={match.players[2]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
                     <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={match.creator==window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} key={match.players[1]} playerId={match.players[1]} />
-                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} key={match.players[3]} playerId={match.players[3]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>
               </table>

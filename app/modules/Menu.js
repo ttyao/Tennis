@@ -33,21 +33,6 @@ export default class Menu extends React.Component {
   }
 
   onUpload(files){
-    // var ref = window.Fbase.getRef("web/data/matches");
-    // ref.once('value', function(snapshot) {
-    //   var matches = snapshot.val();
-    //   console.log(matches);
-    //   for (let m in matches) {
-    //     var match = matches[m];
-    //     var mref = ref.child(m+"/players");
-    //     var players = [match.players.player1, match.players.player2];
-    //     if (match.players.player3) {
-    //       players.push(match.players.player3);
-    //       players.push(match.players.player4);
-    //     }
-    //     mref.set(players);
-    //   }
-    // });
 
     // var ref = window.Fbase.mergeAccountA2B("guest:Junya Zhang","7062f35c-bc7e-48a1-a3f2-d2ca587cb644");
     var bucket = new AWS.S3({params: {Bucket: 'baytennis/firebase'}});
@@ -70,18 +55,34 @@ export default class Menu extends React.Component {
     }
   }
 
+  onTestButtonClick() {
+    console.log(window.Fbase.displayNames)
+    console.log(window.Fbase.getUserId("Henry T Yao"));
+    // window.Fbase.addMatchToLadder("match:1454970406422:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618");
+  }
+
   render() {
+    console.log(this.props.params)
+    const tab_maps = {
+      "recent" : 1,
+      "ladder" : 2,
+      "h2h" : 3,
+      "create" : 2
+    }
     return (
       <div>
-        <Tabs tabActive={1} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
-          <Tabs.Panel title='最新战报'>
+        <div className="container page-header">
+          <h2 className="titleText">湾区网事恩怨榜</h2>
+        </div>
+        <Tabs tabActive={tab_maps[this.props.params.tab]} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
+          <Tabs.Panel title='Recent'>
             <MatchList value={this.state.scores} />
           </Tabs.Panel>
-          <Tabs.Panel title='输入战绩'>
+          <Tabs.Panel title='Create'>
             <MatchRecorder />
           </Tabs.Panel>
           <Tabs.Panel title="H2H">
-            <Head2Head player1={window.Fbase.authUid} player2="" />
+            <Head2Head player0={this.props.params.player0} player1={this.props.params.player1} />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
           { window.Fbase.authUid == "facebook:539060618" &&
@@ -89,6 +90,7 @@ export default class Menu extends React.Component {
               <Dropzone onDrop={this.onUpload} className="pictureUpload">
                 <div>Try</div>
               </Dropzone>
+              <button onClick={this.onTestButtonClick}>Test</button>
               <img src={this.state.file} className="player" />
             </Tabs.Panel>
           }
