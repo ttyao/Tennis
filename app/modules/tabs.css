@@ -22,7 +22,8 @@
 }
 
 .tab-panel {
-  padding: 10px 5px;
+  padding: 10px 0;
+  background-color: rgba(0, 126, 255, 0.08);
 }
 
 .tabs {

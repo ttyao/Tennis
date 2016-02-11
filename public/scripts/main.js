@@ -22,7 +22,7 @@ if (authData) {
   var userRef = ref.child("web/data/users/" + authData["uid"]);
   var user = {};
   user[authData["uid"]] = authData["facebook"];
-  user[authData["uid"]]["loggedInAt"] = Date.now();
+  user[authData["uid"]]["loggedInAt"] = window.now();
   userRef.set(user[authData["uid"]]);
 }
 var name = authData ? authData.facebook.displayName : "anonymous";

@@ -1,0 +1,26 @@
+:root {
+    --progress-bg-color: #ddd;
+    --progress-fg-color: #2ecc40;
+}
+
+.CircularProgress-Bg,
+.CircularProgress-Fg {
+    fill: none;
+}
+
+.CircularProgress-Bg {
+    stroke: #ddd;
+}
+
+.CircularProgress-Fg {
+    transition: stroke-dashoffset .5s ease-in-out;
+    stroke: #2ecc40;
+}
+
+.CircularProgress-Text {
+    font-family: sans-serif;
+    font-size: 10px;
+    fill: #2ecc40;
+
+    transform: translate(0 50%);
+}

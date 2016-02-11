@@ -170,8 +170,9 @@ var MatchBrief = React.createClass({
         var winSetNum = this.getWinSetNum();
         var progressStyle = {
           position: 'relative',
-          bottom: "90px",
+          bottom: "80px",
           float: "right",
+          right: "5px",
         };
         return (
           <div className="matchBriefBody">
@@ -228,7 +229,7 @@ var MatchBrief = React.createClass({
               </div>
             </div>
             <div style={progressStyle} >
-              <Progress radius="20" strokeWidth="4" percentage={this.state.uploadPercentage}/>
+              <Progress radius="15" strokeWidth="4" percentage={this.state.uploadPercentage}/>
             </div>
           </div>
         );
