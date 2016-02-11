@@ -72,7 +72,7 @@ export default class Menu extends React.Component {
     return (
       <div>
         <div className="container page-header">
-          <h2 className="titleText">湾区网事恩怨榜</h2>
+          <h2 className="titleText">Live Tennis Ladder</h2>
         </div>
         <Tabs tabActive={tab_maps[this.props.params.tab]} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
           <Tabs.Panel title='Recent'>

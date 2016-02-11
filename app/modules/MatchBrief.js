@@ -57,10 +57,24 @@ var MatchBrief = React.createClass({
       match.status = "active";
       window.Fbase.updateMatchStatus(match);
     }
+    window.Fbase.createComment(
+      this.state.match,
+      "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
+      "system"
+    );
   },
   completeMatch() {
     var match = this.state.match;
-    match.status = "completed";
+    if (window.now(match.matchTime) > window.now() + 3600*1000) {
+      match.status = "pending";
+    } else {
+      match.status = "completed";
+      window.Fbase.createComment(
+      this.state.match,
+      "Marked this match as completed.",
+      "system"
+    );
+    }
     window.Fbase.updateMatchStatus(match);
   },
   editMatch() {
@@ -86,7 +100,7 @@ var MatchBrief = React.createClass({
   },
   onCommentInputChange(event) {
     if (event.key == 'Enter' && event.target.value) {
-      window.Fbase.createComment(this.state.match, event.target.value);
+      window.Fbase.createComment(this.state.match, event.target.value, "text");
       this.refs["commentInput"].value = "";
     }
   },
@@ -186,13 +200,13 @@ var MatchBrief = React.createClass({
                 <tbody><tr>
                   <td className="playersection centerContainer">
                     <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
                     <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={match.creator==window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
                     <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>

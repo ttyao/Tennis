@@ -61,12 +61,10 @@ export default class MatchRecorder extends React.Component {
       alert("Please select players first.");
       return;
     } else if (this.state.players[0] == this.state.players[1]) {
-      alert("不可以左右互搏.");
-      return;
-    } else if (!window.Fbase.isHenry()) {
-      alert("System in beta, you can't create match yet. Contact henryy艾特gmail.com");
+      alert("You cannot play against yourself.");
       return;
     }
+
     var status = "completed";
     console.log(this.status, this.state.scores[0].scores[0] + this.state.scores[0].scores[1], this.state.matchMoment.unix()*1000, Date.now())
     if (this.state.scores[0].scores[0] + this.state.scores[0].scores[1] > 0) {

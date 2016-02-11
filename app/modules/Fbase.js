@@ -26,6 +26,9 @@ window.Fbase = {
       }
     });
   },
+  getAuthName: function() {
+    return this.getDisplayName(this.authUid);
+  },
   getDisplayName: function(uid) {
     if (this.displayNames[uid]) {
       return this.displayNames[uid];
@@ -226,14 +229,15 @@ window.Fbase = {
     ref.set(videoTitle);
     this.log(key, "write", "createVideoTitle");
   },
-  createComment: function(match, comment) {
+  createComment: function(match, comment, type) {
     var commentId = "comment:"+window.now()+":"+this.authUid;
     var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + commentId);
 
     ref.set({
       comment: comment,
       creator: this.authUid,
-      createdTime: window.now()
+      createdTime: window.now(),
+      type: type
     });
     this.log("create comment", "write", "createComment");
   },
