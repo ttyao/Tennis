@@ -15,6 +15,77 @@ var appElement = document.getElementById('modal');
 
 Modal.setAppElement(appElement);
 
+var Reflux = require('reflux');
+
+var imageActions = Reflux.createActions([
+  'loadImage'
+]);
+
+var imageStore = Reflux.createStore({
+  listenables: [imageActions],
+
+  init: function() {
+    this.image = '';
+    this.exif = {};
+    this.latitude = null;
+    this.longtitude = null;
+  },
+
+  onLoadImage: function(file, callback) {
+    var self = this;
+
+    // Read image file
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+
+    // Get exif data from image
+    EXIF.getData(file, function() {
+      self.exif = this.exifdata;
+      // console.log(this.exifdata, callback);
+      if (callback) {
+        callback(this.exifdata);
+      }
+
+      // var gps = self.getGPSData(self.exif);
+      // if (gps && gps.latitude != null && gps.longtitude != null) {
+      //   self.latitude = gps.latitude;
+      //   self.longtitude = gps.longtitude;
+      //   self.trigger({
+      //     latitude: self.latitude,
+      //     longtitude: self.longtitude
+      //   });
+      // }
+    });
+  },
+
+  getGPSData: function(exif) {
+    if (exif['GPSLatitude'] == null ||
+      exif['GPSLatitude'].length == null ||
+      exif['GPSLatitude'].length !== 3) {
+      return;
+    }
+    if (exif['GPSLongitude'] == null ||
+      exif['GPSLongitude'].length == null ||
+      exif['GPSLongitude'].length !== 3) {
+      return;
+    }
+
+    var latitude = exif['GPSLatitude'][0] + exif['GPSLatitude'][1] / 60.0 + exif['GPSLatitude'][2] / 3600.0;
+    if (exif['GPSLatitudeRef'] === 'S') {
+      latitude *= -1;
+    }
+    var longtitude = exif['GPSLongitude'][0] + exif['GPSLongitude'][1] / 60.0 + exif['GPSLongitude'][2] / 3600.0;
+    if (exif['GPSLongitudeRef'] === 'W') {
+      longtitude *= -1;
+    }
+
+    return {
+      latitude: latitude,
+      longtitude: longtitude
+    };
+  }
+});
+
 var MatchBrief = React.createClass({
   propTypes: {
     matchId: React.PropTypes.string,
@@ -32,7 +103,7 @@ var MatchBrief = React.createClass({
       visible: true
     };
   },
-  mixins: [ReactFireMixin, TimerMixin],
+  mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
 
   componentWillMount () {
     var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
@@ -65,7 +136,7 @@ var MatchBrief = React.createClass({
   },
   completeMatch() {
     var match = this.state.match;
-    if (window.now(match.matchTime) > window.now() + 3600*1000) {
+    if (window.now(match.matchTime) > window.now() + 24*3600*1000) {
       match.status = "pending";
     } else {
       match.status = "completed";
@@ -131,16 +202,19 @@ var MatchBrief = React.createClass({
             alert('The File APIs are not fully supported in this browser.');
             return false;
           }
-          window.ImageResizer.resizeImage(file, function(dataUrl) {
-            var params = {Key: "thumb:"+key, ContentType: "image/jpeg", Body: dataUrl, ACL: "public-read"};
-            bucket.upload(params, function (err, data) {
-              if (!err) {
-                console.log("thumb", key, data);
-                window.Fbase.createPicThumb(matchId, "comment:"+key, data.Location, type);
-              } else {
-                console.log(err);
-                window.Fbase.log(err, "error");
-              }
+          imageActions.loadImage(files[0], function(exif) {
+
+            window.ImageResizer.resizeImage(file, exif, function(dataUrl) {
+              var params = {Key: "thumb:"+key, ContentType: "image/jpeg", Body: dataUrl, ACL: "public-read"};
+              bucket.upload(params, function (err, data) {
+                if (!err) {
+                  console.log("thumb", key, data);
+                  window.Fbase.createPicThumb(matchId, "comment:"+key, data.Location, type);
+                } else {
+                  console.log(err);
+                  window.Fbase.log(err, "error");
+                }
+              });
             });
           });
         } else {

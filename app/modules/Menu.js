@@ -6,6 +6,7 @@ import MatchList from './MatchList';
 import Modal from 'react-modal';
 import Head2Head from './Head2Head';
 var Dropzone = require('react-dropzone');
+// var ExifImage = require('exif').ExifImage;
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -33,6 +34,38 @@ export default class Menu extends React.Component {
   }
 
   onUpload(files){
+    var self = this;
+    var reader = new FileReader();
+    reader.onload = function() {
+      self.image = reader.result;
+      self.trigger({
+        image: self.image,
+        latitude: null,
+        longtitude: null
+      });
+    };
+    reader.readAsDataURL(files[0]);
+    try {
+        EXIF.getData(file, function() {
+          self.exif = this.exifdata;
+          self.trigger({
+            exif: self.exif
+          });
+
+          var gps = self.getGPSData(self.exif);
+          if (gps && gps.latitude != null && gps.longtitude != null) {
+            self.latitude = gps.latitude;
+            self.longtitude = gps.longtitude;
+            self.trigger({
+              latitude: self.latitude,
+              longtitude: self.longtitude
+            });
+          }
+        });
+    } catch (error) {
+        console.log('Error: ' + error.message);
+    }
+    return;
 
     // var ref = window.Fbase.mergeAccountA2B("guest:Junya Zhang","7062f35c-bc7e-48a1-a3f2-d2ca587cb644");
     var bucket = new AWS.S3({params: {Bucket: 'baytennis/firebase'}});

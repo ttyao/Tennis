@@ -18,7 +18,7 @@ var Comment = React.createClass({
       case "pic":
         return (<a href={comment.URL || comment.thumbURL}><img className="pictureComment" src={comment.thumbURL || "images/tennis_ball.gif"} /></a>);
       case "video":
-        return (<a href={comment.URL}>{comment.title || "Play video"}</a>);
+        return (<a href={comment.URL}>📹{comment.title || "Play video"}📹</a>);
       case "system":
         return (<div className="commenter">{comment.comment}</div>);
       default:
