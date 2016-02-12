@@ -259,10 +259,9 @@ var MatchBrief = React.createClass({
       if (this.props.visible && this.state.match.players) {
         var winSetNum = this.getWinSetNum();
         var progressStyle = {
-          position: 'relative',
-          bottom: "80px",
+          // position: 'relative',
           float: "right",
-          right: "5px",
+
         };
         return (
           <div className="matchBriefBody">
@@ -296,6 +295,9 @@ var MatchBrief = React.createClass({
             </div>
             <div>
               <Timestamp time={match.matchTime} className="floatleft" />
+              <div style={progressStyle} >
+                <Progress radius="8" strokeWidth="3" percentage={this.state.uploadPercentage}/>
+              </div>
               <div className='floatright'>
                 <Modal
                   className="Modal__Bootstrap modal-dialog"
@@ -317,9 +319,6 @@ var MatchBrief = React.createClass({
                       match.status == "active" ? "正在现场直播!" : ""
                 }
               </div>
-            </div>
-            <div style={progressStyle} >
-              <Progress radius="15" strokeWidth="4" percentage={this.state.uploadPercentage}/>
             </div>
           </div>
         );

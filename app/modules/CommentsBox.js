@@ -25,12 +25,29 @@ var CommentsBox = React.createClass({
     );
   },
   componentDidMount: function() {
+    var maxHeight = 350;
     if (this.refs.scrollbars) {
+      var node = ReactDOM.findDOMNode(this.refs.scrollbars);
+
+      if (this.refs.scrollbars.getScrollHeight() < maxHeight) {
+        // console.log(node.style,node.style.height,this.refs.scrollbars.getScrollHeight() );
+        node.style.height = this.refs.scrollbars.getScrollHeight() + "px";
+      } else {
+        node.style.height = maxHeight + "px";
+      }
       this.refs.scrollbars.scrollToBottom();
     }
   },
   componentWillUpdate: function() {
     if (this.refs.scrollbars) {
+      var node = ReactDOM.findDOMNode(this.refs.scrollbars);
+      var maxHeight = 350;
+      if (this.refs.scrollbars.getScrollHeight() < maxHeight) {
+        // console.log(node.style.height,this.refs.scrollbars.getScrollHeight() );
+        node.style.height = this.refs.scrollbars.getScrollHeight() + "px";
+      } else {
+        node.style.height = maxHeight + "px";
+      }
       var node = ReactDOM.findDOMNode(this.refs.scrollbars);
       this.shouldScrollBottom = this.refs.scrollbars.getScrollHeight() - this.refs.scrollbars.getScrollTop() < node.offsetHeight + 10;
     }
@@ -44,7 +61,7 @@ var CommentsBox = React.createClass({
     if (this.props.comments) {
       var cls = "commentsBoxBody";
       var comments = this.getComments();
-      return <Scrollbars ref="scrollbars" style={{ height: 350 }} className={cls}> {comments} </Scrollbars>;
+      return <Scrollbars ref="scrollbars" style={{ height: 50 }} className={cls}> {comments} </Scrollbars>;
     }
     return null;
   }
