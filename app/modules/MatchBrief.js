@@ -209,7 +209,7 @@ var MatchBrief = React.createClass({
               bucket.upload(params, function (err, data) {
                 if (!err) {
                   console.log("thumb", key, data);
-                  window.Fbase.createPicThumb(matchId, "comment:"+key, data.Location, type);
+                  window.Fbase.createPicThumb(matchId, "comment:"+key, exif, data.Location, type);
                 } else {
                   console.log(err);
                   window.Fbase.log(err, "error");

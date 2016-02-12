@@ -213,13 +213,14 @@ window.Fbase = {
     }
     this.log("create picture", "write", "createPic");
   },
-  createPicThumb:function(matchId, picId, thumbUrl, type) {
+  createPicThumb:function(matchId, picId, exif, thumbUrl, type) {
     var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
 
     baseRef.child("thumbURL").set(thumbUrl);
     baseRef.child("type").set(type);
     baseRef.child("creator").set(this.authUid);
     baseRef.child("createdTime").set(window.now());
+    baseRef.child("exif").set(exif);
     this.log("create thumb", "write", "createThumb");
   },
   updateVideoTitle:function(match, commentId, videoTitle) {
