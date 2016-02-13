@@ -1,5 +1,4 @@
 import React from 'react';
-var ReactFireMixin = require('reactfire');
 
 var ScoreBoard = React.createClass({
   propTypes: {
@@ -16,13 +15,6 @@ var ScoreBoard = React.createClass({
 
   getInitialState () {
     return {};
-  },
-  getScoreCell(score) {
-    if (this.props.editable) {
-      return (<input>{score.scores[0]}</input>);
-    } else {
-      return score.scores[0];
-    }
   },
   getScoreCell(index, score) {
     var callback = null;

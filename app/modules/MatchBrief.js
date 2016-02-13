@@ -1,12 +1,12 @@
 import React from 'react';
+var ReactFireMixin = require('reactfire');
+var TimerMixin = require('react-timer-mixin');
+var Dropzone = require('react-dropzone');
 import PlayerName from './PlayerName';
 import Timestamp from './Timestamp';
 import ScoreBoard from './ScoreBoard';
 import CommentsBox from './CommentsBox';
-var ReactFireMixin = require('reactfire');
 import Linkify from 'react-linkify';
-var TimerMixin = require('react-timer-mixin');
-var Dropzone = require('react-dropzone');
 import Progress from './Progress';
 
 import Modal from 'react-modal';

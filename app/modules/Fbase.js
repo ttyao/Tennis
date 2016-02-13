@@ -1,3 +1,5 @@
+import Firebase from 'firebase';
+
 window.Fbase = {
   baseUrl : "https://blistering-torch-8342.firebaseio.com",
   Henry: "facebook:539060618",
