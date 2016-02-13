@@ -275,5 +275,18 @@ window.Fbase = {
       creator: this.authUid
     });
     this.log("add match "+matchId+" to ladder "+ladderId, "write", "addMatchToLadder");
+  },
+  addUserToTeam: function() {
+
+  },
+  createObject: function(modal, path, object) {
+    console.log(object);
+    object['a'] = 1;
+    if (["teams", "leagues"].indexOf(modal) == -1) {
+      alert("Modal not supported.");
+      return;
+    }
+    var ref = this.getRef("web/data/"+modal+"/"+path);
+    ref.set(object)
   }
 };

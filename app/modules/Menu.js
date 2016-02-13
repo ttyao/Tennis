@@ -89,8 +89,11 @@ export default class Menu extends React.Component {
   }
 
   onTestButtonClick() {
-    console.log(window.Fbase.displayNames)
-    console.log(window.Fbase.getUserId("Henry T Yao"));
+    var obj = {ccc:1};
+    window.Fbase.createObject("leagues", "", obj);
+    console.log(obj)
+    // console.log(window.Fbase.displayNames)
+    // console.log(window.Fbase.getUserId("Henry T Yao"));
     // window.Fbase.addMatchToLadder("match:1454970406422:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618");
   }
 
