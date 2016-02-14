@@ -77,11 +77,15 @@ window.Fbase = {
 
   // very inefficient now, need to look into index later
   onceDisplayNameExists: function(displayName, callback) {
+    if (displayName == null) {
+      callback.call(this, null);
+      return;
+    }
     var ref = window.Fbase.getRef("web/data/users");
     ref.once('value', function(snapshot){
       var users = snapshot.val();
       for (let key in users) {
-        if (users[key].displayName.toLowerCase() == displayName.toLowerCase()) {
+        if (users[key].displayName && users[key].displayName.toLowerCase() == displayName.toLowerCase()) {
           callback.call(this, key);
           return;
         }

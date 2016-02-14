@@ -40,8 +40,8 @@ var Login = React.createClass({
           return;
         } else {
           ref.createUser({
-            email: this.state.email,
-            password: this.state.password,
+            email: email,
+            password: password,
           }, function(error, userData) {
             if (error) {
               switch (error.code) {
@@ -53,6 +53,7 @@ var Login = React.createClass({
                   alert("The specified email is not a valid email.");
                   break;
                 default:
+                  console.log(error);
                   alert("Error creating user.");
               }
             } else {

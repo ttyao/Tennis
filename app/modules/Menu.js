@@ -137,7 +137,7 @@ export default class Menu extends React.Component {
             <Head2Head player0={this.props.params.player0} player1={this.props.params.player1} />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
-          { window.Fbase.authUid == "facebook:539060618" &&
+          { (window.Fbase.authUid == window.Fbase.Henry || window.Fbase.authUid == "ac61cfeb-2bf2-4df9-bbba-ac3a4e4f9d34") &&
             <Tabs.Panel title="Admin">
               <Dropzone onDrop={this.onUpload} className="pictureUpload">
                 <div>Try</div>
