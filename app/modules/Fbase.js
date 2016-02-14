@@ -1,7 +1,7 @@
 import Firebase from 'firebase';
 
 window.Fbase = {
-  baseUrl : "https://blistering-torch-8342.firebaseio.com",
+  baseUrl : "http://www.google.com",
   Henry: "facebook:539060618",
   isHenry: function() {
     return this.Henry == this.authUid;
@@ -182,7 +182,7 @@ window.Fbase = {
         .toString(16)
         .substring(1);
     }
-    this.sessionId = "visitor:" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    this.sessionId = "visitor:" + window.now() + ":" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
   },
   mergeAccountA2B: function(fromId, toId) {
@@ -282,9 +282,7 @@ window.Fbase = {
 
   },
   createObject: function(modal, path, object) {
-    console.log(object);
-    object['a'] = 1;
-    if (["teams", "leagues"].indexOf(modal) == -1) {
+    if (["teams", "leagues", "users"].indexOf(modal) == -1) {
       alert("Modal not supported.");
       return;
     }

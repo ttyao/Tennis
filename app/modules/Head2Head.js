@@ -116,7 +116,7 @@ var Head2Head = React.createClass({
             <td className="centerContainer"> {this.state.win2} </td>
           </tr></tbody>
         </table>
-        { matches.reverse() }
+        { this.state.matches ? matches.reverse() : "loading..."}
       </div>
     );
   }

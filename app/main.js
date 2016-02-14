@@ -7,8 +7,8 @@ import moment from 'moment';
 import { Router, Route, browserHistory, hashHistory } from 'react-router'
 
 require("./modules/ImageResizer.js");
-require("./modules/aws.js");
 require("./modules/Fbase.js");
+require("./modules/aws.js");
 require("./css/main.css");
 'use strict';
 

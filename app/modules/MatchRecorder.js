@@ -90,12 +90,12 @@ export default class MatchRecorder extends React.Component {
   handlePlayerChange(id, value) {
     var newState = this.state;
     var players = value.split(",");
-    if (id == "player1") {
+    if (id == "player0") {
       newState.players[0] = players[0];
-      newState.players[2] = players[1] ? players[1] : null;
+      newState.players[2] = players[1] || null;
     } else {
       newState.players[1] = players[0];
-      newState.players[3] = players[1] ? players[1] : null;
+      newState.players[3] = players[1] || null;
     }
     this.setState(newState);
   }

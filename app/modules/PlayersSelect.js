@@ -11,11 +11,11 @@ var PlayersSelect = React.createClass({
   getInitialState () {
     return { player0: window.Fbase.authUid, player1: ""};
   },
-  handleSelectChange1 (value, values) {
+  handleSelectChange0 (value, values) {
     this.setState({ player0: value });
     this.props.onChange("player0", value);
   },
-  handleSelectChange2 (value, values) {
+  handleSelectChange1 (value, values) {
     this.setState({ player1: value });
     this.props.onChange("player1", value);
   },

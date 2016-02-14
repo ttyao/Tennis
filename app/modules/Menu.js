@@ -92,6 +92,22 @@ export default class Menu extends React.Component {
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
     console.log(obj)
+    var data = [
+"190024;Maria E  Chamberlain;2010399900;03/31/2016;3.0;Livermore, CA;F"];
+  data.forEach(function(row){
+    var p = row.split(";");
+    if (true || p[4] != "na") {
+      window.Fbase.createObject("users", "norcal:"+p[0],{
+        norcal: p[0],
+        displayName: p[1],
+        usta: p[2],
+        expirationDate: p[3],
+        rating: p[4],
+        residence: p[5],
+      });
+    }
+    // console.log(p);
+  });
     // console.log(window.Fbase.displayNames)
     // console.log(window.Fbase.getUserId("Henry T Yao"));
     // window.Fbase.addMatchToLadder("match:1454970406422:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618");

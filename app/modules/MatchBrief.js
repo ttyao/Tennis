@@ -139,13 +139,18 @@ var MatchBrief = React.createClass({
     if (window.now(match.matchTime) > window.now() + 24*3600*1000) {
       match.status = "pending";
     } else {
-      match.status = "completed";
-      window.Fbase.createComment(
+      if (match.scores[0].scores[0] + match.scores[0].scores[1] > 0) {
+        match.status = "completed";
+      } else {
+        match.status = "canceled";
+      }
+
+    }
+    window.Fbase.createComment(
       this.state.match,
-      "Marked this match as completed.",
+      "Marked this match as " + match.status + ".",
       "system"
     );
-    }
     window.Fbase.updateMatchStatus(match);
   },
   editMatch() {
@@ -315,14 +320,19 @@ var MatchBrief = React.createClass({
                       <button onClick={this.completeMatch} >Complete</button> :
                       <button onClick={this.editMatch} >Edit</button> :
                     match.status == "pending" ?
-                      "大战倒计时中..." :
-                      match.status == "active" ? "正在现场直播!" : ""
+                      "Coming soon..." :
+                      match.status == "active" && (match.scores[0].scores[0] + match.scores[0].scores[1] > 0) ? "Live Now!" : ""
                 }
               </div>
             </div>
           </div>
         );
       }
+    }
+    if (this.props.visible) {
+      return (
+        <div>Loading match stats...</div>
+      );
     }
     return null;
   }

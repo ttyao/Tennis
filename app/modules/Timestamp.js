@@ -48,8 +48,7 @@ class Timestamp extends React.Component {
         } else if (seconds < -60 * 60 * 24) {
           future = Math.floor(-seconds / (60 * 60 * 24));
           return this._formatString("In {0} {1}", future, this._plural('day', future));
-        } else if (seconds < -60 * 60 * 24) {
-          future = Math.floor(-seconds / (60 * 60 * 24));
+        } else if (seconds < 0) {
           return this._formatString("Very soon!");
         } else if (seconds < 60) { // 1 minute
             return "Just then";

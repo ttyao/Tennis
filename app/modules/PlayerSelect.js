@@ -16,7 +16,17 @@ var PlayerSelect = React.createClass({
   },
 
   loadOptions(input, callback) {
-
+    if (!input) {
+      var opts = [];
+      if (this.props.player) {
+        opts.push({
+          value: this.props.player,
+          label: window.Fbase.getDisplayName(this.props.player)
+        });
+      }
+      callback(null, {options: opts, complete: false});
+      return;
+    }
     var userRef = window.Fbase.getRef("web/data/users");
     userRef.orderByChild("displayName").once("value", function(snapshot) {
       var ops = [];
@@ -29,7 +39,7 @@ var PlayerSelect = React.createClass({
           ops.push(item);
         }
       }
-      callback(null, {options: ops, complete: true});
+      callback(null, {options: ops, complete: false});
     }, function() {}, this);
   },
 
@@ -39,7 +49,7 @@ var PlayerSelect = React.createClass({
         <tbody><tr>
           <td className="playersection">
             <span className="section">
-              <Select value={this.state.player} placeholder="Select player" onChange={this.handleSelectChange} asyncOptions={this.loadOptions} />
+              <Select value={window.Fbase.getDisplayName(this.state.player)} placeholder="Select player" onChange={this.handleSelectChange} asyncOptions={this.loadOptions} />
             </span>
           </td>
         </tr></tbody>
