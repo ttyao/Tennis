@@ -259,7 +259,7 @@ var MatchBrief = React.createClass({
       var match = this.state.match;
       var matchId = match['.key'];
       if (this.props.onAfterLoad) {
-        this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match.players);}, 0);
+        this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
         var winSetNum = this.getWinSetNum();

@@ -19,7 +19,8 @@ var Head2Head = React.createClass({
       this.bindAsArray(ref, "matches");
     }
   },
-  onMatchBriefLoad(matchId, players) {
+  onMatchBriefLoad(matchId, match) {
+    var players = match.players;
     var qualified = false;
 
     if (!this.state.player1 || !this.state.player0) {

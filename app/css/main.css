@@ -612,6 +612,15 @@ h6,
   -o-transform: rotate(270deg);
   -webkit-transform-origin: 0 0;
 }
+.rightalign {
+  text-align: right;
+  padding: 8px;
+  border-radius: 10px;
+  margin: 8px 0;
+  background-color: white;
+  border: 1px solid rgba(0, 126, 255, 0.03);
+  box-shadow: 2px 3px 2px #888888;
+}
 /*
 
 // include these styles to test normal form fields

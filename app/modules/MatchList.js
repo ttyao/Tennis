@@ -16,7 +16,6 @@ var MatchList = React.createClass({
   },
   render() {
     var matches = this.state.matches.map(function(match) {
-      // console.log(match.scores);
       return (
         <MatchBrief visible={true} key={match['.key']} matchId={match['.key']} />
       );

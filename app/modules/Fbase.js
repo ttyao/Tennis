@@ -196,16 +196,33 @@ window.Fbase = {
       var matches = snapshot.val();
       for (let key in matches) {
         var players = matches[key].players;
-        var changed = false;
         for (let i = 0; i < 4; i++) {
           if (players[i] == fromId) {
-            players[i] = toId;
-            changed = true;
+            var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
+            n.set(toId);
+            break;
           }
         }
-        if (changed) {
-          ref.child(key+"/players").set(players);
-        }
+        // if (changed) {
+        //   console.log(key+"/players")
+        //   , function(e) {
+        //     console.log(e)
+        //   });
+        // }
+      }
+    });
+    var ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
+    ref.once('value', function(snapshot) {
+      var oldMatches = snapshot.val();
+      if (oldMatches) {
+        var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
+        newRef.once('value', function(s) {
+          var newMatches = s.val() || {};
+          for (let key in oldMatches) {
+            newMatches[key] = oldMatches[key];
+          }
+          newRef.set(newMatches);
+        })
       }
     });
   },

@@ -5,8 +5,8 @@ import MatchRecorder from './MatchRecorder';
 import MatchList from './MatchList';
 import Modal from 'react-modal';
 import Head2Head from './Head2Head';
+import LadderOverview from './LadderOverview';
 var Dropzone = require('react-dropzone');
-// var ExifImage = require('exif').ExifImage;
 
 export default class Menu extends React.Component {
   constructor(props) {
@@ -67,7 +67,6 @@ export default class Menu extends React.Component {
     }
     return;
 
-    // var ref = window.Fbase.mergeAccountA2B("guest:Junya Zhang","7062f35c-bc7e-48a1-a3f2-d2ca587cb644");
     var bucket = new AWS.S3({params: {Bucket: 'baytennis/firebase'}});
 
     var file = files[0];
@@ -89,6 +88,24 @@ export default class Menu extends React.Component {
   }
 
   onTestButtonClick() {
+    // var ref = window.Fbase.mergeAccountA2B("guest:Eddie Lin","3acfe162-0f10-4cdf-8d7b-edf164d137a4");
+window.Fbase.addMatchToLadder("match:2016-02-13-18-27-57-288:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-13-19-32-46-987:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-15-18-26-998:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-16-16-08-177:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-18-54-48-633:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-18-59-56-006:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-22-29-28-345:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-22-30-39-543:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-14-22-31-42-104:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-08-00-932:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-08-31-588:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-08-45-869:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-09-00-556:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-09-23-890:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-09-50-101:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-15-01-10-01-349:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
     console.log(obj)
@@ -134,7 +151,7 @@ export default class Menu extends React.Component {
       "recent" : 1,
       "ladder" : 2,
       "h2h" : 3,
-      "create" : 2
+      "create" : 4
     }
     return (
       <div>
@@ -145,12 +162,15 @@ export default class Menu extends React.Component {
           <Tabs.Panel title='Recent'>
             <MatchList value={this.state.scores} />
           </Tabs.Panel>
-          <Tabs.Panel title='Create'>
-            <MatchRecorder />
+          <Tabs.Panel title="Ladder">
+            <LadderOverview ladder={this.props.params.ladder} />
           </Tabs.Panel>
           <Tabs.Panel title="H2H">
             <Head2Head player0={this.props.params.player0} player1={this.props.params.player1} />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
+          </Tabs.Panel>
+          <Tabs.Panel title='Create'>
+            <MatchRecorder />
           </Tabs.Panel>
           { (window.Fbase.authUid == window.Fbase.Henry || window.Fbase.authUid == "ac61cfeb-2bf2-4df9-bbba-ac3a4e4f9d34") &&
             <Tabs.Panel title="Admin">
