@@ -3,6 +3,7 @@ import PlayersSelect from './PlayersSelect';
 import ScoreSelect from './ScoreSelect';
 import Notice from './Notice';
 import DatePicker from 'react-datepicker';
+import LadderSelect from "./LadderSelect";
 var moment = require('moment');
 require('react-datepicker/dist/react-datepicker.css');
 
@@ -15,13 +16,15 @@ export default class MatchRecorder extends React.Component {
       scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
       message: "",
       matchMoment: moment(),
-      status: "completed"
+      status: "completed",
+      ladder: this.props.ladder || null,
     };
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.handleScoreChange = this.handleScoreChange.bind(this);
     this.handleMatchSubmit = this.handleMatchSubmit.bind(this);
     this.handleMessageChange = this.handleMessageChange.bind(this);
     this.handleMatchTimeChange = this.handleMatchTimeChange.bind(this);
+    this.onLadderChange = this.onLadderChange.bind(this);
   }
 
   handleMessageChange(value) {
@@ -100,9 +103,14 @@ export default class MatchRecorder extends React.Component {
     this.setState(newState);
   }
 
+  onLadderChange(id) {
+    this.setState({ladder:id});
+  }
+
   render() {
     return (
       <div>
+        <LadderSelect value={this.state.ladder} onChange={this.onLadderChange} />
         <PlayersSelect label="players" onChange={this.handlePlayerChange} />
         <div>Score:</div>
         <ScoreSelect id="0" onChange={this.handleScoreChange} />

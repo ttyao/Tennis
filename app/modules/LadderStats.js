@@ -5,16 +5,27 @@ var LadderStats = React.createClass({
   displayName: 'LadderStats',
   propTypes: {
     matches: React.PropTypes.object,
+    matchIds: React.PropTypes.array,
   },
   getInitialState () {
-    return { matches: this.props.matches || {}};
+    return {};
   },
   getStats() {
-    if (this.state.matches) {
+    var matches = this.props.matches;
+    var matchKeys = Object.keys(matches);
+    var found = 0;
+    for (let i in matchKeys) {
+      if (this.props.matchIds.indexOf(matchKeys[i]) >= 0) {
+        found++;
+      }
+    }
+    if (found == this.props.matchIds.length) {
       var stats = {};
-      console.log(this.state.matches);
-      for (let key in this.state.matches) {
-        let match = this.state.matches[key];
+      for (let key in matches) {
+        if (this.props.matchIds.indexOf(key) < 0) {
+          continue;
+        }
+        let match = matches[key];
         if (match.status == "completed") {
           var winningSet = 0;
           for (let i in match.scores) {
@@ -34,6 +45,8 @@ var LadderStats = React.createClass({
                 doubleWin:0,
                 doubleLoss:0,
                 douleWinRate:0,
+                setWin:0,
+                setLoss:0,
                 totalMatch:0,
                 totalWin:0,
                 totalLoss:0,
@@ -42,6 +55,7 @@ var LadderStats = React.createClass({
             }
             stats[match.players[i]].totalWin += (winningSet > 0 && !(i%2) || winningSet < 0 && (i%2)) ? 1 : 0;
             stats[match.players[i]].totalLoss += (winningSet > 0 && (i%2) || winningSet < 0 && !(i%2)) ? 1 : 0;
+            stats[match.players[i]].setWin -= (i%2) ? winningSet : -winningSet ;
             stats[match.players[i]].totalMatch ++;
             stats[match.players[i]].totalWinRate = Math.floor(stats[match.players[i]].totalWin / stats[match.players[i]].totalMatch * 100) +"%";
           }
@@ -52,28 +66,33 @@ var LadderStats = React.createClass({
       for (let i in stats) {
         let best = null;
         for (let j in stats) {
-          if (!stats[j].used && (!best || (stats[j].totalWin > stats[best].totalWin || (stats[j].totalWin == stats[best].totalWin && stats[j].totalMatch < stats[best].totalMatch)))) {
+          if (!stats[j].used &&
+              (!best ||
+                (stats[j].totalWin > stats[best].totalWin ||
+                (stats[j].totalWin == stats[best].totalWin &&
+                  (stats[j].totalMatch < stats[best].totalMatch ||
+                    (stats[j].totalMatch == stats[best].totalMatch && stats[j].setWin > stats[best].setWin)))))) {
             best = j;
           }
         }
         stats[best].used = true;
         result.push(
-          <tr>
+          <tr key={stats[best].id}>
             <td>{rank++}</td>
             <td>{window.Fbase.getDisplayName(stats[best].id)}</td>
             <td>{stats[best].totalWin}</td>
             <td>{stats[best].totalMatch}</td>
+            <td>{stats[best].setWin}</td>
             <td>{stats[best].totalWinRate}</td>
           </tr>
         );
       }
       return result;
     } else {
-      return "Calculating ...";
+      return (<tr><td></td><td><div>Calculating ... ({found} / {this.props.matchIds.length})</div></td></tr>);
     }
   },
   render () {
-    var stats = this.getStats();
     return (
       <div>
         <table className="wholerow rightalign">
@@ -83,9 +102,10 @@ var LadderStats = React.createClass({
               <th>Player</th>
               <th>Win</th>
               <th>Total</th>
+              <th>SetWin</th>
               <th>Win%</th>
             </tr>
-            {stats}
+            {this.getStats()}
           </tbody>
         </table>
       </div>

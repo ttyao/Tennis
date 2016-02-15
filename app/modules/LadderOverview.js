@@ -23,18 +23,27 @@ var LadderOverview = React.createClass({
     });
   },
   onLadderChange(value) {
-    this.setState({ladder: value});
+    this.setState({
+      ladder: value,
+      loadedMatches: {}
+    });
     var ref = window.Fbase.getRef("web/data/ladders/"+value+"/matches");
     var self = this;
     ref.once('value', function(snapshot) {
-      self.setState({matches:snapshot.val()});
+      self.setState({
+        matches:snapshot.val(),
+      });
     });
   },
   onMatchBriefLoad(matchId, match) {
-    var matches = this.state.loadedMatches;
-    if (!matches[matchId]) {
-      matches[matchId] = match;
-      this.setState({loadedMatches:matches});
+    if (this.state.matches[matchId]) {
+      var matches = this.state.loadedMatches;
+      if (!matches[matchId]) {
+        matches[matchId] = match;
+        this.setState({loadedMatches:matches});
+      }
+    } else {
+      this.setState({loadedMatches: {}});
     }
   },
   getMatchList() {
@@ -55,7 +64,7 @@ var LadderOverview = React.createClass({
             <td className="playersection">
               <span className="section">
                 <LadderSelect ladder={this.state.ladder} onChange={this.onLadderChange} />
-                <LadderStats matches={this.state.loadedMatches} />
+                <LadderStats matches={this.state.loadedMatches} matchIds={Object.keys(this.state.matches)} />
               </span>
 
             </td>

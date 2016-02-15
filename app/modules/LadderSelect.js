@@ -11,7 +11,7 @@ var LadderSelect = React.createClass({
     return { ladder: this.props.ladder || ""};
   },
   handleSelectChange (value, values) {
-    this.setState({ player: value });
+    this.setState({ ladder: value });
     this.props.onChange(value);
   },
 

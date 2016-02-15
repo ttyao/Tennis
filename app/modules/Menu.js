@@ -89,22 +89,7 @@ export default class Menu extends React.Component {
 
   onTestButtonClick() {
     // var ref = window.Fbase.mergeAccountA2B("guest:Eddie Lin","3acfe162-0f10-4cdf-8d7b-edf164d137a4");
-window.Fbase.addMatchToLadder("match:2016-02-13-18-27-57-288:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-13-19-32-46-987:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-15-18-26-998:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-16-16-08-177:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-18-54-48-633:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-18-59-56-006:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-22-29-28-345:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-22-30-39-543:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-14-22-31-42-104:f11884b5-cc46-4885-bed7-645bdd843182", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-08-00-932:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-08-31-588:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-08-45-869:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-09-00-556:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-09-23-890:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-09-50-101:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-window.Fbase.addMatchToLadder("match:2016-02-15-01-10-01-349:facebook:1145514842125553", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+window.Fbase.addMatchToLadder("match:2016-02-10-19-16-37-628:facebook:539060618", "ladder:2016-02-15-07-42-03-177:facebook:539060618")
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
@@ -148,8 +133,8 @@ window.Fbase.addMatchToLadder("match:2016-02-15-01-10-01-349:facebook:1145514842
   render() {
     console.log(this.props.params)
     const tab_maps = {
-      "recent" : 1,
-      "ladder" : 2,
+      "ladder" : 1,
+      "recent" : 2,
       "h2h" : 3,
       "create" : 4
     }
@@ -159,11 +144,11 @@ window.Fbase.addMatchToLadder("match:2016-02-15-01-10-01-349:facebook:1145514842
           <h2 className="titleText">Live Tennis Ladder</h2>
         </div>
         <Tabs tabActive={tab_maps[this.props.params.tab]} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
-          <Tabs.Panel title='Recent'>
-            <MatchList value={this.state.scores} />
-          </Tabs.Panel>
-          <Tabs.Panel title="Ladder">
+          <Tabs.Panel title='Ladder'>
             <LadderOverview ladder={this.props.params.ladder} />
+          </Tabs.Panel>
+          <Tabs.Panel title="Recent">
+            <MatchList value={this.state.scores} />
           </Tabs.Panel>
           <Tabs.Panel title="H2H">
             <Head2Head player0={this.props.params.player0} player1={this.props.params.player1} />

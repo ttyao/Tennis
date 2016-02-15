@@ -133,6 +133,7 @@ var MatchBrief = React.createClass({
       "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
       "system"
     );
+    this.shouldupdate = true;
   },
   completeMatch() {
     var match = this.state.match;
@@ -152,11 +153,13 @@ var MatchBrief = React.createClass({
       "system"
     );
     window.Fbase.updateMatchStatus(match);
+    this.shouldupdate = true;
   },
   editMatch() {
     var match = this.state.match;
     match.status = "active";
     window.Fbase.updateMatchStatus(match);
+    this.shouldupdate = true;
   },
   onNewCommentClick() {
     if (!window.Fbase.authUid) {
@@ -164,21 +167,25 @@ var MatchBrief = React.createClass({
       return;
     }
     this.setState({showNewCommentsBox: true});
+    this.shouldupdate = true;
   },
   onNewCommentsBoxCloseClick() {
     this.setState({showNewCommentsBox: false});
+    this.shouldupdate = true;
   },
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
     window.Fbase.updateVideoTitle(this.state.match, this.state.latestVideoId, this.refs["newVideoTitle"].value);
     this.setState({showNewCommentsBox: false});
+    this.shouldupdate = true;
   },
   onCommentInputChange(event) {
     if (event.key == 'Enter' && event.target.value) {
       window.Fbase.createComment(this.state.match, event.target.value, "text");
       this.refs["commentInput"].value = "";
     }
+    this.shouldupdate = true;
   },
   onUploadPics(files) {
     if (files && window.Fbase.authUid) {
@@ -252,14 +259,18 @@ var MatchBrief = React.createClass({
         });
       });
     }
+    this.shouldupdate = true;
   },
-
+  shouldComponentUpdate: function(nextProps, nextState) {
+    return !this.state.match && !!nextState.match || this.shouldupdate == true;
+  },
   render() {
     if (this.state.match) {
       var match = this.state.match;
       var matchId = match['.key'];
       if (this.props.onAfterLoad) {
-        this.setTimeout(function() { this.props.onAfterLoad(this.state.match['.key'], this.state.match);}, 0);
+        var self = this;
+        this.setTimeout(function() { self.props.onAfterLoad(matchId, match);}, 0);
       }
       if (this.props.visible && this.state.match.players) {
         var winSetNum = this.getWinSetNum();
@@ -281,7 +292,8 @@ var MatchBrief = React.createClass({
                     <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
-                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={window.Fbase.authUid && match.status == "active"} />
+                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
+                      editable={!!window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
                     <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
@@ -319,10 +331,9 @@ var MatchBrief = React.createClass({
                     match.status == "active" ?
                       <button onClick={this.completeMatch} >Complete</button> :
                       <button onClick={this.editMatch} >Edit</button> :
-                    match.status == "pending" ?
-                      "Coming soon..." :
-                      match.status == "active" && (match.scores[0].scores[0] + match.scores[0].scores[1] > 0) ? "Live Now!" : ""
+                    ""
                 }
+                {match.status}
               </div>
             </div>
           </div>

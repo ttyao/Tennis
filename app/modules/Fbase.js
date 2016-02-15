@@ -122,6 +122,12 @@ window.Fbase = {
 
     // There is no transaction support...
 
+    if (match.ladder) {
+      this.addMatchToLadder(matchId, match.ladder);
+    } else {
+      alert("You can only create a match belonging to certain ladder.")
+      return;
+    }
     match.players.forEach(function(player) {
       if (player) {
         let playerRef = this.getRef("web/data/users/"+player+"/matches/"+matchId);
