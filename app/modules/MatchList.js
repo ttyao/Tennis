@@ -11,7 +11,7 @@ var MatchList = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var ref = window.Fbase.getRef("web/data/matches").limitToLast(5);
+    var ref = window.Fbase.getRef("web/data/matches").limitToLast(15);
     this.bindAsArray(ref, "matches");
   },
   render() {

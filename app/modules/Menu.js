@@ -126,9 +126,6 @@ export default class Menu extends React.Component {
   ref.once('value', function() {
     console.log("got data", window.now());
   })
-    // console.log(window.Fbase.displayNames)
-    // console.log(window.Fbase.getUserId("Henry T Yao"));
-    // window.Fbase.addMatchToLadder("match:1454970406422:facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618");
   }
 
   render() {

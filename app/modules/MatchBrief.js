@@ -114,7 +114,7 @@ var MatchBrief = React.createClass({
     for (var i in this.state.match.scores) {
       if (this.state.match.scores[i].scores[0] > this.state.match.scores[i].scores[1]) {
         winningSet+=1;
-      } else {
+      } else if (this.state.match.scores[i].scores[0] < this.state.match.scores[i].scores[1]) {
         winningSet-=1;
       }
     }
@@ -198,8 +198,8 @@ var MatchBrief = React.createClass({
             alert("Video file can not be uploaded with other files together.")
             return;
           }
-          if (file.size > 10 * 1024 * 1024) {
-            alert("can not upload video file larger than 10MB");
+          if (file.size > 30 * 1024 * 1024) {
+            alert("can not upload video file larger than 30MB");
             return;
           }
         } else if(file.type.slice(0, 5) == 'image') {
