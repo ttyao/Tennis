@@ -281,7 +281,7 @@ var MatchBrief = React.createClass({
                     <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
-                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={match.creator==window.Fbase.authUid && match.status == "active"} />
+                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status} editable={window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
                     <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
@@ -328,11 +328,6 @@ var MatchBrief = React.createClass({
           </div>
         );
       }
-    }
-    if (this.props.visible) {
-      return (
-        <div>Loading match stats...</div>
-      );
     }
     return null;
   }

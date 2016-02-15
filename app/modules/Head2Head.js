@@ -9,7 +9,8 @@ var Head2Head = React.createClass({
     if (this.props.player0) {
       player0 = window.Fbase.getUserId(this.props.player0);
     }
-    return {player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : "", win1: 0, win2: 0};
+    return {
+      player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : "", win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
@@ -24,12 +25,10 @@ var Head2Head = React.createClass({
     if (!this.state.player1 || !this.state.player0) {
       return;
     }
+
     if (!players) {
       console.log("players not found "+matchId);
-      return;
-    }
-
-    if (this.state.player0 == players[0] || this.state.player0 == players[2]) {
+    } else if (this.state.player0 == players[0] || this.state.player0 == players[2]) {
       qualified = (this.state.player1 == players[1] || this.state.player1 == players[3]);
     } else if (this.state.player0 == players[1] || this.state.player0 == players[3]) {
       qualified = (this.state.player1 == players[0] || this.state.player1 == players[2]);
@@ -81,8 +80,12 @@ var Head2Head = React.createClass({
     window.Fbase.log("head2head 1st player changed to: " + value, "query");
     this.setState({player0: value});
     var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
+    // var self = this;
     this.unbind("matches");
     this.bindAsArray(ref, "matches");
+    // ref.once('value', function(snapshot) {
+    //   self.setState({matches:snapshot.val()});
+    // })
   },
   onPlayer1Change(value){
     window.Fbase.log("head2head 2nd player changed to: " + value, "query");
@@ -95,7 +98,27 @@ var Head2Head = React.createClass({
   render() {
     var matches = [];
     if (this.state.matches) {
+      // console.log("loading matches ",this.state.matches, window.now())
+      // var m = this.state.matches;
+      // for (var key in m) {
+      //   if (true || key == "match:1455075662000:facebook:539060618") {
+      //     var ref = window.Fbase.getRef("web/data/matches/"+key);
+      //     console.log("loading match ",key, window.now())
+      //     ref.once('value', function(data) {
+      //       console.log("got data", window.now())
+      //     });
+      //   }
+      //   // matches.push(<MatchBrief key={key} matchId={key} visible={this.state["qualified"+key]} onAfterLoad={this.onMatchBriefLoad} />)
+      // }
       matches = this.state.matches.map(function(match) {
+        // var ref = window.Fbase.getRef("web/data/matches/"+match['.key']);
+        // // this.bindAsObject(ref, "match");
+
+        // if (match['.key'] == "match:1455075662000:facebook:539060618") {
+        //   ref.once('value', function(data) {
+        //     console.log("got data", window.now())
+        //   });
+        // }
         return (
           <MatchBrief key={match['.key']} matchId={match['.key']} visible={this.state["qualified"+[match['.key']]]} onAfterLoad={this.onMatchBriefLoad} />
         );
