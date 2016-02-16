@@ -15,7 +15,7 @@ var CommentsBox = React.createClass({
     var comments = [];
     if (this.props.comments) {
       for (let key in this.props.comments) {
-        comments.push(<Comment key={key} comment={this.props.comments[key]} />);
+        comments.push(<Comment key={key} comment={this.props.comments[key]} status={this.props.status} />);
       };
     }
     return (
@@ -28,9 +28,8 @@ var CommentsBox = React.createClass({
     var maxHeight = 350;
     if (this.refs.scrollbars) {
       var node = ReactDOM.findDOMNode(this.refs.scrollbars);
-
       if (this.refs.scrollbars.getScrollHeight() < maxHeight) {
-        // console.log(node.style,node.style.height,this.refs.scrollbars.getScrollHeight() );
+        // console.log(node.style,node.style.height,this.refs.scrollbars.getScrollHeight());
         node.style.height = this.refs.scrollbars.getScrollHeight() + "px";
       } else {
         node.style.height = maxHeight + "px";
@@ -43,7 +42,7 @@ var CommentsBox = React.createClass({
       var node = ReactDOM.findDOMNode(this.refs.scrollbars);
       var maxHeight = 350;
       if (this.refs.scrollbars.getScrollHeight() < maxHeight) {
-        // console.log(node.style.height,this.refs.scrollbars.getScrollHeight() );
+        // console.log(node.style.height,this.refs.scrollbars.getScrollHeight());
         node.style.height = this.refs.scrollbars.getScrollHeight() + "px";
       } else {
         node.style.height = maxHeight + "px";
@@ -61,7 +60,7 @@ var CommentsBox = React.createClass({
     if (this.props.comments) {
       var cls = "commentsBoxBody";
       var comments = this.getComments();
-      return <Scrollbars ref="scrollbars" style={{ height: 50 }} className={cls}> {comments} </Scrollbars>;
+      return <Scrollbars ref="scrollbars" style={{ height: 0 }} className={cls}> {comments} </Scrollbars>;
     }
     return null;
   }

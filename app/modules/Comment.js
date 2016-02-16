@@ -57,21 +57,57 @@ var Comment = React.createClass({
             </a>
           </div>);
       case "video":
-        return (<a href={comment.URL}>📹{comment.title || "Play video"}📹</a>);
+        return (<a href={comment.URL}>{comment.title || "Play video"}</a>);
       case "system":
-        return (<div className="commenter">{comment.comment}</div>);
+        if (this.props.status == "active") {
+          return (<div className="commenter">{comment.comment}</div>);
+        } else {
+          return null;
+        }
       default:
         return comment.comment;
     }
     return null;
+  },
+  getCommentTitle() {
+    var comment = this.props.comment;
+    var type = comment.type || "comment";
+    var creator = window.Fbase.getDisplayName(this.props.comment.creator);
+    var time = <Timestamp time={this.props.comment.createdTime} />;
+    switch (comment.type) {
+      case "video":
+        return(
+          <div>
+            {creator} uploaded a video 📹: ({time})
+          </div>);
+      case "system":
+        if (this.props.status == "active") {
+          return (
+            <div>
+              {creator}: ({time})
+            </div>);
+        } else {
+          return null;
+        }
+      case "image":
+      case "pic":
+        return (
+          <div>
+            {creator} uploaded a picture: ({time})
+          </div>);
+      default:
+        return (
+          <div>
+            {creator} says: ({time})
+          </div>);
+    }
   },
   render() {
     if (this.props.comment && this.props.comment.createdTime && this.props.comment.creator) {
       return (
         <div className="commentBody">
           <div className="commenter">
-            {window.Fbase.getDisplayName(this.props.comment.creator)}: (
-            <Timestamp time={this.props.comment.createdTime} />)
+            {this.getCommentTitle()}
           </div>
           <Linkify>
             {this.getComment()}

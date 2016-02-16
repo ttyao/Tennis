@@ -111,11 +111,13 @@ var MatchBrief = React.createClass({
   },
   getWinSetNum() {
     var winningSet = 0;
-    for (var i in this.state.match.scores) {
-      if (this.state.match.scores[i].scores[0] > this.state.match.scores[i].scores[1]) {
-        winningSet+=1;
-      } else if (this.state.match.scores[i].scores[0] < this.state.match.scores[i].scores[1]) {
-        winningSet-=1;
+    if (this.state.match.status == "completed") {
+      for (var i in this.state.match.scores) {
+        if (this.state.match.scores[i].scores[0] > this.state.match.scores[i].scores[1]) {
+          winningSet+=1;
+        } else if (this.state.match.scores[i].scores[0] < this.state.match.scores[i].scores[1]) {
+          winningSet-=1;
+        }
       }
     }
     return winningSet;
@@ -264,6 +266,9 @@ var MatchBrief = React.createClass({
   shouldComponentUpdate: function(nextProps, nextState) {
     return !this.state.match && !!nextState.match || this.shouldupdate == true;
   },
+  canEditMatch() {
+    return match.creator == window.Fbase.authUid;
+  },
   render() {
     if (this.state.match) {
       var match = this.state.match;
@@ -272,12 +277,11 @@ var MatchBrief = React.createClass({
         var self = this;
         this.setTimeout(function() { self.props.onAfterLoad(matchId, match);}, 0);
       }
-      if (this.props.visible && this.state.match.players) {
+      if (this.props.visible && this.state.match.players && this.state.match.status != "canceled") {
         var winSetNum = this.getWinSetNum();
         var progressStyle = {
           // position: 'relative',
           float: "right",
-
         };
         return (
           <div className="matchBriefBody">
@@ -288,23 +292,23 @@ var MatchBrief = React.createClass({
               <table className="wholerow">
                 <tbody><tr>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={match.status == "active" ? 0 : winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
+                    <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
+                    <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
                   </td>
                   <td className="scoresection">
                     <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
                       editable={!!window.Fbase.authUid && match.status == "active"} />
                   </td>
                   <td className="playersection centerContainer">
-                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
-                    <PlayerName winSetNum={match.status == "active" ? 0 : -winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
+                    <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
+                    <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
                   </td>
                 </tr></tbody>
               </table>
             </div>
             <div>
               <Linkify>{this.state.match.message}</Linkify>
-              <CommentsBox status={match.status} comments={match.comments} />
+              <CommentsBox status={match.status} comments={match.comments} status={match.status} />
               <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
               <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
                 <img src="images/camera-icon.png" className="cameraIcon" />
@@ -327,7 +331,7 @@ var MatchBrief = React.createClass({
                   <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
                   <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
                 </Modal>
-                { match.creator == window.Fbase.authUid ?
+                { this.canEditMatch() ?
                     match.status == "active" ?
                       <button onClick={this.completeMatch} >Complete</button> :
                       <button onClick={this.editMatch} >Edit</button> :
