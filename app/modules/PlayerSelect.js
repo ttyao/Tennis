@@ -28,12 +28,15 @@ var PlayerSelect = React.createClass({
       return;
     }
     var userRef = window.Fbase.getRef("web/data/users");
-    userRef.limitToLast(500).startAt(input).once("value", function(snapshot) {
+    userRef.orderByChild("displayName_").once("value", function(snapshot) {
       var ops = [];
       var object = snapshot.val();
+
+      console.log(object)
       for (var key in object) {
         if (object[key]) {
           var item = {};
+          console.log(object[key].displayName)
           item.value = key;
           item.label = object[key].displayName;
           ops.push(item);

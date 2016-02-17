@@ -11,7 +11,13 @@ window.Fbase = {
     ref.once('value', function(snapshot) {
       var data = snapshot.val();
       for (let key in data) {
-        window.Fbase.displayNames[key] = data[key].displayName;
+        if (data[key].displayName) {
+          window.Fbase.displayNames[key] = data[key].displayName;
+          // if (!data[key].displayName_) {
+          //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
+          //   f.set(data[key].displayName.toLowerCase());
+          // }
+        }
       }
       if (callback) {
         callback();
@@ -85,7 +91,7 @@ window.Fbase = {
     ref.once('value', function(snapshot){
       var users = snapshot.val();
       for (let key in users) {
-        if (users[key].displayName && users[key].displayName.toLowerCase() == displayName.toLowerCase()) {
+        if (users[key].displayName && users[key].displayName_ == displayName.toLowerCase()) {
           callback.call(this, key);
           return;
         }
@@ -95,12 +101,14 @@ window.Fbase = {
   },
   createUser: function(displayName, onComplete, caller){
     if (this.authUid) {
-      this.onceUserName("guest:"+displayName, function(username) {
+      var lowcase = displayName.toLowerCase();
+      this.onceUserName("guest:"+lowcase, function(username) {
         if (!username) {
-          var ref = window.Fbase.getRef("web/data/users/guest:"+displayName);
+          var ref = window.Fbase.getRef("web/data/users/guest:"+lowcase);
           ref.set({
             creator: window.Fbase.getAuthUid(),
-            displayName: displayName
+            displayName: displayName,
+            displayName_: lowcase,
           }, function(error) {
             if(!error && onComplete) {
               onComplete.call(caller, error);
@@ -179,12 +187,16 @@ window.Fbase = {
     if (id.slice(0,8) == "visitor:") {
       id = "visitor/" + id.slice(8);
     }
-    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
-    logRef.set({
+    var log = {
       message: message,
       creator: id,
       type: type,
-    });
+    };
+    if (type == "visit") {
+      log.userAgent = navigator.userAgent;
+    }
+    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
+    logRef.set(log);
   },
   setSessionId: function () {
     function s4() {

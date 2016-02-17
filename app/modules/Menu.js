@@ -88,8 +88,12 @@ export default class Menu extends React.Component {
   }
 
   onTestButtonClick() {
+    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users");
+    ref.orderByChild("displayName").once("value", function(snapshot) {
+      console.log(snapshot.val());
+    });
     // var ref = window.Fbase.mergeAccountA2B("guest:Eddie Lin","3acfe162-0f10-4cdf-8d7b-edf164d137a4");
-window.Fbase.addMatchToLadder("match:2016-02-10-19-16-37-628:facebook:539060618", "ladder:2016-02-15-07-42-03-177:facebook:539060618")
+// window.Fbase.addMatchToLadder("match:2016-02-10-19-16-37-628:facebook:539060618", "ladder:2016-02-15-07-42-03-177:facebook:539060618")
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
@@ -139,8 +143,8 @@ window.Fbase.addMatchToLadder("match:2016-02-10-19-16-37-628:facebook:539060618"
       "create" : 4
     }
     return (
-      <div>
-        <div className="container page-header">
+      <div className="container">
+        <div className="page-header">
           <h2 className="titleText">Live Tennis Ladder</h2>
         </div>
         <Tabs tabActive={tab_maps[this.props.params.tab]} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>

@@ -135,7 +135,6 @@ var MatchBrief = React.createClass({
       "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
       "system"
     );
-    this.shouldupdate = true;
   },
   completeMatch() {
     var match = this.state.match;
@@ -147,7 +146,6 @@ var MatchBrief = React.createClass({
       } else {
         match.status = "canceled";
       }
-
     }
     window.Fbase.createComment(
       this.state.match,
@@ -155,13 +153,11 @@ var MatchBrief = React.createClass({
       "system"
     );
     window.Fbase.updateMatchStatus(match);
-    this.shouldupdate = true;
   },
   editMatch() {
     var match = this.state.match;
     match.status = "active";
     window.Fbase.updateMatchStatus(match);
-    this.shouldupdate = true;
   },
   onNewCommentClick() {
     if (!window.Fbase.authUid) {
@@ -169,25 +165,21 @@ var MatchBrief = React.createClass({
       return;
     }
     this.setState({showNewCommentsBox: true});
-    this.shouldupdate = true;
   },
   onNewCommentsBoxCloseClick() {
     this.setState({showNewCommentsBox: false});
-    this.shouldupdate = true;
   },
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
     window.Fbase.updateVideoTitle(this.state.match, this.state.latestVideoId, this.refs["newVideoTitle"].value);
     this.setState({showNewCommentsBox: false});
-    this.shouldupdate = true;
   },
   onCommentInputChange(event) {
     if (event.key == 'Enter' && event.target.value) {
       window.Fbase.createComment(this.state.match, event.target.value, "text");
       this.refs["commentInput"].value = "";
     }
-    this.shouldupdate = true;
   },
   onUploadPics(files) {
     if (files && window.Fbase.authUid) {
@@ -261,13 +253,41 @@ var MatchBrief = React.createClass({
         });
       });
     }
-    this.shouldupdate = true;
   },
   shouldComponentUpdate: function(nextProps, nextState) {
-    return !this.state.match && !!nextState.match || this.shouldupdate == true;
+
+    if (!nextState.match) {
+      return false;
+    }
+    if (!this.state.match && !!nextState.match) {
+      return true;
+    }
+    var oldMatch = this.state.match;
+    var newMatch = nextState.match;
+    if (oldMatch.scores && newMatch.scores) {
+      if (oldMatch.scores.length != newMatch.scores.length) {
+        return true;
+      }
+      if (oldMatch.scores[0].scores[0] != newMatch.scores[0].scores[0] ||
+          oldMatch.scores[0].scores[1] != newMatch.scores[0].scores[1] ||
+          oldMatch.scores[1].scores[0] != newMatch.scores[1].scores[0] ||
+          oldMatch.scores[1].scores[1] != newMatch.scores[1].scores[1] ||
+          oldMatch.scores[2].scores[0] != newMatch.scores[2].scores[0] ||
+          oldMatch.scores[2].scores[1] != newMatch.scores[2].scores[1]) {
+        return true;
+      }
+    }
+    if (oldMatch.status != newMatch.status) {
+      return true;
+    }
+    if (!oldMatch.comment && newMatch.comments ||
+        oldMatch.comments && newMatch.comments && Object.keys(oldMatch.comments).length != Object.keys(newMatch.comments).length) {
+      return true;
+    }
+    return false;
   },
   canEditMatch() {
-    return match.creator == window.Fbase.authUid;
+    return this.state.match.creator == window.Fbase.authUid;
   },
   render() {
     if (this.state.match) {
