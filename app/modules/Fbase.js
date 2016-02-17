@@ -209,6 +209,9 @@ window.Fbase = {
       type: type,
     };
     if (type == "visit") {
+      if (this.authUid == this.Henry) {
+        return;
+      }
       log.userAgent = navigator.userAgent;
       var ref = this.getRef('web/data/logs/visitlog/'+window.now()+"-"+id);
       ref.set(log);

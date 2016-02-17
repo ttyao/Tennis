@@ -151,12 +151,11 @@ var LadderOverview = React.createClass({
     this.setState({showCreateMatchModal: true});
   },
   render () {
-    console.log(this.state.players);
     return (
       <div>
         <div>
           {false && <span> Filter: {this.getFilter()}</span>}
-          {Object.keys(this.state.players).indexOf(window.Fbase.authUid) >=0 &&
+          {this.state.players && Object.keys(this.state.players).indexOf(window.Fbase.authUid) >=0 &&
             <div>
               <button className="floatright" onClick={this.createMatchClick}>Create Match</button>
               <button onClick={this.AddPlayerClick}>Roster</button>
@@ -181,7 +180,7 @@ var LadderOverview = React.createClass({
           onRequestClose={this.handleModalCloseRequest}
         >
           <div>Add new player:</div>
-          <Select multi value={Object.keys(this.state.players)} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
+          <Select multi value={this.state.players ? Object.keys(this.state.players) : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
           <button className='floatright' onClick={this.onAddPlayerSaveClick}>Save</button>
           <button className='floatright' onClick={this.onAddPlayerCancelClick}>Cancel</button>
         </Modal>

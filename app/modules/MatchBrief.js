@@ -255,36 +255,36 @@ var MatchBrief = React.createClass({
     }
   },
   shouldComponentUpdate: function(nextProps, nextState) {
-
     if (!nextState.match) {
       return false;
     }
     if (!this.state.match && !!nextState.match) {
       return true;
     }
-    var oldMatch = this.state.match;
-    var newMatch = nextState.match;
-    if (oldMatch.scores && newMatch.scores) {
-      if (oldMatch.scores.length != newMatch.scores.length) {
-        return true;
-      }
-      if (oldMatch.scores[0].scores[0] != newMatch.scores[0].scores[0] ||
-          oldMatch.scores[0].scores[1] != newMatch.scores[0].scores[1] ||
-          oldMatch.scores[1].scores[0] != newMatch.scores[1].scores[0] ||
-          oldMatch.scores[1].scores[1] != newMatch.scores[1].scores[1] ||
-          oldMatch.scores[2].scores[0] != newMatch.scores[2].scores[0] ||
-          oldMatch.scores[2].scores[1] != newMatch.scores[2].scores[1]) {
-        return true;
-      }
-    }
-    if (oldMatch.status != newMatch.status) {
-      return true;
-    }
-    if (!oldMatch.comment && newMatch.comments ||
-        oldMatch.comments && newMatch.comments && Object.keys(oldMatch.comments).length != Object.keys(newMatch.comments).length) {
-      return true;
-    }
-    return false;
+    return JSON.stringify(this.state.match) != JSON.stringify(nextState.match);
+    // var oldMatch = this.state.match;
+    // var newMatch = nextState.match;
+    // if (oldMatch.scores && newMatch.scores) {
+    //   if (oldMatch.scores.length != newMatch.scores.length) {
+    //     return true;
+    //   }
+    //   if (oldMatch.scores[0].scores[0] != newMatch.scores[0].scores[0] ||
+    //       oldMatch.scores[0].scores[1] != newMatch.scores[0].scores[1] ||
+    //       oldMatch.scores[1].scores[0] != newMatch.scores[1].scores[0] ||
+    //       oldMatch.scores[1].scores[1] != newMatch.scores[1].scores[1] ||
+    //       oldMatch.scores[2].scores[0] != newMatch.scores[2].scores[0] ||
+    //       oldMatch.scores[2].scores[1] != newMatch.scores[2].scores[1]) {
+    //     return true;
+    //   }
+    // }
+    // if (oldMatch.status != newMatch.status) {
+    //   return true;
+    // }
+    // if (!oldMatch.comment && newMatch.comments ||
+    //     oldMatch.comments && newMatch.comments && Object.keys(oldMatch.comments).length != Object.keys(newMatch.comments).length) {
+    //   return true;
+    // }
+    // return false;
   },
   canEditMatch() {
     return this.state.match.creator == window.Fbase.authUid;
