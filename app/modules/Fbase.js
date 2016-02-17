@@ -99,7 +99,19 @@ window.Fbase = {
       callback.call(this, null);
     });
   },
-  createUser: function(displayName, onComplete, caller){
+  updateLadderRoster: function(roster, ladder) {
+    var ref = this.getRef("web/data/ladders/"+ladder+"/users");
+    var players = {}
+    var users = roster ? roster.split(",") : [];
+    for (let i in users) {
+      players[users[i]] = users[i];
+    }
+    console.log(players)
+    console.log(users)
+    ref.set(players);
+    this.log("update ladder roster:"+ladder,"write", "updateRoster");
+  },
+  createUser: function(displayName, onComplete, caller) {
     if (this.authUid) {
       var lowcase = displayName.toLowerCase();
       this.onceUserName("guest:"+lowcase, function(username) {
@@ -138,7 +150,7 @@ window.Fbase = {
     }
     match.players.forEach(function(player) {
       if (player) {
-        let playerRef = this.getRef("web/data/users/"+player+"/matches/"+matchId);
+        let playerRef = this.getRef("web/data/users/"+player.toLowerCase()+"/matches/"+matchId);
         playerRef.set(m);
       }
     }, this);
@@ -147,7 +159,11 @@ window.Fbase = {
     m["updatedTime"] = createdTime;
     m["status"] = match.status;
     m["matchTime"] = window.now(match.matchMoment.unix()*1000);
-    m["players"] = match.players;
+    m["players"] = [];
+    m["players"][0] = match.players[0] ? match.players[0].toLowerCase() : null;
+    m["players"][1] = match.players[1] ? match.players[1].toLowerCase() : null;
+    m["players"][2] = match.players[2] ? match.players[2].toLowerCase() : null;
+    m["players"][3] = match.players[3] ? match.players[3].toLowerCase() : null;
 
     var matchRef = this.getRef('web/data/matches/'+matchId);
     matchRef.set(m, function(error) {
@@ -194,6 +210,8 @@ window.Fbase = {
     };
     if (type == "visit") {
       log.userAgent = navigator.userAgent;
+      var ref = this.getRef('web/data/logs/visitlog/'+window.now()+"-"+id);
+      ref.set(log);
     }
     var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
     logRef.set(log);
@@ -310,6 +328,7 @@ window.Fbase = {
     if (!this.authUid) {
       return;
     }
+    console.log(ladderId, matchId)
     var ref = this.getRef("web/data/ladders/"+ladderId+"/matches/"+matchId);
     ref.set({
       createdTime: window.now(),
@@ -327,5 +346,9 @@ window.Fbase = {
     }
     var ref = this.getRef("web/data/"+modal+"/"+path);
     ref.set(object)
+  },
+  updateLadderStats(ladderId, stats) {
+    var ref = this.getRef("web/data/ladders/"+ladderId+"/stats");
+    ref.set(stats);
   }
 };

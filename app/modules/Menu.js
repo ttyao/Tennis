@@ -3,7 +3,6 @@ import Firebase from 'firebase';
 import Tabs from './Tabs';
 import MatchRecorder from './MatchRecorder';
 import MatchList from './MatchList';
-import Modal from 'react-modal';
 import Head2Head from './Head2Head';
 import LadderOverview from './LadderOverview';
 var Dropzone = require('react-dropzone');
@@ -88,12 +87,11 @@ export default class Menu extends React.Component {
   }
 
   onTestButtonClick() {
-    var ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users");
-    ref.orderByChild("displayName").once("value", function(snapshot) {
-      console.log(snapshot.val());
-    });
+
     // var ref = window.Fbase.mergeAccountA2B("guest:Eddie Lin","3acfe162-0f10-4cdf-8d7b-edf164d137a4");
-// window.Fbase.addMatchToLadder("match:2016-02-10-19-16-37-628:facebook:539060618", "ladder:2016-02-15-07-42-03-177:facebook:539060618")
+    window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    window.Fbase.addUserToLadder("facebook:10207621109160243", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
@@ -158,17 +156,21 @@ export default class Menu extends React.Component {
             <Head2Head player0={this.props.params.player0} player1={this.props.params.player1} />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
-          <Tabs.Panel title='Create'>
-            <MatchRecorder />
-          </Tabs.Panel>
-          { (window.Fbase.authUid == window.Fbase.Henry || window.Fbase.authUid == "ac61cfeb-2bf2-4df9-bbba-ac3a4e4f9d34") &&
-            <Tabs.Panel title="Admin">
-              <Dropzone onDrop={this.onUpload} className="pictureUpload">
-                <div>Try</div>
-              </Dropzone>
-              <button onClick={this.onTestButtonClick}>Test</button>
-              <img src={this.state.file} className="player" />
-            </Tabs.Panel>
+          {window.Fbase.authUid == window.Fbase.Henry &&
+              <Tabs.Panel title='Create'>
+                <MatchRecorder />
+              </Tabs.Panel>
+            }
+          {window.Fbase.authUid == window.Fbase.Henry &&
+
+              <Tabs.Panel title="Admin">
+                <Dropzone onDrop={this.onUpload} className="pictureUpload">
+                  <div>Try</div>
+                </Dropzone>
+                <button onClick={this.onTestButtonClick}>Test</button>
+                <img src={this.state.file} className="player" />
+              </Tabs.Panel>
+
           }
         </Tabs>
       </div>

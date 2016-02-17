@@ -12,7 +12,7 @@ export default class MatchRecorder extends React.Component {
     super(props);
 
     this.state = {
-      players: [window.Fbase.authUid, null, null, null],
+      players: [null, null, null, null],
       scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
       message: "",
       matchMoment: moment(),
@@ -94,10 +94,10 @@ export default class MatchRecorder extends React.Component {
     var newState = this.state;
     var players = value.split(",");
     if (id == "player0") {
-      newState.players[0] = players[0];
+      newState.players[0] = players[0] || null;
       newState.players[2] = players[1] || null;
     } else {
-      newState.players[1] = players[0];
+      newState.players[1] = players[0] || null;
       newState.players[3] = players[1] || null;
     }
     this.setState(newState);
@@ -110,8 +110,8 @@ export default class MatchRecorder extends React.Component {
   render() {
     return (
       <div>
-        <LadderSelect value={this.state.ladder} onChange={this.onLadderChange} />
-        <PlayersSelect label="players" onChange={this.handlePlayerChange} />
+        {this.props.showLadder && <LadderSelect value={this.state.ladder} onChange={this.onLadderChange} />}
+        <PlayersSelect label="players" onChange={this.handlePlayerChange} ladder={this.props.ladder} />
         <div>Score:</div>
         <ScoreSelect id="0" onChange={this.handleScoreChange} />
         <ScoreSelect id="1" onChange={this.handleScoreChange} />

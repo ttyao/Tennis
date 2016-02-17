@@ -8,19 +8,20 @@ var LadderStats = React.createClass({
     matchIds: React.PropTypes.array,
   },
   getInitialState () {
-    return {};
+    return {stats: this.props.stats};
   },
   getStats() {
     var matches = this.props.matches;
     var matchKeys = Object.keys(matches);
+    var stats = this.props.stats;
     var found = 0;
     for (let i in matchKeys) {
       if (this.props.matchIds.indexOf(matchKeys[i]) >= 0) {
         found++;
       }
     }
-    if (found == this.props.matchIds.length) {
-      var stats = {};
+    if (found && found == this.props.matchIds.length) {
+      stats = {};
       for (let key in matches) {
         if (this.props.matchIds.indexOf(key) < 0) {
           continue;
@@ -61,12 +62,16 @@ var LadderStats = React.createClass({
           }
         }
       }
+      window.Fbase.updateLadderStats(this.props.ladder, stats);
+    }
+    if (stats) {
       var result = [];
+      var used = {};
       var rank=1;
       for (let i in stats) {
         let best = null;
         for (let j in stats) {
-          if (!stats[j].used &&
+          if (!used[j] &&
               (!best ||
                 (stats[j].totalWin > stats[best].totalWin ||
                 (stats[j].totalWin == stats[best].totalWin &&
@@ -75,7 +80,7 @@ var LadderStats = React.createClass({
             best = j;
           }
         }
-        stats[best].used = true;
+        used[best] = true;
         result.push(
           <tr key={stats[best].id}>
             <td>{rank++}</td>
@@ -89,7 +94,7 @@ var LadderStats = React.createClass({
       }
       return result;
     } else {
-      return (<tr><td></td><td><div>Calculating ... ({found} / {this.props.matchIds.length})</div></td></tr>);
+      return (<tr><td></td><td><div>Loading ... ({found} / {this.props.matchIds.length})</div></td></tr>);
     }
   },
   render () {
@@ -98,7 +103,7 @@ var LadderStats = React.createClass({
         <table className="wholerow rightalign">
           <tbody>
             <tr>
-              <th/>
+              <th>Rank</th>
               <th>Player</th>
               <th>Win</th>
               <th>Total</th>

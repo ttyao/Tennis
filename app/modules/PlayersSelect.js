@@ -9,7 +9,7 @@ var PlayersSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return { player0: window.Fbase.authUid, player1: ""};
+    return { player0: "", player1: ""};
   },
   handleSelectChange0 (value, values) {
     this.setState({ player0: value });
@@ -34,6 +34,9 @@ var PlayersSelect = React.createClass({
           var displayName = input.split(":")[1];
           if (input == inputs[inputs.length - 1]) {
             current = displayName;
+          }
+          if (window.Fbase.getDisplayName(input) != input) {
+            displayName = window.Fbase.getDisplayName(input);
           }
           ops.push({value : "guest:"+displayName, label : displayName});
         } else if (input.split(":")[0].split("-")[0] == input) { // unchanged displayname
