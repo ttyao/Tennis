@@ -88,10 +88,10 @@ export default class Menu extends React.Component {
 
   onTestButtonClick() {
 
-    // var ref = window.Fbase.mergeAccountA2B("guest:Eddie Lin","3acfe162-0f10-4cdf-8d7b-edf164d137a4");
-    window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-    window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-    window.Fbase.addUserToLadder("facebook:10207621109160243", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    // var ref = window.Fbase.mergeAccountA2B("guest:dong sun","facebook:10153378593488148");
+    // window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    // window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    // window.Fbase.addUserToLadder("facebook:10207621109160243", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);

@@ -126,7 +126,7 @@ window.Fbase = {
               onComplete.call(caller, error);
             }
           });
-          window.Fbase.log("create user: "+displayName, "write");
+          window.Fbase.log("create user: "+displayName, "write", "createUser");
         } else if (onComplete) {
           onComplete.call(caller);
         }
@@ -205,7 +205,7 @@ window.Fbase = {
     }
     var log = {
       message: message,
-      creator: id,
+      creator: this.authUid,
       type: type,
     };
     if (type == "visit") {

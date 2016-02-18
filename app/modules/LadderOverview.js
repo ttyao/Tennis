@@ -24,7 +24,7 @@ var LadderOverview = React.createClass({
       loadedMatches:{},
       showAddPlayerModal: false,
       showCreateMatchModal: false,
-      players: [],
+      players: "",
     };
   },
   componentWillMount() {
@@ -34,7 +34,7 @@ var LadderOverview = React.createClass({
       var ladder = snapshot.val();
       self.setState({
         matches: ladder.matches,
-        players: ladder.users,
+        players: ladder.users ? Object.keys(ladder.users).join(",") : "",
         stats: ladder.stats
       });
     });
@@ -51,7 +51,7 @@ var LadderOverview = React.createClass({
       var ladder = snapshot.val();
       self.setState({
         matches: ladder.matches,
-        players: ladder.users,
+        players: ladder.users ? Object.keys(ladder.users).join(",") : "",
         stats: ladder.stats
       });
     });
@@ -109,8 +109,10 @@ var LadderOverview = React.createClass({
   loadOptions(input, callback) {
     var userRef = window.Fbase.getRef("web/data/users");
     var ops = [];
-    for (let i in this.state.players) {
-      ops.push({value : this.state.players[i], label : window.Fbase.getDisplayName(this.state.players[i])});
+    var keys = this.state.players.split(",");
+
+    for (let i in keys) {
+      ops.push({value : keys[i], label : window.Fbase.getDisplayName(keys[i])});
     };
     // if (!input) {
     //   console.log(ops)
@@ -121,11 +123,12 @@ var LadderOverview = React.createClass({
       // input = input.split(",").slice(-1)[0].split(":")[0];
       var object = snapshot.val();
       for (var key in object) {
-        if (object[key] && object[key].displayName) {
+        if (object[key] && object[key].displayName && keys.indexOf(key) < 0) {
           var item = {};
           item.value = key;
           item.label = object[key].displayName;
           ops.push(item);
+          keys.push(key);
         }
       }
       callback(null, {options: ops, complete: false});
@@ -135,7 +138,7 @@ var LadderOverview = React.createClass({
     window.Fbase.updateLadderRoster(this.state.players, this.state.ladder);
     this.setState({
       showAddPlayerModal: false,
-      players: this.state.players.split(",")
+      players: this.state.players
     });
   },
   onAddPlayerCancelClick() {
@@ -155,7 +158,7 @@ var LadderOverview = React.createClass({
       <div>
         <div>
           {false && <span> Filter: {this.getFilter()}</span>}
-          {this.state.players && Object.keys(this.state.players).indexOf(window.Fbase.authUid) >=0 &&
+          {this.state.players && this.state.players.indexOf(window.Fbase.authUid) >=0 &&
             <div>
               <button className="floatright" onClick={this.createMatchClick}>Create Match</button>
               <button onClick={this.AddPlayerClick}>Roster</button>
@@ -180,7 +183,7 @@ var LadderOverview = React.createClass({
           onRequestClose={this.handleModalCloseRequest}
         >
           <div>Add new player:</div>
-          <Select multi value={this.state.players ? Object.keys(this.state.players) : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
+          <Select multi value={this.state.players ? this.state.players.split(",") : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
           <button className='floatright' onClick={this.onAddPlayerSaveClick}>Save</button>
           <button className='floatright' onClick={this.onAddPlayerCancelClick}>Cancel</button>
         </Modal>
