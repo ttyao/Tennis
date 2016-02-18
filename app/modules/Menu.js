@@ -32,62 +32,47 @@ export default class Menu extends React.Component {
     location.reload();
   }
 
-  onUpload(files){
-    var self = this;
+  loadPlayers(file) {
     var reader = new FileReader();
-    reader.onload = function() {
-      self.image = reader.result;
-      self.trigger({
-        image: self.image,
-        latitude: null,
-        longtitude: null
-      });
-    };
-    reader.readAsDataURL(files[0]);
-    try {
-        EXIF.getData(file, function() {
-          self.exif = this.exifdata;
-          self.trigger({
-            exif: self.exif
-          });
+    reader.onload = function(event) {
+      // console.log(this.result);
 
-          var gps = self.getGPSData(self.exif);
-          if (gps && gps.latitude != null && gps.longtitude != null) {
-            self.latitude = gps.latitude;
-            self.longtitude = gps.longtitude;
-            self.trigger({
-              latitude: self.latitude,
-              longtitude: self.longtitude
-            });
-          }
-        });
-    } catch (error) {
-        console.log('Error: ' + error.message);
-    }
-    return;
-
-    var bucket = new AWS.S3({params: {Bucket: 'baytennis/firebase'}});
-
-    var file = files[0];
-    if (file) {
-      console.log(bucket, files);
-      var results = document.getElementById('results');
-      var fileId = "pic:"+window.now()+":"+window.Fbase.authUid;
-      var params = {Key: fileId, ContentType: file.type, Body: file, ACL: "public-read"};
-      bucket.upload(params, function (err, data) {
-        if (!err) {
-          console.log(data)
-          window.Fbase.createPic(
-            {".key" : "match:1454970406422:facebook:539060618"},
-            data.Location
-          );
+      // By lines
+      var lines = this.result.split('\n');
+      for(var line = 0; line < 100000; line++){
+        var field = lines[line].split(";");
+        if (!field[1]) continue;
+        var player = {
+          norcal: field[0],
+          displayName: field[1],
+          displayName_: field[1].toLowerCase(),
+          usta: field[2],
+          expiration: field[3],
+          ntrp: parseFloat(field[4]) > 0 ? parseFloat(field[4]) : null,
+          residence: field[5],
+          gender: field[6][0]
+        };
+        if (line % 100 == 0) {
+          console.log(line);
         }
-      });
-    }
+        if (line > 100000) {
+          return;
+        }
+        if (line >= 99000 && player.ntrp) {
+           // console.log(lines[line])
+          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]+"-"+(field[1].indexOf(".") >=0 ? "" : field[1].replace(/ /g, "-")));
+          ref.set(player);
+        }
+      }
+    };
+    reader.readAsText(file);
+  }
+  onUpload(files){
+
   }
 
   onTestButtonClick() {
-
+    window.Fbase.createLadder("2015 Combo M8.5 D1-211")
     // var ref = window.Fbase.mergeAccountA2B("guest:dong sun","facebook:10153378593488148");
     // window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     // window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
@@ -133,6 +118,7 @@ export default class Menu extends React.Component {
   }
 
   render() {
+    window.Fbase.authUid = window.Fbase.Henry
     console.log(this.props.params)
     const tab_maps = {
       "ladder" : 1,

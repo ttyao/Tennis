@@ -6,19 +6,20 @@ window.Fbase = {
   isHenry: function() {
     return this.Henry == this.authUid;
   },
-  refreshDisplayNames: function(callback) {
-    var ref = this.getRef("web/data/users");
+  refreshDisplayNames: function(uid, callback) {
+    if (!uid) return;
+    this.displayNames[uid] = "loading";
+    var ref = this.getRef("web/data/users/"+uid);
     ref.once('value', function(snapshot) {
       var data = snapshot.val();
-      for (let key in data) {
-        if (data[key].displayName) {
-          window.Fbase.displayNames[key] = data[key].displayName;
-          // if (!data[key].displayName_) {
-          //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
-          //   f.set(data[key].displayName.toLowerCase());
-          // }
-        }
+      if (data.displayName) {
+        window.Fbase.displayNames[uid] = data.displayName;
+        // if (!data[key].displayName_) {
+        //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
+        //   f.set(data[key].displayName.toLowerCase());
+        // }
       }
+
       if (callback) {
         callback();
       }
@@ -27,22 +28,25 @@ window.Fbase = {
   init: function(callback) {
     this.authUid = this.getAuthUid();
     this.displayNames = {};
-    this.refreshDisplayNames(function() {
-      window.Fbase.log("init", "visit");
-      if (callback) {
-        callback();
-      }
-    });
+    this.refreshDisplayNames(this.Henry)
+    window.Fbase.log("init", "visit");
+    if (callback) {
+      callback();
+    }
   },
   getAuthName: function() {
     return this.getDisplayName(this.authUid);
   },
   getDisplayName: function(uid) {
+    if (!uid) {
+      return null;
+    }
     if (this.displayNames[uid]) {
       return this.displayNames[uid];
     }
-    this.refreshDisplayNames();
-    return uid;
+    // console.log("not found ", uid);
+    this.refreshDisplayNames(uid);
+    return "loading";
   },
   getUserId: function(displayName) {
     for (var key in this.displayNames) {
@@ -196,28 +200,38 @@ window.Fbase = {
     this.log("update match status to "+match.status+" -- "+matchId, "write", "updateMatchStatus");
   },
   log: function(message, type, subtype) {
-    var id = this.getDisplayName(this.authUid);
-    if (!id) {
-      id = this.sessionId;
-    }
-    if (id.slice(0,8) == "visitor:") {
-      id = "visitor/" + id.slice(8);
-    }
-    var log = {
-      message: message,
-      creator: this.authUid,
-      type: type,
-    };
-    if (type == "visit") {
-      if (this.authUid == this.Henry) {
+    try {
+      var id = this.getDisplayName(this.authUid);
+      if (!id) {
+        this.setSessionId();
+        id = this.sessionId;
+      }
+      if (id.slice(0,8) == "visitor:") {
+        id = "visitor/" + id.slice(8);
+      }
+
+      if (id.indexOf(".") >=0) {
+        this.log("id error:"+id, "error", "id");
         return;
       }
-      log.userAgent = navigator.userAgent;
-      var ref = this.getRef('web/data/logs/visitlog/'+window.now()+"-"+id);
-      ref.set(log);
+      var log = {
+        message: message,
+        creator: this.authUid,
+        type: type,
+      };
+      if (type == "visit") {
+        if (this.authUid == this.Henry) {
+          return;
+        }
+        log.userAgent = navigator.userAgent;
+        var ref = this.getRef('web/data/logs/visitlog/'+window.now()+"-"+id);
+        ref.set(log);
+      }
+      var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
+      logRef.set(log);
+    } catch (err) {
+      console.log(err)
     }
-    var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
-    logRef.set(log);
   },
   setSessionId: function () {
     function s4() {

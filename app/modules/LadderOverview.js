@@ -33,7 +33,7 @@ var LadderOverview = React.createClass({
     ref.once('value', function(snapshot) {
       var ladder = snapshot.val();
       self.setState({
-        matches: ladder.matches,
+        matches: ladder.matches || {},
         players: ladder.users ? Object.keys(ladder.users).join(",") : "",
         stats: ladder.stats
       });
@@ -50,7 +50,7 @@ var LadderOverview = React.createClass({
     ref.once('value', function(snapshot) {
       var ladder = snapshot.val();
       self.setState({
-        matches: ladder.matches,
+        matches: ladder.matches || {},
         players: ladder.users ? Object.keys(ladder.users).join(",") : "",
         stats: ladder.stats
       });
@@ -119,7 +119,12 @@ var LadderOverview = React.createClass({
     //   callback(null, {options:ops, complete: false});
     //   return;
     // }
-    userRef.orderByChild("displayName_").once("value", function(snapshot) {
+    console.log(input)
+    if (typeof(input) != "string") {
+      callback(null, {options:ops, complete: false});
+      return;
+    }
+    userRef.orderByChild("displayName_").startAt(input).limitToFirst(20).once("value", function(snapshot) {
       // input = input.split(",").slice(-1)[0].split(":")[0];
       var object = snapshot.val();
       for (var key in object) {
