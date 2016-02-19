@@ -4,26 +4,26 @@ import Select from 'react-select';
 var LadderStats = React.createClass({
   displayName: 'LadderStats',
   propTypes: {
-    matches: React.PropTypes.object,
-    matchIds: React.PropTypes.array,
+    ladder: React.PropTypes.object,
+    loadedMatches: React.PropTypes.object,
   },
   getInitialState () {
-    return {stats: this.props.stats};
+    return {stats: this.props.ladder.stats};
   },
   getStats() {
-    var matches = this.props.matches;
-    var matchKeys = Object.keys(matches);
-    var stats = this.props.stats;
+    var matches = this.props.loadedMatches;
+    var matchKeys = matches ? Object.keys(matches) : [];
+    var stats = this.props.ladder.stats;
     var found = 0;
     for (let i in matchKeys) {
-      if (this.props.matchIds.indexOf(matchKeys[i]) >= 0) {
+      if (Object.keys(this.props.ladder.matches).indexOf(matchKeys[i]) >= 0) {
         found++;
       }
     }
-    if (found && found == this.props.matchIds.length) {
+    if (found && found == Object.keys(this.props.ladder.matches).length) {
       stats = {};
       for (let key in matches) {
-        if (this.props.matchIds.indexOf(key) < 0) {
+        if (Object.keys(this.props.ladder.matches).indexOf(key) < 0) {
           continue;
         }
         let match = matches[key];
@@ -62,7 +62,7 @@ var LadderStats = React.createClass({
           }
         }
       }
-      window.Fbase.updateLadderStats(this.props.ladder, stats);
+      window.Fbase.updateLadderStats(this.props.ladder.id, stats);
     }
     if (stats) {
       var result = [];
@@ -94,11 +94,11 @@ var LadderStats = React.createClass({
       }
       return result;
     } else {
-      return (<tr><td></td><td><div>Loading ... ({found} / {this.props.matchIds.length})</div></td></tr>);
+      return (<tr><td></td><td><div>Loading ... ({found} / {Object.keys(this.props.ladder.matches).length})</div></td></tr>);
     }
   },
   render () {
-    if (this.props.type == "usta combo") {
+    if (this.props.ladder.type == "usta combo") {
       return null; //todo
     }
     return (

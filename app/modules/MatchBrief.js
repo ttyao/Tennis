@@ -130,11 +130,20 @@ var MatchBrief = React.createClass({
       match.status = "active";
       window.Fbase.updateMatchStatus(match);
     }
-    window.Fbase.createComment(
-      this.state.match,
-      "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
-      "system"
-    );
+    if (this.state.match.teamMatchId) {
+      window.Fbase.createComment(
+        this.state.match.teamMatchId,
+        "Updated line "+this.props.line+": set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
+        "system",
+        true
+      );
+    } else {
+      window.Fbase.createComment(
+        this.state.match[".key"],
+        "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
+        "system"
+      );
+    }
   },
   completeMatch() {
     var match = this.state.match;
@@ -147,8 +156,16 @@ var MatchBrief = React.createClass({
         match.status = "canceled";
       }
     }
+    if (match.teamMatchId) {
+      window.Fbase.createComment(
+        this.teamMatchId,
+        "Marked line "+this.props.line+" as " + match.status + ".",
+        "system",
+        true
+      );
+    }
     window.Fbase.createComment(
-      this.state.match,
+      this.state.match[".key"],
       "Marked this match as " + match.status + ".",
       "system"
     );
@@ -172,12 +189,12 @@ var MatchBrief = React.createClass({
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
-    window.Fbase.updateVideoTitle(this.state.match, this.state.latestVideoId, this.refs["newVideoTitle"].value);
+    window.Fbase.updateVideoTitle(this.state.match[".key"], this.state.latestVideoId, this.refs["newVideoTitle"].value);
     this.setState({showNewCommentsBox: false});
   },
   onCommentInputChange(event) {
     if (event.key == 'Enter' && event.target.value) {
-      window.Fbase.createComment(this.state.match, event.target.value, "text");
+      window.Fbase.createComment(this.state.match[".key"], event.target.value, "text");
       this.refs["commentInput"].value = "";
     }
   },
@@ -292,6 +309,51 @@ var MatchBrief = React.createClass({
   canEditMatch() {
     return this.state.match.creator == window.Fbase.authUid;
   },
+  getFooter() {
+    var match = this.state.match;
+    if (match.teamMatchId) {
+      if (this.canEditMatch()) {
+        if (match.status == "active") {
+          return (<button onClick={this.completeMatch} >Complete</button>);
+        } else {
+          return (<button onClick={this.editMatch} >Edit</button>);
+        }
+      }
+    } else {
+      var progressStyle = {
+        // position: 'relative',
+        float: "right",
+      };
+      return (
+        <div>
+          <Timestamp time={match.matchTime} className="floatleft" />
+          <div style={progressStyle} >
+            <Progress radius="8" strokeWidth="3" percentage={this.state.uploadPercentage}/>
+          </div>
+          <div className='floatright'>
+            <Modal
+              className="Modal__Bootstrap modal-dialog"
+              closeTimeoutMS={150}
+              isOpen={this.state.showNewCommentsBox}
+              onRequestClose={this.handleModalCloseRequest}
+            >
+              <div>Video Title:</div>
+              <input ref="newVideoTitle" />
+              <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
+              <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+            </Modal>
+            { this.canEditMatch() ?
+                match.status == "active" ?
+                  <button onClick={this.completeMatch} >Complete</button> :
+                  <button onClick={this.editMatch} >Edit</button> :
+                ""
+            }
+            {match.status}
+          </div>
+        </div>
+      );
+    }
+  },
   render() {
     if (this.state.match) {
       var match = this.state.match;
@@ -303,10 +365,7 @@ var MatchBrief = React.createClass({
       }
       if (this.props.visible && this.state.match.players && this.state.match.status != "canceled") {
         var winSetNum = this.getWinSetNum();
-        var progressStyle = {
-          // position: 'relative',
-          float: "right",
-        };
+
         return (
           <div className="matchBriefBody">
             { window.Fbase.isDebug() &&
@@ -330,40 +389,17 @@ var MatchBrief = React.createClass({
                 </tr></tbody>
               </table>
             </div>
-            <div>
-              <Linkify>{this.state.match.message}</Linkify>
-              <CommentsBox status={match.status} comments={match.comments} status={match.status} />
-              <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
-              <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
-                <img src="images/camera-icon.png" className="cameraIcon" />
-              </Dropzone>
-            </div>
-            <div>
-              <Timestamp time={match.matchTime} className="floatleft" />
-              <div style={progressStyle} >
-                <Progress radius="8" strokeWidth="3" percentage={this.state.uploadPercentage}/>
+            {!this.state.match.teamMatchId &&
+              <div>
+                <Linkify>{this.state.match.message}</Linkify>
+                <CommentsBox status={match.status} comments={match.comments} status={match.status} />
+                <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
+                <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
+                  <img src="images/camera-icon.png" className="cameraIcon" />
+                </Dropzone>
               </div>
-              <div className='floatright'>
-                <Modal
-                  className="Modal__Bootstrap modal-dialog"
-                  closeTimeoutMS={150}
-                  isOpen={this.state.showNewCommentsBox}
-                  onRequestClose={this.handleModalCloseRequest}
-                >
-                  <div>Video Title:</div>
-                  <input ref="newVideoTitle" />
-                  <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
-                  <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
-                </Modal>
-                { this.canEditMatch() ?
-                    match.status == "active" ?
-                      <button onClick={this.completeMatch} >Complete</button> :
-                      <button onClick={this.editMatch} >Edit</button> :
-                    ""
-                }
-                {match.status}
-              </div>
-            </div>
+            }
+            {this.getFooter()}
           </div>
         );
       }

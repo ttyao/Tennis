@@ -10,7 +10,7 @@ var Head2Head = React.createClass({
       player0 = window.Fbase.getUserId(this.props.player0);
     }
     return {
-      player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : "", win1: 0, win2: 0};
+      player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : undefined, win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {

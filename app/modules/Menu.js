@@ -12,6 +12,7 @@ export default class Menu extends React.Component {
     super(props);
     this.state = {authData: null};
     this.onUpload = this.onUpload.bind(this);
+    this.onTestButtonClick = this.onTestButtonClick.bind(this);
   }
 
   authDataCallback(authData) {
@@ -58,7 +59,7 @@ export default class Menu extends React.Component {
         }
         if (player.ntrp) {
            // console.log(lines[line])
-          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]+"-"+(field[1].indexOf(".") >=0 ? "" : field[1].replace(/ /g, "-").toLowerCase()));
+          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]);
           ref.set(player);
         }
       }
@@ -69,12 +70,70 @@ export default class Menu extends React.Component {
     this.loadPlayers(files[0])
   }
 
+  copy(norcal) {
+    // if (norcal == 10) return;
+    if (norcal % 100 == 0) {
+      console.log(norcal)
+    }
+    var self = this;
+    var ref = window.Fbase.getRef("web/data/users");
+    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
+      var oldUser = snapshot.val();
+      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
+        self.copy(norcal+1)
+      } else {
+        var nref = window.Fbase.getRef("web/data/users/norcal:"+norcal);
+        nref.set(oldUser[Object.keys(oldUser)[0]], function() {
+          self.delete(norcal);
+        })
+      }
+    });
+  }
+  delete(norcal) {
+    var ref = window.Fbase.getRef("web/data/users");
+    var self = this;
+    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
+      var oldUser = snapshot.val();
+      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
+        console.log("not found ", norcal)
+        return;
+      } else {
+        var r = window.Fbase.getRef("web/data/users/"+Object.keys(oldUser)[0]);
+        r.remove(function() {
+          self.copy(norcal+1)
+        })
+      }
+    });
+  }
   onTestButtonClick() {
+    this.copy(27200);
+    this.copy(37200);
+    this.copy(47200);
+    this.copy(57200);
+    this.copy(67200);
+    this.copy(77200);
+    this.copy(87200);
+    this.copy(97200);
+    this.copy(107200);
+    this.copy(117200);
+    this.copy(127200);
+    this.copy(137200);
+    this.copy(147200);
+    this.copy(157200);
+    this.copy(167200);
+    this.copy(177200);
+    this.copy(187200);
+    this.copy(197200);
+    this.copy(207200);
+    this.copy(217200);
     // window.Fbase.createObject("teams", )
     // var ref = window.Fbase.mergeAccountA2B("guest:dong sun","facebook:10153378593488148");
     // window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     // window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     // window.Fbase.addUserToLadder("facebook:10207621109160243", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
+    // var fromId = this.refs.fromId.value;
+    // var toId = this.refs.toId.value;
+    // window.Fbase.mergeNorcalAccount(fromId, toId)
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
@@ -116,8 +175,6 @@ export default class Menu extends React.Component {
   }
 
   render() {
-    window.Fbase.authUid = window.Fbase.Henry
-    console.log(this.props.params)
     const tab_maps = {
       "ladder" : 1,
       "recent" : 2,
@@ -153,6 +210,9 @@ export default class Menu extends React.Component {
                 </Dropzone>
                 <button onClick={this.onTestButtonClick}>Test</button>
                 <img src={this.state.file} className="player" />
+                <div>from ID:<input ref="fromId"/></div>
+                <div>to ID:<input ref="toId"/></div>
+
               </Tabs.Panel>
 
           }

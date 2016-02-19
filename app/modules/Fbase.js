@@ -17,15 +17,17 @@ window.Fbase = {
     var ref = this.getRef("web/data/users/"+uid);
     ref.once('value', function(snapshot) {
       var data = snapshot.val();
-      if (data.displayName) {
-        window.Fbase.displayNames[uid] = data.displayName;
-        // if (!data[key].displayName_) {
-        //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
-        //   f.set(data[key].displayName.toLowerCase());
-        // }
-      }
-      if (callback) {
-        callback(data.displayName || null);
+      if (data) {
+        if (data.displayName) {
+          window.Fbase.displayNames[uid] = data.displayName;
+          // if (!data[key].displayName_) {
+          //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
+          //   f.set(data[key].displayName.toLowerCase());
+          // }
+        }
+        if (callback) {
+          callback(data.displayName || null);
+        }
       }
     });
   },
@@ -159,8 +161,8 @@ window.Fbase = {
 
     // There is no transaction support...
 
-    if (match.ladder) {
-      this.addMatchToLadder(matchId, match.ladder);
+    if (match.ladder && match.ladder.id) {
+      this.addMatchToLadder(matchId, match.ladder.id);
     } else {
       alert("You can only create a match belonging to certain ladder.")
       return;
@@ -181,7 +183,7 @@ window.Fbase = {
     m["updatedTime"] = createdTime;
     m["status"] = match.status;
     m["matchTime"] = window.now(match.matchMoment.unix()*1000);
-    m["ladderId"] = match.ladder;
+    m["ladderId"] = match.ladder.id;
 
     m["players"] = [];
     m["players"][0] = match.players[0] ? match.players[0].toLowerCase() : null;
@@ -267,45 +269,72 @@ window.Fbase = {
     this.sessionId = "visitor:" + window.now() + ":" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
   },
-  mergeAccountA2B: function(fromId, toId) {
-    // change player ids in all matches.
-    var ref = window.Fbase.getRef("web/data/matches");
-    ref.once('value', function(snapshot){
-      var matches = snapshot.val();
-      for (let key in matches) {
-        var players = matches[key].players;
-        for (let i = 0; i < 4; i++) {
-          if (players[i] == fromId) {
-            var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
-            n.set(toId);
-            break;
-          }
-        }
-        // if (changed) {
-        //   console.log(key+"/players")
-        //   , function(e) {
-        //     console.log(e)
-        //   });
-        // }
+  mergeNorcalAccount: function(norcal, toId) {
+    var ref = this.getRef("web/data/users/norcal:"+norcal+":");
+    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
+      var oldUser = snapshot.val();
+      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
+        alert("not found");
+        return;
       }
-    });
-    var ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
-    ref.once('value', function(snapshot) {
-      var oldMatches = snapshot.val();
-      if (oldMatches) {
-        var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
-        newRef.once('value', function(s) {
-          var newMatches = s.val() || {};
-          for (let key in oldMatches) {
-            newMatches[key] = oldMatches[key];
-          }
-          newRef.set(newMatches);
-        })
-      }
+      console.log(oldUser)
+      window.Fbase.mergeAccountA2B(Object.keys(oldUser)[0], toId);
     });
   },
-  createPic: function(matchId, picId, picUrl, type) {
-    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
+  mergeAccountA2B: function(fromId, toId) {
+    console.log(fromId)
+    var ref = this.getRef("web/data/users/"+fromId);
+    ref.once('value', function(old) {
+      var oldUser = old.val();
+      if (!oldUser) {
+        alert("from id not found");
+        return;
+      }
+      var oldRef = window.Fbase.getRef("web/data/users/"+fromId+"/status");
+      oldRef.set("merged to "+toId);
+      window.Fbase.log("merge "+ fromId + " to "+ toId, "write", "mergeAccount");
+      var newref = window.Fbase.getRef("web/data/users/"+toId);
+      for (let key in oldUser) {
+        if (key != "matches" && key != "ladders" && key != "teams" && key != "status" &&
+           (typeof(oldUser[key]) == 'number' || typeof(oldUser[key]) == 'string')) {
+          newref.child(key).set(oldUser[key]);
+        }
+      }
+      var ref = window.Fbase.getRef("web/data/matches");
+      ref.once('value', function(snapshot){
+        var matches = snapshot.val();
+        for (let key in matches) {
+          var players = matches[key].players;
+          for (let i = 0; i < 4; i++) {
+            if (players[i] == fromId) {
+              var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
+              n.set(toId);
+              break;
+            }
+          }
+        }
+      });
+      ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
+      ref.once('value', function(snapshot) {
+        var oldMatches = snapshot.val();
+        if (oldMatches) {
+          var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
+          newRef.once('value', function(s) {
+            var newMatches = s.val() || {};
+            for (let key in oldMatches) {
+              newMatches[key] = oldMatches[key];
+            }
+            newRef.set(newMatches);
+          })
+        }
+      });
+    })
+    return;
+    // change player ids in all matches.
+
+  },
+  createPic: function(matchId, picId, picUrl, type, isTeamMatch) {
+    var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
     baseRef.child("URL").set(picUrl);
     if (type == "video") {
       baseRef.child("type").set(type);
@@ -314,8 +343,8 @@ window.Fbase = {
     }
     this.log("create picture", "write", "createPic");
   },
-  createPicThumb:function(matchId, picId, exif, thumbUrl, type) {
-    var baseRef = this.getRef("web/data/matches/" + matchId + '/comments/' + picId);
+  createPicThumb:function(matchId, picId, exif, thumbUrl, type, isTeamMatch) {
+    var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
 
     baseRef.child("thumbURL").set(thumbUrl);
     baseRef.child("type").set(type);
@@ -324,17 +353,22 @@ window.Fbase = {
     baseRef.child("exif").set(exif);
     this.log("create thumb", "write", "createThumb");
   },
-  updateVideoTitle:function(match, commentId, videoTitle) {
-    var key = "web/data/matches/" + match['.key'] + '/comments/' + commentId + "/title";
-    console.log(match, commentId, videoTitle, key);
+  updateVideoTitle:function(matchId, commentId, videoTitle, isTeamMatch) {
+    var key = "web/data/matches/" + matchId + '/comments/' + commentId + "/title";
+    if (isTeamMatch) {
+      key = "web/data/teammatches/" + matchId + '/comments/' + commentId + "/title";
+    }
     var ref = this.getRef(key);
     ref.set(videoTitle);
     this.log(key, "write", "createVideoTitle");
   },
-  createComment: function(match, comment, type) {
+  createComment: function(matchId, comment, type, isTeamMatch) {
     var commentId = "comment:"+window.now()+":"+this.authUid;
-    var ref = this.getRef("web/data/matches/" + match['.key'] + '/comments/' + commentId);
-
+    var key = "web/data/matches/" + matchId + '/comments/' + commentId;
+    if (isTeamMatch) {
+      key = "web/data/teammatches/" + matchId + '/comments/' + commentId
+    }
+    var ref = this.getRef(key);
     ref.set({
       comment: comment,
       creator: this.authUid,

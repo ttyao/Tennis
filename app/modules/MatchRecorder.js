@@ -52,6 +52,9 @@ export default class MatchRecorder extends React.Component {
       }
     } else {
       window.Fbase.createMatch(this.state);
+      if (this.props.onMatchCreated) {
+        this.props.onMatchCreated();
+      }
     }
   }
   handleMatchSubmit() {

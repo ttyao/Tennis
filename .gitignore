@@ -1,6 +1,7 @@
 .DS_Store
 build/bundle.js
 app/modules/aws.js
+app/data
 node_modules
 firebase.json
 public

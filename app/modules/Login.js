@@ -115,7 +115,10 @@ var Login = React.createClass({
   handleModalCloseRequest() {
     this.setState({unauthed:false});
   },
-
+  fblogin() {
+    // <button type="button" className="btn btn-primary loginButton fbLogin" onClick={this.handleFacebookLoginClicked}>.</button>
+    return null;
+  },
   render: function() {
     return (
       <div>
@@ -152,13 +155,10 @@ var Login = React.createClass({
             <div className="modal-footer centerContainer">
               <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
               <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
-              <button type="button" className="btn btn-primary loginButton fbLogin" onClick={this.handleFacebookLoginClicked}>.</button>
+              {this.fblogin()}
             </div>
             <div className="centerContainer">
-              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>先不注册, 随便看看</button>
-            </div>
-            <div>
-              目前Facebook Login有点小问题, 如果点击一次没成功的话, 请多试两次就会成功.
+              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visitor</button>
             </div>
           </div>
         </Modal>

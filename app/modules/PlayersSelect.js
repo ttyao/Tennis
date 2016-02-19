@@ -7,9 +7,10 @@ var PlayersSelect = React.createClass({
     label: React.PropTypes.string,
     value: React.PropTypes.array,
     onChange: React.PropTypes.func,
+    ladder: React.PropTypes.object,
   },
   getInitialState () {
-    return { player0: "", player1: ""};
+    return { player0: "", player1: "", player2: "", player3: ""};
   },
   handleSelectChange0 (value, values) {
     this.setState({ player0: value });
@@ -23,10 +24,6 @@ var PlayersSelect = React.createClass({
       this.props.onChange("player1", value, this.props.line);
     }
   },
-  toggleDisabled (e) {
-    this.setState({ 'disabled': e.target.checked });
-  },
-
   loadOptions(input, callback) {
     var userRef = window.Fbase.getRef("web/data/users");
     if (!input) {
@@ -37,6 +34,7 @@ var PlayersSelect = React.createClass({
       var inputs = input.split(",");
       var ops = [];
       var current = inputs.length ? inputs[inputs.length-1] : "";
+      console.log(input)
       inputs.forEach(function(input) {
         if (input.slice(0, 6) == "guest:") {
           var displayName = input.split(":")[1];
@@ -57,7 +55,7 @@ var PlayersSelect = React.createClass({
       input = input.split(",").slice(-1)[0].split(":")[0];
       var object = snapshot.val();
       for (var key in object) {
-        if (object[key] && object[key].displayName) {
+        if (object[key] && object[key].displayName && !object[key].status) {
           if (current.toLowerCase() == object[key].displayName.toLowerCase()) {
             ops[inputs.length - 1].value = key;
             ops[inputs.length - 1].label = object[key].displayName;
@@ -73,11 +71,54 @@ var PlayersSelect = React.createClass({
       callback(null, {options: ops, complete: false});
     }, function() {}, this);
   },
-
-  render () {
-    return (
-      <table className="wholerow">
-        <tbody><tr>
+  getOptions(type, id) {
+    var result = [<option key="none" label="select player ..." value="none"/>]
+    if (type == "normal") {
+      for (let i in this.props.ladder.users) {
+        result.push(<option key={i} label={window.Fbase.getDisplayName(i)} value={i}/>);
+      }
+    }
+    return result;
+  },
+  onSelectChange0 (event) {
+    console.log(event.target)
+    this.setState({ player0: event.target.value });
+    if (this.props.onChange) {
+      this.props.onChange("player0", event.target.value, this.props.line);
+    }
+  },
+  onSelectChange1 (event) {
+    this.setState({ player1: event.target.value });
+    if (this.props.onChange) {
+      this.props.onChange("player1", event.target.value, this.props.line);
+    }
+  },
+  getSelects() {
+    if (this.props.ladder) {
+      if (this.props.ladder.type == "normal") {
+        return (
+          <tr>
+            <td className="playerselect">
+              <span className="section">
+                <select key="player0" value={this.state.player0} onChange={this.onSelectChange0}>
+                  {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
+                </select>
+              </span>
+            </td>
+            <td className="divider">vs</td>
+            <td className="playerselect">
+              <span className="section">
+                <select key="player1" value={this.state.player1} onChange={this.onSelectChange1}>
+                  {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
+                </select>
+              </span>
+            </td>
+          </tr>
+        );
+      }
+    } else {
+      return (
+        <tr>
           <td className="playerselect">
             <span className="section">
               <Select multi key="player0" value={this.state.player0} placeholder="Select player(s)" onChange={this.handleSelectChange0} asyncOptions={this.loadOptions} />
@@ -89,7 +130,16 @@ var PlayersSelect = React.createClass({
               <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange1} />
             </span>
           </td>
-        </tr></tbody>
+        </tr>
+      );
+    }
+  },
+  render () {
+    return (
+      <table className="wholerow">
+        <tbody>
+          {this.getSelects()}
+        </tbody>
       </table>
     );
   }
