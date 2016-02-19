@@ -14,7 +14,9 @@ var PlayerName = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    if (!this.props.playerName) {
+    // console.log("??"+window.now(), this.props.playerName)
+    if (!this.props.playerName || this.props.playerName == "loading") {
+      // console.log("loading" + window.now())
       var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
       this.bindAsObject(playerRef, "player");
     }
@@ -28,9 +30,9 @@ var PlayerName = React.createClass({
     }
     return (
       <div className={cls}>
-        {window.Fbase.isValidDisplayName(this.props.playerName) ?
+        {window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading" ?
           this.props.playerName :
-          this.state.player? this.state.player.displayName : "n/a"}
+          this.state.player? this.state.player.displayName : "loading"}
       </div>
     );
   }

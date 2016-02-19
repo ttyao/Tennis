@@ -7,7 +7,12 @@ window.Fbase = {
     return this.Henry == this.authUid;
   },
   refreshDisplayNames: function(uid, callback) {
-    if (!uid) return;
+    if (!uid) {
+      if (callback) {
+        callback(null);
+      }
+      return;
+    }
     this.displayNames[uid] = "loading";
     var ref = this.getRef("web/data/users/"+uid);
     ref.once('value', function(snapshot) {
@@ -19,33 +24,41 @@ window.Fbase = {
         //   f.set(data[key].displayName.toLowerCase());
         // }
       }
-
       if (callback) {
-        callback();
+        callback(data.displayName || null);
       }
     });
   },
   init: function(callback) {
     this.authUid = this.getAuthUid();
     this.displayNames = {};
-    this.refreshDisplayNames(this.Henry)
-    window.Fbase.log("init", "visit");
-    if (callback) {
-      callback();
-    }
+    this.refreshDisplayNames(this.authUid, function(){
+      window.Fbase.log("init", "visit");
+      if (callback) {
+        callback();
+      }
+    })
   },
   getAuthName: function() {
     return this.getDisplayName(this.authUid);
   },
-  getDisplayName: function(uid) {
+  setDisplayName: function(uid, displayName) {
+    this.displayNames[uid] = displayName;
+  },
+  getDisplayName: function(uid, callback) {
     if (!uid) {
+      if (callback) {
+        callback(null);
+      }
       return null;
     }
     if (this.displayNames[uid]) {
+      if (callback) {
+        callback(this.displayNames[uid]);
+      }
       return this.displayNames[uid];
     }
-    // console.log("not found ", uid);
-    this.refreshDisplayNames(uid);
+    this.refreshDisplayNames(uid, callback);
     return "loading";
   },
   getUserId: function(displayName) {
@@ -159,10 +172,17 @@ window.Fbase = {
       }
     }, this);
 
+    if (match.teamMatchId) {
+      m["teamMatchId"] = match.teamMatchId;
+      let Ref = this.getRef("web/data/teammatches/"+match.teamMatchId+"/matches/"+matchId);
+      Ref.set(m);
+    }
     m["scores"] = match.scores;
     m["updatedTime"] = createdTime;
     m["status"] = match.status;
     m["matchTime"] = window.now(match.matchMoment.unix()*1000);
+    m["ladderId"] = match.ladder;
+
     m["players"] = [];
     m["players"][0] = match.players[0] ? match.players[0].toLowerCase() : null;
     m["players"][1] = match.players[1] ? match.players[1].toLowerCase() : null;
@@ -174,9 +194,14 @@ window.Fbase = {
       if (error) {
         alert("Can't save match.");
       } else {
-        location.reload();
+        // location.reload();
       }
     });
+    return matchId;
+  },
+  updateTeamMatchStatus: function(teamMatchId, status) {
+    var ref = this.getRef("web/data/teammatches/"+teamMatchId+"/status");
+    ref.set(status);
   },
   updateMatchScores: function(match) {
     var scores = match.scores;
@@ -330,6 +355,19 @@ window.Fbase = {
     });
     this.log("created ladder "+ladderName, "write", "createLadder");
   },
+  createTeam: function(teamName) {
+    if (!this.authUid) {
+      return;
+    }
+    var ref = this.getRef("web/data/teams/team:"+window.now()+":"+this.authUid);
+    ref.set({
+      name: teamName,
+      createdTime: window.now(),
+      creator: this.authUid
+    });
+    this.log("created team "+ladderName, "write", "createTeam");
+  },
+
   addUserToLadder: function(userId, ladderId) {
     if (!this.authUid) {
       return;
@@ -353,15 +391,24 @@ window.Fbase = {
     });
     this.log("add match "+matchId+" to ladder "+ladderId, "write", "addMatchToLadder");
   },
-  addUserToTeam: function() {
-
-  },
-  createObject: function(modal, path, object) {
-    if (["teams", "leagues", "users"].indexOf(modal) == -1) {
-      alert("Modal not supported.");
+  addUserToObject: function(type, objectId, uid) {
+    if (!uid || !objectId) return;
+    if (["teams", "ladders"].indexOf(type) == -1) {
+      alert("Type not supported.");
       return;
     }
-    var ref = this.getRef("web/data/"+modal+"/"+path);
+    var ref = this.getRef("web/data/"+type+"/"+objectId+"/users/"+uid);
+    ref.set({
+      creator: this.getAuthName(),
+      createTime: window.now()
+    });
+  },
+  createObject: function(type, path, object) {
+    if (["teams", "leagues", "users"].indexOf(type) == -1) {
+      alert("Type not supported.");
+      return;
+    }
+    var ref = this.getRef("web/data/"+type+"/"+path);
     ref.set(object)
   },
   updateLadderStats(ladderId, stats) {

@@ -98,6 +98,9 @@ var LadderStats = React.createClass({
     }
   },
   render () {
+    if (this.props.type == "usta combo") {
+      return null; //todo
+    }
     return (
       <div>
         <table className="wholerow rightalign">

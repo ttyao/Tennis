@@ -466,6 +466,9 @@ h6,
 .wholerow .playersection {
   width: 35%;
 }
+.wholerow .playerselect {
+  width: 49%;
+}
 .wholerow .rowlabel {
   width: 10%;
 }
@@ -546,6 +549,7 @@ h6,
 .floatright {
   display: inline;
   float: right;
+  margin: 5px;
 }
 .floatmiddle {
   display: inline;

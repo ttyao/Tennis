@@ -69,7 +69,7 @@ export default class MatchRecorder extends React.Component {
     }
 
     var status = "completed";
-    console.log(this.status, this.state.scores[0].scores[0] + this.state.scores[0].scores[1], this.state.matchMoment.unix()*1000, Date.now())
+    // console.log(this.status, this.state.scores[0].scores[0] + this.state.scores[0].scores[1], this.state.matchMoment.unix()*1000, Date.now())
     if (this.state.scores[0].scores[0] + this.state.scores[0].scores[1] > 0) {
       if (this.state.matchMoment.unix()*1000 > Date.now()) {
         alert("Date of completed match can't be in the future.");

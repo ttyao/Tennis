@@ -261,6 +261,9 @@ var MatchBrief = React.createClass({
     if (!this.state.match && !!nextState.match) {
       return true;
     }
+    // if (this.state.refreshName != nextState.refreshName) {
+    //   return true;
+    // }
     return JSON.stringify(this.state.match) != JSON.stringify(nextState.match);
     // var oldMatch = this.state.match;
     // var newMatch = nextState.match;
@@ -292,6 +295,7 @@ var MatchBrief = React.createClass({
   render() {
     if (this.state.match) {
       var match = this.state.match;
+      var self = this;
       var matchId = match['.key'];
       if (this.props.onAfterLoad) {
         var self = this;

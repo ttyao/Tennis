@@ -39,7 +39,7 @@ export default class Menu extends React.Component {
 
       // By lines
       var lines = this.result.split('\n');
-      for(var line = 0; line < 100000; line++){
+      for(var line = 0; line < lines.length; line++){
         var field = lines[line].split(";");
         if (!field[1]) continue;
         var player = {
@@ -50,17 +50,15 @@ export default class Menu extends React.Component {
           expiration: field[3],
           ntrp: parseFloat(field[4]) > 0 ? parseFloat(field[4]) : null,
           residence: field[5],
-          gender: field[6][0]
+          gender: field.length > 5 && field[6].length > 0 ? field[6][0] : "U"
         };
         if (line % 100 == 0) {
           console.log(line);
+
         }
-        if (line > 100000) {
-          return;
-        }
-        if (line >= 99000 && player.ntrp) {
+        if (player.ntrp) {
            // console.log(lines[line])
-          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]+"-"+(field[1].indexOf(".") >=0 ? "" : field[1].replace(/ /g, "-")));
+          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]+"-"+(field[1].indexOf(".") >=0 ? "" : field[1].replace(/ /g, "-").toLowerCase()));
           ref.set(player);
         }
       }
@@ -68,11 +66,11 @@ export default class Menu extends React.Component {
     reader.readAsText(file);
   }
   onUpload(files){
-
+    this.loadPlayers(files[0])
   }
 
   onTestButtonClick() {
-    window.Fbase.createLadder("2015 Combo M8.5 D1-211")
+    // window.Fbase.createObject("teams", )
     // var ref = window.Fbase.mergeAccountA2B("guest:dong sun","facebook:10153378593488148");
     // window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
     // window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")

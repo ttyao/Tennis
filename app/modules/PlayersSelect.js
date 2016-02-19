@@ -13,11 +13,15 @@ var PlayersSelect = React.createClass({
   },
   handleSelectChange0 (value, values) {
     this.setState({ player0: value });
-    this.props.onChange("player0", value);
+    if (this.props.onChange) {
+      this.props.onChange("player0", value, this.props.line);
+    }
   },
   handleSelectChange1 (value, values) {
     this.setState({ player1: value });
-    this.props.onChange("player1", value);
+    if (this.props.onChange) {
+      this.props.onChange("player1", value, this.props.line);
+    }
   },
   toggleDisabled (e) {
     this.setState({ 'disabled': e.target.checked });
@@ -25,7 +29,11 @@ var PlayersSelect = React.createClass({
 
   loadOptions(input, callback) {
     var userRef = window.Fbase.getRef("web/data/users");
-    userRef.orderByChild("displayName").once("value", function(snapshot) {
+    if (!input) {
+      callback(null, {options: [], complete: false});
+      return;
+    }
+    userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(5).once("value", function(snapshot) {
       var inputs = input.split(",");
       var ops = [];
       var current = inputs.length ? inputs[inputs.length-1] : "";
@@ -35,12 +43,15 @@ var PlayersSelect = React.createClass({
           if (input == inputs[inputs.length - 1]) {
             current = displayName;
           }
-          if (window.Fbase.getDisplayName(input) != input) {
-            displayName = window.Fbase.getDisplayName(input);
+          var d = window.Fbase.getDisplayName(input);
+          if ( d != input && d != "loading") {
+            displayName = d;
           }
           ops.push({value : "guest:"+displayName, label : displayName});
         } else if (input.split(":")[0].split("-")[0] == input) { // unchanged displayname
           ops.push({value : "guest:"+input, label : input});
+        } else {
+          ops.push({value : input, label : window.Fbase.getDisplayName(input)})
         }
       });
       input = input.split(",").slice(-1)[0].split(":")[0];
@@ -49,10 +60,12 @@ var PlayersSelect = React.createClass({
         if (object[key] && object[key].displayName) {
           if (current.toLowerCase() == object[key].displayName.toLowerCase()) {
             ops[inputs.length - 1].value = key;
-          } else {
+            ops[inputs.length - 1].label = object[key].displayName;
+          } else if (ops.indexOf(key) < 0) {
             var item = {};
             item.value = key;
             item.label = object[key].displayName;
+            window.Fbase.setDisplayName(key, item.label)
             ops.push(item);
           }
         }
@@ -65,17 +78,13 @@ var PlayersSelect = React.createClass({
     return (
       <table className="wholerow">
         <tbody><tr>
-          <td className="playersection">
+          <td className="playerselect">
             <span className="section">
               <Select multi key="player0" value={this.state.player0} placeholder="Select player(s)" onChange={this.handleSelectChange0} asyncOptions={this.loadOptions} />
             </span>
           </td>
-        </tr>
-        <tr>
-          <td className="divider"> VS </td>
-        </tr>
-        <tr>
-          <td className="playersection">
+          <td className="divider">vs</td>
+          <td className="playerselect">
             <span className="section">
               <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange1} />
             </span>
