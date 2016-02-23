@@ -8,37 +8,39 @@ var PlayerSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    return { player: this.props.player || ""};
+    return { player: this.props.player};
   },
   handleSelectChange (value, values) {
     this.setState({ player: value });
     this.props.onChange(value);
   },
-
+  shouldComponentUpdate(nextProps, nextState) {
+    return JSON.stringify(nextState) != JSON.stringify(this.state) ||
+           JSON.stringify(nextProps) != JSON.stringify(this.props)
+  },
   loadOptions(input, callback) {
-    if (!input) {
-      var opts = [];
-      if (this.props.player) {
-        opts.push({
-          value: this.props.player,
-          label: window.Fbase.getDisplayName(this.props.player)
+    var ops = [];
+    for (let i in window.Fbase.displayNames) {
+      if (window.Fbase.displayNames[i] != "loading") {
+        ops.push({
+          value: i,
+          label: window.Fbase.getDisplayName(i)
         });
       }
-      callback(null, {options: opts, complete: false});
+    }
+    if (!input) {
+      callback(null, {options: ops, complete: false});
       return;
     }
     var userRef = window.Fbase.getRef("web/data/users");
-    userRef.orderByChild("displayName_").once("value", function(snapshot) {
-      var ops = [];
+    userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(15).once("value", function(snapshot) {
       var object = snapshot.val();
-
-      console.log(object)
       for (var key in object) {
-        if (object[key]) {
+        if (object[key] && !window.Fbase.displayNames[key]) {
           var item = {};
-          console.log(object[key].displayName)
           item.value = key;
           item.label = object[key].displayName;
+          window.Fbase.displayNames[key] = item.label;
           ops.push(item);
         }
       }

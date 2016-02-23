@@ -10,7 +10,7 @@ var Head2Head = React.createClass({
       player0 = window.Fbase.getUserId(this.props.player0);
     }
     return {
-      player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : undefined, win1: 0, win2: 0};
+      player0: player0, player1: this.props.player1 ? window.Fbase.getUserId(this.props.player1) : "", win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
@@ -38,7 +38,7 @@ var Head2Head = React.createClass({
     if (this.state["qualified"+matchId] != qualified) {
       var newState = {};
       newState["qualified"+matchId] = qualified;
-      this.setState(newState);
+      // this.setState(newState);
       this.calculateWinLoss();
     }
   },
@@ -133,7 +133,7 @@ var Head2Head = React.createClass({
               <PlayerSelect key="player0" player={this.state.player0} onChange={this.onPlayer0Change} />
             </td>
             <td>
-              <PlayerSelect key="player1" player={this.state.player1 || ""} onChange={this.onPlayer1Change} />
+              <PlayerSelect key="player1" player={this.state.player1} onChange={this.onPlayer1Change} />
             </td>
           </tr><tr>
             <td className="centerContainer"> {this.state.win1} </td>
