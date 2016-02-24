@@ -2,7 +2,7 @@ import React from 'react';
 import Select from 'react-select';
 
 var PlayersSelect = React.createClass({
-  displayName: 'PlayerSelect',
+  displayName: 'PlayersSelect',
   propTypes: {
     label: React.PropTypes.string,
     value: React.PropTypes.array,

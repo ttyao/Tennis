@@ -50,7 +50,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "dev": "webpack-dev-server --inline --content-base . --history-api-fallback",
+    "dev": "webpack-dev-server --inline --devtool eval --progress --colors --hot --content-base . --history-api-fallback",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

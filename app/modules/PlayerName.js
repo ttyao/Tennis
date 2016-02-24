@@ -1,5 +1,6 @@
 import React from 'react';
 var ReactFireMixin = require('reactfire');
+import { Link } from 'react-router'
 
 var PlayerName = React.createClass({
   propTypes: {
@@ -14,11 +15,20 @@ var PlayerName = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    // console.log("??"+window.now(), this.props.playerName)
     if (!this.props.playerName || this.props.playerName == "loading") {
-      // console.log("loading" + window.now())
       var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
       this.bindAsObject(playerRef, "player");
+    }
+  },
+  getName() {
+    if (window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading") {
+      return (<Link to={"/player/0/"+this.props.playerId}>{this.props.playerName}</Link>);
+    } else {
+      if (this.state.player) {
+        return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName}</Link>);
+      } else {
+        return "loading";
+      }
     }
   },
   render() {
@@ -30,9 +40,7 @@ var PlayerName = React.createClass({
     }
     return (
       <div className={cls}>
-        {window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading" ?
-          this.props.playerName :
-          this.state.player? this.state.player.displayName : "loading"}
+        {this.getName()}
       </div>
     );
   }

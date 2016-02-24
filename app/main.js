@@ -17,16 +17,13 @@ window.Fbase.init(main);
 function main() {
   ReactDOM.render(
     <Router history={browserHistory}>
-      <div>
       <div className="page-body">
         <div className="container">
           <Route path="/" component={Menu} />
           <Route path="/:tab" component={Menu} />
-          <Route path="/:tab/:ladder" component={Menu} />
-          <Route path="/:tab/:ladder/:player0" component={Menu} />
-          <Route path="/:tab/:ladder/:player0/:player1" component={Menu} />
+          <Route path="/:tab/:ladderId" component={Menu} />
+          <Route path="/:tab/:ladderId/:playerId" component={Menu} />
         </div>
-      </div>
       </div>
     </Router>,
     document.getElementById('app')

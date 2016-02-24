@@ -1,5 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
+import { Link } from 'react-router'
 
 var LadderStats = React.createClass({
   displayName: 'LadderStats',
@@ -8,7 +9,7 @@ var LadderStats = React.createClass({
     loadedMatches: React.PropTypes.object,
   },
   getInitialState () {
-    return {stats: this.props.ladder.stats};
+    return {stats: this.props.ladder ? this.props.ladder.stats : ""};
   },
   getStats() {
     var matches = this.props.loadedMatches;
@@ -84,7 +85,7 @@ var LadderStats = React.createClass({
         result.push(
           <tr key={stats[best].id}>
             <td>{rank++}</td>
-            <td>{window.Fbase.getDisplayName(stats[best].id)}</td>
+            <td><Link to={"/player/0/"+stats[best].id}>{window.Fbase.getDisplayName(stats[best].id)}</Link></td>
             <td>{stats[best].totalWin}</td>
             <td>{stats[best].totalMatch}</td>
             <td>{stats[best].setWin}</td>
@@ -98,6 +99,9 @@ var LadderStats = React.createClass({
     }
   },
   render () {
+    if (!this.props.ladder) {
+      return null;
+    }
     if (this.props.ladder.type == "usta combo") {
       return null; //todo
     }

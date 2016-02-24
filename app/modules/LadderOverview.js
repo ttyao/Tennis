@@ -20,7 +20,7 @@ var LadderOverview = React.createClass({
   // mixins: [ReactFireMixin],
   getInitialState () {
     return {
-      ladderId: this.props.ladder || "ladder:2016-02-15-07-42-03-177:facebook:539060618",
+      ladderId: this.props.ladderId || "ladder:2016-02-15-07-42-03-177:facebook:539060618",
       matches: {},
       loadedMatches:{},
       showAddPlayerModal: false,
@@ -37,6 +37,10 @@ var LadderOverview = React.createClass({
     var self = this;
     ref.once('value', function(snapshot) {
       var ladder = snapshot.val();
+      if (!ladder) {
+        self.setState({ ladder: null, ladderId: null });
+        return;
+      }
       ladder.matches = ladder.matches || {}
       ladder.teamMatches = ladder.teamMatches || {}
       ladder.type = ladder.type || "normal"
@@ -68,6 +72,7 @@ var LadderOverview = React.createClass({
   },
   onLadderChange(value) {
     this.loadLadder(value);
+    this.props.history.push("/ladder/"+value);
     var select = ReactDOM.findDOMNode(this.refs.ladderSelect).getElementsByTagName('input')[1];
     // console.log(select)
     select.blur();
@@ -186,7 +191,17 @@ var LadderOverview = React.createClass({
   },
   render () {
     if (!this.state.ladder) {
-      return null;
+      return (
+        <table className="wholerow">
+          <tbody><tr>
+            <td className="playersection">
+              <span className="section">
+                <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
+                <LadderStats ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
+              </span>
+            </td>
+          </tr></tbody>
+        </table>);
     }
     return (
       <div>
@@ -203,7 +218,7 @@ var LadderOverview = React.createClass({
           <tbody><tr>
             <td className="playersection">
               <span className="section">
-                <LadderSelect ref="ladderSelect" ladder={this.state.ladderId} onChange={this.onLadderChange} />
+                <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
                 <LadderStats ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
               </span>
             </td>

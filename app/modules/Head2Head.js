@@ -18,6 +18,7 @@ var Head2Head = React.createClass({
       var ref = window.Fbase.getRef("web/data/users/"+this.state.player0+"/matches");
       this.bindAsArray(ref, "matches");
     }
+    console.log(this.props)
   },
   onMatchBriefLoad(matchId, match) {
     var players = match.players;
@@ -77,6 +78,10 @@ var Head2Head = React.createClass({
       win2: totalMatch - matchWin
     });
   },
+  componentWillUpdate(nextProps, nextState) {
+    console.log(nextProps.player0, nextState.player0, this.props.player0, this.state.player0)
+    // if (nextProps.player0)
+  },
   onPlayer0Change(value){
     window.Fbase.log("head2head 1st player changed to: " + value, "query");
     this.setState({player0: value});
@@ -87,6 +92,8 @@ var Head2Head = React.createClass({
     // ref.once('value', function(snapshot) {
     //   self.setState({matches:snapshot.val()});
     // })
+
+    this.props.history.push("/player/0/"+value)
   },
   onPlayer1Change(value){
     window.Fbase.log("head2head 2nd player changed to: " + value, "query");
