@@ -33,107 +33,372 @@ export default class Menu extends React.Component {
     location.reload();
   }
 
-  loadPlayers(file) {
-    var reader = new FileReader();
-    reader.onload = function(event) {
-      // console.log(this.result);
-
-      // By lines
-      var lines = this.result.split('\n');
-      for(var line = 0; line < lines.length; line++){
-        var field = lines[line].split(";");
-        if (!field[1]) continue;
-        var player = {
-          norcal: field[0],
-          displayName: field[1],
-          displayName_: field[1].toLowerCase(),
-          usta: field[2],
-          expiration: field[3],
-          ntrp: parseFloat(field[4]) > 0 ? parseFloat(field[4]) : null,
-          residence: field[5],
-          gender: field.length > 5 && field[6].length > 0 ? field[6][0] : "U"
-        };
-        if (line % 100 == 0) {
-          console.log(line);
-
+  updatePlayer(lines) {
+    var completed = 0;
+    var requested = 0;
+    for(var line = 1; line < lines.length; line++){
+      var field = lines[line].split(";");
+      if (!field[1]) continue;
+      var player = {
+        norcal: field[0],
+        displayName: field[1],
+        displayName_: field[1].toLowerCase(),
+        usta: field[2],
+        expiration: field[3],
+        ntrpYear: field[4],
+        ntrpType: field[5],
+        ntrp: parseFloat(field[6]) > 0 ? parseFloat(field[6]) : null,
+        residence: field[7],
+        gender: field.length > 7 && field[8].length > 0 ? field[8][0] : "U"
+      };
+      if (player.ntrp) {
+        requested++;
+        if (requested % 100 == 0) {
+          console.log("requested: ", requested);
+         // console.log(lines[line])
         }
-        if (player.ntrp) {
-           // console.log(lines[line])
-          var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]);
-          ref.set(player);
+        var ref = window.Fbase.getRef("web/data/users/norcal:"+field[0]);
+        ref.update(player, function(error) {
+          if (error) {
+            console.log(error);
+          } else {
+            completed++;
+            if (completed % 100 == 0) console.log("complete:" + completed)
+          }
+        });
+      }
+    }
+  }
+
+  updateLadder(lines) {
+    var area =['DN', 'DS', 'EB', 'FA',
+               'LP', 'MA', 'MB', 'MP',
+               'NS', 'RT', 'SA', 'SB',
+               'SF', 'SM', 'UP'];
+    var completed = 0;
+    var requested = 0;
+    for(var line = 1; line < lines.length; line++){
+      var field = lines[line].split(";");
+      if (field.length < 2 || field[1].indexOf("JTT") >=0) continue;
+      requested++;
+      if (requested % 100 == 0) {
+        console.log("requested: ", requested);
+      }
+      var ref = window.Fbase.getRef("web/data/ladders/norcalladder:"+field[0]);
+      var ladder = {
+        norcal: field[0],
+        displayName: field[1],
+        displayName_: field[1].toLowerCase(),
+        type: field[2],
+        gender: field[3],
+        age: field[4],
+        level: field[5]
+      };
+      ref.update(ladder, function(error) {
+        if (error) {
+          console.log(error);
+        } else {
+          completed++;
+          if (completed % 100 == 0) console.log("complete:" + completed)
+        }
+      });
+    }
+  }
+
+  updateLeagueTeam(lines) {
+    var completed = 0;
+    var requested = 0;
+    for(var line = 1; line < lines.length; line++){
+      var field = lines[line].split(";");
+      if (field.length < 10 || field[1].indexOf("JTT") >=0) {
+        console.log(field)
+        break;
+      }
+      requested++;
+      if (requested % 100 == 0) {
+        console.log("requested: ", requested);
+      }
+      var ref = window.Fbase.getRef("web/data/ladders/norcalladder:"+field[0]+"/teams");
+      var team = {};
+      team["norcalteam:"+field[2]] = "norcalteam:"+field[2];
+      ref.update(team);
+      team = {
+        norcal: field[2],
+        ladderId: "norcalladder:"+field[0],
+        displayName: field[3],
+        displayName_: field[3].toLowerCase(),
+        captainId: "norcal:"+field[4],
+        city: field[6],
+        area: field[7],
+        orgId: field[8],
+        org: field[9]
+      };
+      ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[2]);
+      ref.update(team, function(error) {
+        if (error) {
+          console.log(error);
+        } else {
+          completed++;
+          if (completed % 100 == 0) console.log(window.now()+"complete:" + completed)
+        }
+      });
+    }
+  }
+
+  updateTeamPlayer(lines) {
+    var completed = 0;
+    var requested = 0;
+    for(var line = 6000; line < 8000; line++){
+      var field = lines[line].split(";");
+      if (field.length < 2 || !field[1]) continue;
+
+      var players = {};
+      var ids = field[1].split(",");
+      for (let i in ids) {
+        if (ids[i]) {
+          requested++;
+          if (requested % 100 == 0) {
+            console.log("requested: ", requested);
+          }
+          let t = {};
+          t["norcalteam:"+field[0]] = "norcalteam:"+field[0];
+          players["norcal:"+ids[i]] = "norcal:"+ids[i];
+          let r = window.Fbase.getRef("web/data/users/norcal:"+ids[i]+"/teams");
+          r.update(t, function(err) {
+            if (err) {
+              console.log(err);
+            } else {
+              completed++;
+              if (completed % 100 == 0) console.log(window.now()+" complete:" + completed)
+            }
+          });
         }
       }
-    };
-    reader.readAsText(file);
+      requested++;
+      if (requested % 100 == 0) {
+        console.log("requested: ", requested);
+      }
+      var ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[0]+"/players");
+      ref.set(players, function(err) {
+        if (err) {
+          console.log(err);
+        } else {
+          completed++;
+          if (completed % 100 == 0) console.log(window.now()+" complete:" + completed)
+        }
+      });
+    }
+  }
+
+  updateScores(lines, start) {
+    var requested = 0;
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("scores starting:", start);
+    for (let i = 0; i < batch && start+i < lines.length; i++) {
+      var field = lines[i+start].split(";");
+      if (field.length < 2) continue;
+      // update teammatch info
+      if (field[3] == 1) {
+        var ref = window.Fbase.getRef("web/data/teammatches/norcalteammatch:"+field[0]);
+        requested++;
+        var teamMatch = {
+          teams: ["norcalteam:"+field[1], "norcalteam:"+field[2]],
+          status: "completed",
+          matchTime: window.now(new Date(field[6]).getTime())
+        };
+        // console.log(teamMatch);
+
+        ref.update(teamMatch, function(err) {
+          if (!err) {
+            completed++;
+            if (completed == requested) {
+              self.updateScores(lines, start + batch);
+            }
+          }
+        });
+        ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[1]+"/matches/norcalteammatch:"+field[0]+"/teamId");
+        requested++;
+        ref.set("norcalteam:"+field[2], function(err) {
+          if (!err) {
+            completed++;
+            if (completed == requested) {
+              self.updateScores(lines, start + batch);
+            }
+          }
+        });
+        ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[2]+"/matches/norcalteammatch:"+field[0]+"/teamId");
+        requested++;
+        ref.set("norcalteam:"+field[1], function(err) {
+          if (!err) {
+            completed++;
+            if (completed == requested) {
+              self.updateScores(lines, start + batch);
+            }
+          }
+        });
+
+        // remove pending match data
+        // TODO
+      }
+
+      // create match
+      var players = field[5].split(",");
+      var match = {
+        line: field[3],
+        teamMatchId: "norcalteammatch:"+field[0],
+        scores: [],
+        players: [],
+        status: "completed",
+        matchDate: window.now(new Date(field[6]).getTime())
+      }
+      var scores = field[4].split(",");
+      for (let s in scores) {
+        match.scores.push(scores[s].split("-"));
+      }
+      for (let p in players) {
+        match.players.push("norcal:"+players[p]);
+      }
+      ref = window.Fbase.getRef("web/data/matches/norcalmatch:"+field[0]+":"+field[3]);
+      requested++;
+      ref.update(match, function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateScores(lines, start + batch);
+          }
+        }
+      });
+
+      // link match to teammatch
+      ref = window.Fbase.getRef("web/data/teammatches/norcalteammatch:"+field[0]+"/matches/norcalmatch:"+field[0]+":"+field[3]);
+      requested++;
+      ref.set("norcalmatch:"+field[0]+":"+field[3], function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateScores(lines, start + batch);
+          }
+        }
+      });
+
+      // link match to player
+
+      for (let p in players) {
+        ref = window.Fbase.getRef("web/data/users/norcal:"+players[p]+"/matches/norcalmatch:"+field[0]+":"+field[3]);
+        requested++;
+        ref.set("norcalmatch:"+field[0]+":"+field[3], function(err) {
+          if (!err) {
+            completed++;
+            if (completed == requested) {
+              self.updateScores(lines, start + batch);
+            }
+          }
+        });
+      }
+    }
+  }
+
+  updateTeamMatch(lines, start) {
+    var requested = 0;
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("teammatch starting:", start);
+    for (let i = 0; i < batch && start+i < lines.length; i++) {
+      var field = lines[i+start].split(";");
+      var ref = window.Fbase.getRef("web/data/teammatches/norcalteammatch:"+field[0]);
+      requested++;
+      var teamMatch = {
+        teams: ["norcalteam:"+field[1], "norcalteam:"+field[2]],
+        status: field[4],
+      };
+      if (new Date(field[3]) != "Invalid Date") {
+        teamMatch["matchTime"] = window.now(new Date(field[3]).getTime());
+      }
+      // console.log(teamMatch);
+
+      ref.update(teamMatch, function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateTeamMatch(lines, start + batch);
+          }
+        }
+      });
+      ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[1]+"/matches/norcalteammatch:"+field[0]+"/teamId");
+      requested++;
+      ref.set("norcalteam:"+field[2], function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateTeamMatch(lines, start + batch);
+          }
+        }
+      });
+      ref = window.Fbase.getRef("web/data/teams/norcalteam:"+field[2]+"/matches/norcalteammatch:"+field[0]+"/teamId");
+      requested++;
+      ref.set("norcalteam:"+field[1], function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateTeamMatch(lines, start + batch);
+          }
+        }
+      });
+
+      // merge pending match
+    }
   }
   onUpload(files){
-    this.loadPlayers(files[0])
+    var reader = new FileReader();
+    var self = this;
+    reader.onload = function(event) {
+      var lines = this.result.split('\n');
+      console.log(lines[0])
+      switch (lines[0]) {
+        case "league":
+          self.updateLadder(lines);
+          break;
+        case "team":
+          self.updateTeam(lines);
+          break;
+        case "leagueteam":
+          self.updateLeagueTeam(lines);
+          break;
+        case "teamplayer":
+          self.updateTeamPlayer(lines);
+          break;
+        case "player":
+          self.updatePlayer(lines);
+          break;
+        case "teammatch":
+          self.updateTeamMatch(lines, 1);
+          break;
+        case "score":
+          self.updateScores(lines, 1);
+          break;
+      }
+    };
+    reader.readAsText(files[0]);
   }
 
-  copy(norcal) {
-    // if (norcal == 10) return;
-    if (norcal % 100 == 0) {
-      console.log(norcal)
-    }
-    var self = this;
-    var ref = window.Fbase.getRef("web/data/users");
-    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
-      var oldUser = snapshot.val();
-      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
-        self.copy(norcal+1)
-      } else {
-        var nref = window.Fbase.getRef("web/data/users/norcal:"+norcal);
-        nref.set(oldUser[Object.keys(oldUser)[0]], function() {
-          self.delete(norcal);
-        })
-      }
-    });
-  }
-  delete(norcal) {
-    var ref = window.Fbase.getRef("web/data/users");
-    var self = this;
-    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
-      var oldUser = snapshot.val();
-      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
-        console.log("not found ", norcal)
-        return;
-      } else {
-        var r = window.Fbase.getRef("web/data/users/"+Object.keys(oldUser)[0]);
-        r.remove(function() {
-          self.copy(norcal+1)
-        })
-      }
-    });
-  }
   onTestButtonClick() {
-    this.copy(27200);
-    this.copy(37200);
-    this.copy(47200);
-    this.copy(57200);
-    this.copy(67200);
-    this.copy(77200);
-    this.copy(87200);
-    this.copy(97200);
-    this.copy(107200);
-    this.copy(117200);
-    this.copy(127200);
-    this.copy(137200);
-    this.copy(147200);
-    this.copy(157200);
-    this.copy(167200);
-    this.copy(177200);
-    this.copy(187200);
-    this.copy(197200);
-    this.copy(207200);
-    this.copy(217200);
-    // window.Fbase.createObject("teams", )
-    // var ref = window.Fbase.mergeAccountA2B("guest:dong sun","facebook:10153378593488148");
-    // window.Fbase.addUserToLadder("facebook:10153424122431194", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-    // window.Fbase.addUserToLadder("facebook:539060618", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-    // window.Fbase.addUserToLadder("facebook:10207621109160243", "ladder:2016-02-11-08-28-55-181:facebook:539060618")
-    // var fromId = this.refs.fromId.value;
-    // var toId = this.refs.toId.value;
-    // window.Fbase.mergeNorcalAccount(fromId, toId)
+    var ref = window.Fbase.getRef("web/data/matches");
+    ref.once('value', function(data) {
+      var d = data.val();
+      for (let m in d) {
+        var score = [];
+        for (let s in d[m].scores) {
+          score.push(d[m].scores[s].scores);
+        }
+        if (score) {
+          var ref = window.Fbase.getRef("web/data/matches/"+m+"/scores");
+          ref.set(score);
+        }
+      }
+    })
     return;
     var obj = {ccc:1};
     window.Fbase.createObject("leagues", "", obj);
@@ -208,10 +473,10 @@ export default class Menu extends React.Component {
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
           {window.Fbase.authUid == window.Fbase.Henry &&
-              <Tabs.Panel title='Create'>
-                <MatchRecorder />
-              </Tabs.Panel>
-            }
+            <Tabs.Panel title='Create'>
+              <MatchRecorder />
+            </Tabs.Panel>
+          }
           {window.Fbase.authUid == window.Fbase.Henry &&
 
               <Tabs.Panel title="Ad">

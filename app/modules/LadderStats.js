@@ -31,9 +31,9 @@ var LadderStats = React.createClass({
         if (match.status == "completed") {
           var winningSet = 0;
           for (let i in match.scores) {
-            if (match.scores[i].scores[0] > match.scores[i].scores[1]) {
+            if (match.scores[i][0] > match.scores[i][1]) {
               winningSet+=1;
-            } else if (match.scores[i].scores[0] < match.scores[i].scores[1]) {
+            } else if (match.scores[i][0] < match.scores[i][1]) {
               winningSet-=1;
             }
           }

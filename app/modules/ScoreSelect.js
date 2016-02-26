@@ -35,7 +35,7 @@ export default class ScoreSelect extends React.Component {
   }
 
   callback() {
-    this.props.onChange(this.props.id, this.state);
+    this.props.onChange(this.props.id, this.state.scores);
   }
 
   render() {

@@ -113,9 +113,9 @@ var MatchBrief = React.createClass({
     var winningSet = 0;
     if (this.state.match.status == "completed") {
       for (var i in this.state.match.scores) {
-        if (this.state.match.scores[i].scores[0] > this.state.match.scores[i].scores[1]) {
+        if (this.state.match.scores[i][0] > this.state.match.scores[i][1]) {
           winningSet+=1;
-        } else if (this.state.match.scores[i].scores[0] < this.state.match.scores[i].scores[1]) {
+        } else if (this.state.match.scores[i][0] < this.state.match.scores[i][1]) {
           winningSet-=1;
         }
       }
@@ -124,7 +124,7 @@ var MatchBrief = React.createClass({
   },
   onScoresChange(event, index) {
     var match = this.state.match;
-    match.scores[Math.floor(index/2)].scores[index%2] = event.target.value;
+    match.scores[Math.floor(index/2)][index%2] = event.target.value;
     window.Fbase.updateMatchScores(match);
     if (match.status == "pending") {
       match.status = "active";
@@ -133,14 +133,14 @@ var MatchBrief = React.createClass({
     if (this.state.match.teamMatchId) {
       window.Fbase.createComment(
         this.state.match.teamMatchId,
-        "Updated line "+this.props.line+": set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
+        "Updated line "+this.props.line+": set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)][0] + " : " + match.scores[Math.floor(index/2)][1],
         "system",
         true
       );
     } else {
       window.Fbase.createComment(
         this.state.match[".key"],
-        "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
+        "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)][0] + " : " + match.scores[Math.floor(index/2)][1],
         "system"
       );
     }
@@ -150,7 +150,7 @@ var MatchBrief = React.createClass({
     if (window.now(match.matchTime) > window.now() + 24*3600*1000) {
       match.status = "pending";
     } else {
-      if (match.scores[0].scores[0] + match.scores[0].scores[1] > 0) {
+      if (match.scores[0][0] + match.scores[0][1] > 0) {
         match.status = "completed";
       } else {
         match.status = "canceled";
@@ -282,29 +282,6 @@ var MatchBrief = React.createClass({
     //   return true;
     // }
     return JSON.stringify(this.state.match) != JSON.stringify(nextState.match);
-    // var oldMatch = this.state.match;
-    // var newMatch = nextState.match;
-    // if (oldMatch.scores && newMatch.scores) {
-    //   if (oldMatch.scores.length != newMatch.scores.length) {
-    //     return true;
-    //   }
-    //   if (oldMatch.scores[0].scores[0] != newMatch.scores[0].scores[0] ||
-    //       oldMatch.scores[0].scores[1] != newMatch.scores[0].scores[1] ||
-    //       oldMatch.scores[1].scores[0] != newMatch.scores[1].scores[0] ||
-    //       oldMatch.scores[1].scores[1] != newMatch.scores[1].scores[1] ||
-    //       oldMatch.scores[2].scores[0] != newMatch.scores[2].scores[0] ||
-    //       oldMatch.scores[2].scores[1] != newMatch.scores[2].scores[1]) {
-    //     return true;
-    //   }
-    // }
-    // if (oldMatch.status != newMatch.status) {
-    //   return true;
-    // }
-    // if (!oldMatch.comment && newMatch.comments ||
-    //     oldMatch.comments && newMatch.comments && Object.keys(oldMatch.comments).length != Object.keys(newMatch.comments).length) {
-    //   return true;
-    // }
-    // return false;
   },
   canEditMatch() {
     return this.state.match.creator == window.Fbase.authUid;

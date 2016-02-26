@@ -74,7 +74,7 @@ var PlayerDetails = React.createClass({
         if (qualified) {
           totalMatch++;
           match.scores.forEach(function(set){
-            if (set.scores[0] > set.scores[1]) {
+            if (set[0] > set[1]) {
               setWin++;
             } else {
               setWin--;
@@ -99,26 +99,17 @@ var PlayerDetails = React.createClass({
     // var self = this;
     this.unbind("player");
     this.bindAsObject(ref, "player");
-    // ref.once('value', function(snapshot) {
-    //   self.setState({matches:snapshot.val()});
-    // })
 
     this.props.history.push("/player/0/"+value)
-  },
-  onPlayer1Change(value){
-    window.Fbase.log("head2head 2nd player changed to: " + value, "query");
-    this.setState({player1: value});
-    var ref = window.Fbase.getRef("web/data/users/"+value+"/matches");
-    this.unbind("matches");
-    this.bindAsArray(ref, "matches");
   },
   getPlayerDetails() {
     if (this.state.player) {
       return (
         <div className="matchBriefBody">
-          <div>Total Matches: {Object.keys(this.state.player.matches).length} </div>
-          {this.state.player.ntrp && <div>NTRP: {this.state.player.ntrp}</div>}
-          {this.state.player.residence && <div>Residence: {this.state.player.residence}</div>}
+          <table><tbody><tr>
+          {this.state.player.ntrp && <td>{this.state.player.ntrp}{this.state.player.ntrpType}</td>}
+          {this.state.player.residence && <td>{this.state.player.residence}</td>}
+          </tr></tbody></table>
         </div>
       );
     }
@@ -147,7 +138,7 @@ var PlayerDetails = React.createClass({
               </td>
             </tr></tbody>
           </table>
-          { this.state.player.matches ? matches.reverse() : "loading..."}
+          { this.state.player.matches ? matches.reverse() : ""}
         </div>
       );
     }

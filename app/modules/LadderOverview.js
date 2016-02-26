@@ -36,6 +36,7 @@ var LadderOverview = React.createClass({
     var ref = window.Fbase.getRef("web/data/ladders/"+ladderId);
     var self = this;
     ref.once('value', function(snapshot) {
+      console.log("loaded", snapshot.val())
       var ladder = snapshot.val();
       if (!ladder) {
         self.setState({ ladder: null, ladderId: null });

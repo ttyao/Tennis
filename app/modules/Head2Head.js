@@ -60,7 +60,7 @@ var Head2Head = React.createClass({
         if (qualified) {
           totalMatch++;
           match.scores.forEach(function(set){
-            if (set.scores[0] > set.scores[1]) {
+            if (set[0] > set[1]) {
               setWin++;
             } else {
               setWin--;

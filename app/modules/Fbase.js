@@ -282,16 +282,15 @@ window.Fbase = {
     });
   },
   mergeAccountA2B: function(fromId, toId) {
-    console.log(fromId)
     var ref = this.getRef("web/data/users/"+fromId);
     ref.once('value', function(old) {
       var oldUser = old.val();
       if (!oldUser) {
-        alert("from id not found");
+        alert("from id not found.");
         return;
       }
-      var oldRef = window.Fbase.getRef("web/data/users/"+fromId+"/status");
-      oldRef.set("merged to "+toId);
+      var oldRef = window.Fbase.getRef("web/data/users/"+fromId+"/claimerId");
+      oldRef.set(toId);
       window.Fbase.log("merge "+ fromId + " to "+ toId, "write", "mergeAccount");
       var newref = window.Fbase.getRef("web/data/users/"+toId);
       for (let key in oldUser) {
@@ -300,38 +299,37 @@ window.Fbase = {
           newref.child(key).set(oldUser[key]);
         }
       }
-      var ref = window.Fbase.getRef("web/data/matches");
-      ref.once('value', function(snapshot){
-        var matches = snapshot.val();
-        for (let key in matches) {
-          var players = matches[key].players;
-          for (let i = 0; i < 4; i++) {
-            if (players[i] == fromId) {
-              var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
-              n.set(toId);
-              break;
+      if (fromId.indexOf("norcal") < 0) {
+        var ref = window.Fbase.getRef("web/data/matches");
+        ref.once('value', function(snapshot){
+          var matches = snapshot.val();
+          for (let key in matches) {
+            var players = matches[key].players;
+            for (let i = 0; i < 4; i++) {
+              if (players[i] == fromId) {
+                var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
+                n.set(toId);
+                break;
+              }
             }
           }
-        }
-      });
-      ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
-      ref.once('value', function(snapshot) {
-        var oldMatches = snapshot.val();
-        if (oldMatches) {
-          var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
-          newRef.once('value', function(s) {
-            var newMatches = s.val() || {};
-            for (let key in oldMatches) {
-              newMatches[key] = oldMatches[key];
-            }
-            newRef.set(newMatches);
-          })
-        }
-      });
+        });
+        ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
+        ref.once('value', function(snapshot) {
+          var oldMatches = snapshot.val();
+          if (oldMatches) {
+            var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
+            newRef.once('value', function(s) {
+              var newMatches = s.val() || {};
+              for (let key in oldMatches) {
+                newMatches[key] = oldMatches[key];
+              }
+              newRef.set(newMatches);
+            })
+          }
+        });
+      }
     })
-    return;
-    // change player ids in all matches.
-
   },
   createPic: function(matchId, picId, picUrl, type, isTeamMatch) {
     var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);

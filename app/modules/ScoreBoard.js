@@ -75,16 +75,16 @@ var ScoreBoard = React.createClass({
           if (this.props.editable) {
             return (
               <td key={"score"+index}>
-                {this.getScoreCell(index - 2, score.scores[0])}
-                {this.getScoreCell(index - 1, score.scores[1])}
+                {this.getScoreCell(index - 2, score[0])}
+                {this.getScoreCell(index - 1, score[1])}
               </td>
             );
           } else {
-            if (this.props.status != "completed" || score.scores[0] + score.scores[1] > 0) {
+            if (this.props.status != "completed" || score[0] + score[1] > 0) {
               return (
                 <td key={"score"+index}>
-                  <div>{score.scores[0]}</div>
-                  <div>{score.scores[1]}</div>
+                  <div>{score[0]}</div>
+                  <div>{score[1]}</div>
                 </td>
               );
             } else {

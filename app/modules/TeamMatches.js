@@ -132,66 +132,6 @@ var TeamMatches = React.createClass({
       })
     });
   },
-  // getWinSetNum() {
-  //   var winningSet = 0;
-  //   if (this.state.match.status == "completed") {
-  //     for (var i in this.state.match.scores) {
-  //       if (this.state.match.scores[i].scores[0] > this.state.match.scores[i].scores[1]) {
-  //         winningSet+=1;
-  //       } else if (this.state.match.scores[i].scores[0] < this.state.match.scores[i].scores[1]) {
-  //         winningSet-=1;
-  //       }
-  //     }
-  //   }
-  //   return winningSet;
-  // },
-  // onScoresChange(event, index) {
-  //   var match = this.state.match;
-  //   match.scores[Math.floor(index/2)].scores[index%2] = event.target.value;
-  //   window.Fbase.updateMatchScores(match);
-  //   if (match.status == "pending") {
-  //     match.status = "active";
-  //     window.Fbase.updateMatchStatus(match);
-  //   }
-  //   window.Fbase.createComment(
-  //     this.state.match,
-  //     "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)].scores[0] + " : " + match.scores[Math.floor(index/2)].scores[1],
-  //     "system"
-  //   );
-  // },
-  // completeMatch() {
-  //   var match = this.state.match;
-  //   if (window.now(match.matchTime) > window.now() + 24*3600*1000) {
-  //     match.status = "pending";
-  //   } else {
-  //     if (match.scores[0].scores[0] + match.scores[0].scores[1] > 0) {
-  //       match.status = "completed";
-  //     } else {
-  //       match.status = "canceled";
-  //     }
-  //   }
-  //   window.Fbase.createComment(
-  //     this.state.match,
-  //     "Marked this match as " + match.status + ".",
-  //     "system"
-  //   );
-  //   window.Fbase.updateMatchStatus(match);
-  // },
-  // editMatch() {
-  //   var match = this.state.match;
-  //   match.status = "active";
-  //   window.Fbase.updateMatchStatus(match);
-  // },
-  // onNewCommentClick() {
-  //   if (!window.Fbase.authUid) {
-  //     alert("You need to login to leave a comment.");
-  //     return;
-  //   }
-  //   this.setState({showNewCommentsBox: true});
-  // },
-  // onNewCommentsBoxCloseClick() {
-  //   this.setState({showNewCommentsBox: false});
-  // },
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
@@ -300,7 +240,7 @@ var TeamMatches = React.createClass({
     var result = [];
     for (let i=0; i< count; i++) {
       result.push(
-        <PlayersSelect key={"playersSelect"+i} team0={this.state.team0} team1={this.state.team1} line={i} onChange={this.handlePlayerChange} ladder={this.props.ladder} teamIds={this.props.teamIds} />
+        <PlayersSelect key={"playersSelect"+i} line={i} onChange={this.handlePlayerChange} ladder={this.props.ladder} teamIds={this.props.teamIds} />
       )
     }
     return result;
