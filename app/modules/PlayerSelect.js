@@ -44,7 +44,7 @@ var PlayerSelect = React.createClass({
     userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(10).once("value", function(snapshot) {
       var object = snapshot.val();
       for (var key in object) {
-        if (object[key] && !window.Fbase.displayNames[key]) {
+        if (object[key] && !window.Fbase.displayNames[key] && !object[key].claimerId) {
           var item = {};
           item.value = key;
           item.label = object[key].displayName;

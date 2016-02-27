@@ -306,7 +306,7 @@ var TeamMatches = React.createClass({
     return (
       <div>
         <div>
-          <CommentsBox status={teamMatch.status} comments={teamMatch.comments} status={teamMatch.status} />
+          <CommentsBox status={teamMatch.status} comments={teamMatch.comments} />
           <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
           <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
             <img src="images/camera-icon.png" className="cameraIcon" />

@@ -1,7 +1,5 @@
 import React from 'react';
 import MatchBrief from './MatchBrief';
-import ScoreSelect from './ScoreSelect';
-import Notice from './Notice';
 var ReactFireMixin = require('reactfire');
 
 

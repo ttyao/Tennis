@@ -15,19 +15,28 @@ var PlayerName = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    if (!this.props.playerName || this.props.playerName == "loading") {
+    // if (!this.props.playerName || this.props.playerName == "loading") {
       var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
       this.bindAsObject(playerRef, "player");
+    // }
+  },
+  getNTRP() {
+    var ntrp = this.state.player.ntrp;
+    if (ntrp) {
+      if (ntrp.toString().length == 1) {
+        ntrp=ntrp+".0";
+      }
+      return (<span>({ntrp})</span>);
     }
   },
   getName() {
-    if (window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading") {
-      return (<Link to={"/player/0/"+this.props.playerId}>{this.props.playerName}</Link>);
-    } else {
+    // if (window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading") {
+    //   return (<Link to={"/player/0/"+this.props.playerId}>{this.props.playerName}</Link>);
+    // } else {
       if (this.state.player) {
-        return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName}</Link>);
+        return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName} {this.getNTRP()}</Link>);
       }
-    }
+    // }
   },
   render() {
     var cls = "";

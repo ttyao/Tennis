@@ -31,6 +31,13 @@ window.now = function(date) {
 };
 
 window.Utils = {
+  getDateString: function(time) {
+    if (time.toString().indexOf('-') >= 0) {
+      return moment(time).utcOffset(-8).format("MM/DD/YYYY");
+    } else {
+      return new Date(time).toLocaleDateString();
+    }
+  },
   equals: function(obj1, obj2) {
     var type1 = typeof(obj1);
     var type2 = typeof(obj2);

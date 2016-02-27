@@ -105,9 +105,9 @@ class Timestamp extends React.Component {
 
         switch (this.props.format) {
             case 'date':
-                return this._formatString("{0} {1} {2}",
+                return this._formatString("{2}/{1}/{0}",
                     date.getDate(),
-                    MONTHS[date.getMonth()],
+                    date.getMonth()+1,
                     date.getFullYear()
                 );
             case 'time':

@@ -11,11 +11,11 @@ var Login = React.createClass({
     var ref = window.Fbase.getRef();
     var authData = ref.getAuth();
     if (authData && authData.facebook) {
-      var userRef = ref.child("/web/data/users/"+authData["uid"]);
+      // var userRef = ref.child("/web/data/users/"+authData["uid"]);
       // userRef.child("loggedInAt").set(window.now());
-      if (authData.facebook) {
-        userRef.child("displayName").set(authData.facebook.displayName);
-      }
+      // if (authData.facebook) {
+      //   userRef.child("displayName").set(authData.facebook.displayName);
+      // }
     } else {
       window.Fbase.setSessionId();
     }
@@ -158,7 +158,7 @@ var Login = React.createClass({
               {this.fblogin()}
             </div>
             <div className="centerContainer">
-              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visitor</button>
+              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visit as guest</button>
             </div>
           </div>
         </Modal>

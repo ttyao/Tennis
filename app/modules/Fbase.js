@@ -18,7 +18,7 @@ window.Fbase = {
     ref.once('value', function(snapshot) {
       var data = snapshot.val();
       if (data) {
-        if (data.displayName) {
+        if (data.displayName && !data.claimerId) {
           window.Fbase.displayNames[uid] = data.displayName;
           // if (!data[key].displayName_) {
           //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
@@ -156,8 +156,8 @@ window.Fbase = {
     var m = {};
     var createdTime = window.now();
     var matchId = "match:"+createdTime+":"+this.authUid;
-    m["message"] = match.message;
     m["creator"] = this.authUid;
+    m["matchTime"] = window.now(match.matchMoment.unix()*1000);
 
     // There is no transaction support...
 
@@ -179,11 +179,12 @@ window.Fbase = {
       let Ref = this.getRef("web/data/teammatches/"+match.teamMatchId+"/matches/"+matchId);
       Ref.set(m);
     }
+
     m["scores"] = match.scores;
     m["updatedTime"] = createdTime;
     m["status"] = match.status;
-    m["matchTime"] = window.now(match.matchMoment.unix()*1000);
     m["ladderId"] = match.ladder.id;
+    m["message"] = match.message;
 
     m["players"] = [];
     m["players"][0] = match.players[0] ? match.players[0].toLowerCase() : null;
@@ -269,67 +270,82 @@ window.Fbase = {
     this.sessionId = "visitor:" + window.now() + ":" + s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
   },
-  mergeNorcalAccount: function(norcal, toId) {
-    var ref = this.getRef("web/data/users/norcal:"+norcal+":");
-    ref.orderByKey().startAt("norcal:"+norcal+"-").limitToFirst(1).once('value', function(snapshot) {
-      var oldUser = snapshot.val();
-      if (!oldUser || Object.keys(oldUser)[0].indexOf("norcal:"+norcal+"-") < 0) {
+  mergeNorcalAccount: function(usta, toId) {
+    var ref = this.getRef("web/data/users");
+    ref.orderByChild("usta").equalTo(usta).limitToFirst(1).once('value', function(snapshot) {
+      var oldUsers = snapshot.val();
+      if (!oldUsers) {
         alert("not found");
         return;
       }
+      var oldUserId = Object.keys(oldUsers)[0];
+      var oldUser = oldUsers[oldUserId];
+      if (oldUser.claimerId) {
+        alert("account already been claimed by "+oldUser.claimerId);
+        return;
+      }
+      delete oldUser.teams;
+      delete oldUser.matches;
       console.log(oldUser)
-      window.Fbase.mergeAccountA2B(Object.keys(oldUser)[0], toId);
+      ref = window.Fbase.getRef("web/data/users/"+toId);
+      ref.update(oldUser);
+      ref = window.Fbase.getRef("web/data/users/"+toId+"/merges/"+oldUserId);
+      ref.set(oldUserId);
+      ref = window.Fbase.getRef("web/data/users/"+oldUserId+"/claimerId");
+      ref.set(toId);
+
+      // window.Fbase.mergeAccountA2B(Object.keys(oldUser)[0], toId);
     });
   },
   mergeAccountA2B: function(fromId, toId) {
-    var ref = this.getRef("web/data/users/"+fromId);
-    ref.once('value', function(old) {
-      var oldUser = old.val();
-      if (!oldUser) {
-        alert("from id not found.");
-        return;
-      }
-      var oldRef = window.Fbase.getRef("web/data/users/"+fromId+"/claimerId");
-      oldRef.set(toId);
-      window.Fbase.log("merge "+ fromId + " to "+ toId, "write", "mergeAccount");
-      var newref = window.Fbase.getRef("web/data/users/"+toId);
-      for (let key in oldUser) {
-        if (key != "matches" && key != "ladders" && key != "teams" && key != "status" &&
-           (typeof(oldUser[key]) == 'number' || typeof(oldUser[key]) == 'string')) {
-          newref.child(key).set(oldUser[key]);
-        }
-      }
-      if (fromId.indexOf("norcal") < 0) {
-        var ref = window.Fbase.getRef("web/data/matches");
-        ref.once('value', function(snapshot){
-          var matches = snapshot.val();
-          for (let key in matches) {
-            var players = matches[key].players;
-            for (let i = 0; i < 4; i++) {
-              if (players[i] == fromId) {
-                var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
-                n.set(toId);
-                break;
-              }
-            }
-          }
-        });
-        ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
-        ref.once('value', function(snapshot) {
-          var oldMatches = snapshot.val();
-          if (oldMatches) {
-            var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
-            newRef.once('value', function(s) {
-              var newMatches = s.val() || {};
-              for (let key in oldMatches) {
-                newMatches[key] = oldMatches[key];
-              }
-              newRef.set(newMatches);
-            })
-          }
-        });
-      }
-    })
+    // var ref = this.getRef("web/data/users/"+fromId);
+    // ref.once('value', function(old) {
+    //   var oldUser = old.val();
+    //   if (!oldUser) {
+    //     alert("from id not found.");
+    //     return;
+    //   }
+    //   var oldRef = window.Fbase.getRef("web/data/users/"+fromId+"/claimerId");
+    //   oldRef.set(toId);
+    //   window.Fbase.log("merge "+ fromId + " to "+ toId, "write", "mergeAccount");
+    //   var newref = window.Fbase.getRef("web/data/users/"+toId);
+    //   for (let key in oldUser) {
+    //     if (key != "matches" && key != "ladders" && key != "teams" && key != "status" &&
+    //        (typeof(oldUser[key]) == 'number' || typeof(oldUser[key]) == 'string')) {
+    //       newref.child(key).set(oldUser[key]);
+    //     }
+    //   }
+    //   if (fromId.indexOf("n:") < 0) {
+    //     var ref = window.Fbase.getRef("web/data/matches");
+    //     ref.once('value', function(snapshot){
+    //       var matches = snapshot.val();
+    //       for (let key in matches) {
+    //         var players = matches[key].players;
+    //         for (let i = 0; i < 4; i++) {
+    //           if (players[i] == fromId) {
+    //             var n = window.Fbase.getRef("web/data/matches/"+key+"/players/"+i);
+    //             n.set(toId);
+    //             break;
+    //           }
+    //         }
+    //       }
+    //     });
+    //     ref = window.Fbase.getRef("web/data/users/"+fromId+"/matches");
+    //     ref.once('value', function(snapshot) {
+    //       var oldMatches = snapshot.val();
+    //       if (oldMatches) {
+    //         var newRef = window.Fbase.getRef("web/data/users/"+toId+"/matches");
+    //         newRef.once('value', function(s) {
+    //           var newMatches = s.val() || {};
+    //           for (let key in oldMatches) {
+    //             newMatches[key] = oldMatches[key];
+    //           }
+    //           newRef.set(newMatches);
+    //         })
+    //       }
+    //     });
+    //   }
+    // })
   },
   createPic: function(matchId, picId, picUrl, type, isTeamMatch) {
     var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);

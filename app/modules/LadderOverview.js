@@ -36,7 +36,6 @@ var LadderOverview = React.createClass({
     var ref = window.Fbase.getRef("web/data/ladders/"+ladderId);
     var self = this;
     ref.once('value', function(snapshot) {
-      console.log("loaded", snapshot.val())
       var ladder = snapshot.val();
       if (!ladder) {
         self.setState({ ladder: null, ladderId: null });
@@ -47,7 +46,6 @@ var LadderOverview = React.createClass({
       ladder.type = ladder.type || "normal"
       ladder.id = ladderId
 
-      console.log(ladder)
       // {
       //   matches: ladder.matches || {},
       //   teamMatches: ladder.teammatches || {},

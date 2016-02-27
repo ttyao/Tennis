@@ -90,7 +90,8 @@ var MatchBrief = React.createClass({
   propTypes: {
     matchId: React.PropTypes.string,
     onAfterLoad: React.PropTypes.func,
-    visible: React.PropTypes.bool
+    visible: React.PropTypes.bool,
+    showTeam: React.PropTypes.bool,
   },
 
   getInitialState () {
@@ -100,7 +101,8 @@ var MatchBrief = React.createClass({
   },
   getDefaultProps () {
     return {
-      visible: true
+      visible: true,
+      showTeam: false,
     };
   },
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
@@ -331,6 +333,17 @@ var MatchBrief = React.createClass({
       );
     }
   },
+  showTeam() {
+    if (this.props.showTeam) {
+      return (
+        <tr>
+          <td></td>
+          <td><Timestamp format="date" time={this.state.match.matchTime} /></td>
+          <td></td>
+        </tr>
+      );
+    }
+  },
   render() {
     if (this.state.match) {
       var match = this.state.match;
@@ -350,26 +363,29 @@ var MatchBrief = React.createClass({
             }
             <div>
               <table className="wholerow">
-                <tbody><tr>
-                  <td className="playersection centerContainer">
-                    <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
-                    <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
-                  </td>
-                  <td className="scoresection">
-                    <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
-                      editable={!!window.Fbase.authUid && match.status == "active"} />
-                  </td>
-                  <td className="playersection centerContainer">
-                    <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
-                    <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
-                  </td>
-                </tr></tbody>
+                <tbody>
+                  {this.showTeam()}
+                  <tr>
+                    <td className="playersection centerContainer">
+                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
+                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
+                    </td>
+                    <td className="scoresection">
+                      <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
+                        editable={!!window.Fbase.authUid && match.status == "active"} />
+                    </td>
+                    <td className="playersection centerContainer">
+                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
+                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
             {!this.state.match.teamMatchId &&
               <div>
                 <Linkify>{this.state.match.message}</Linkify>
-                <CommentsBox status={match.status} comments={match.comments} status={match.status} />
+                <CommentsBox status={match.status} comments={match.comments} />
                 <input className="commentInput" ref="commentInput" onKeyPress={this.onCommentInputChange} />
                 <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
                   <img src="images/camera-icon.png" className="cameraIcon" />
