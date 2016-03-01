@@ -8,8 +8,8 @@ var LadderSelect = React.createClass({
     onChange: React.PropTypes.func,
   },
   getInitialState () {
-    var userRef = window.Fbase.getRef("web/data/ladders");
-    userRef.orderByChild("name").limitToLast(5).once("value", function(snapshot) {});
+    // var userRef = window.Fbase.getRef("web/data/ladders/"+this.props.ladderId);
+    // userRef.orderByKey().equalTo(this.props.ladderId).limitToFirst(1).once("value", function(snapshot) {});
     return { ladder: this.props.ladder };
   },
   handleSelectChange (value, values) {
@@ -20,22 +20,25 @@ var LadderSelect = React.createClass({
   //          JSON.stringify(nextProps) != JSON.stringify(this.props)
   // },
   loadOptions(input, callback) {
-    var ops = [{value: this.props.ladder.id, label: this.props.ladder.name}];
+    var ops = [{value: this.props.ladder.id, label: this.props.ladder.displayName}];
     var keys = {};
     keys[this.props.ladder.id] = true;
     var userRef = window.Fbase.getRef("web/data/ladders");
-    userRef.orderByChild("name").limitToLast(5).once("value", function(snapshot) {
+    if (!input) {
+      input = "2016";
+    }
+    userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(10).once("value", function(snapshot) {
       var object = snapshot.val();
       for (var key in object) {
         if (object[key] && !keys[key]) {
           var item = {};
           item.value = key;
-          item.label = object[key].name;
+          item.label = object[key].displayName;
           keys[key] = true;
           ops.push(item);
         }
       }
-      callback(null, {options: ops, complete: true});
+      callback(null, {options: ops, complete: false});
     }, function() {}, this);
   },
 

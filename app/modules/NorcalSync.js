@@ -74,23 +74,33 @@ var NorcalSync = React.createClass({
     }
   },
 
-  updateLeagueTeam(lines) {
-    var completed = 0;
+  updateLeagueTeam(lines, start) {
     var requested = 0;
-    for(var line = 1; line < lines.length; line++){
-      var field = lines[line].split(";");
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("leagueteam starting:", start);
+    for (let i = 0; i < batch && start+i < lines.length; i++) {
+      var field = lines[i + start].split(";");
       if (field.length < 10 || field[1].indexOf("JTT") >=0) {
         console.log(field)
         break;
       }
       requested++;
-      if (requested % 100 == 0) {
-        console.log("requested: ", requested);
-      }
       var ref = window.Fbase.getRef("web/data/ladders/nl:"+field[0]+"/teams");
       var team = {};
-      team["nt:"+field[2]] = "nt:"+field[2];
-      ref.update(team);
+      team["nt:"+field[2]] = {
+        area:field[7],
+        displayName: field[3]
+      };
+      ref.update(team, function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateLeagueTeam(lines, start + batch);
+          }
+        }
+      });
       team = {
         n: field[2],
         ladderId: "nl:"+field[0],
@@ -102,58 +112,51 @@ var NorcalSync = React.createClass({
         orgId: field[8],
         org: field[9]
       };
+      requested++;
       ref = window.Fbase.getRef("web/data/teams/nt:"+field[2]);
-      ref.update(team, function(error) {
-        if (error) {
-          console.log(error);
-        } else {
+      ref.update(team, function(err) {
+        if (!err) {
           completed++;
-          if (completed % 100 == 0) console.log(window.now()+"complete:" + completed)
+          if (completed == requested) {
+            self.updateLeagueTeam(lines, start + batch);
+          }
         }
       });
     }
   },
 
-  updateTeamPlayer(lines) {
-    var completed = 0;
+  updateTeamPlayer(lines, start) {
     var requested = 0;
-    for(var line = 6000; line < 8000; line++){
-      var field = lines[line].split(";");
-      if (field.length < 2 || !field[1]) continue;
-
-      var players = {};
-      var ids = field[1].split(",");
-      for (let i in ids) {
-        if (ids[i]) {
-          requested++;
-          if (requested % 100 == 0) {
-            console.log("requested: ", requested);
-          }
-          let t = {};
-          t["nt:"+field[0]] = "nt:"+field[0];
-          players["n:"+ids[i]] = "n:"+ids[i];
-          let r = window.Fbase.getRef("web/data/users/n:"+ids[i]+"/teams");
-          r.update(t, function(err) {
-            if (err) {
-              console.log(err);
-            } else {
-              completed++;
-              if (completed % 100 == 0) console.log(window.now()+" complete:" + completed)
-            }
-          });
-        }
-      }
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("teamplayer starting:", start);
+    for (let i = 0; i < batch && start+i < lines.length; i++) {
+      var field = lines[i+start].split(";");
+      var ref = window.Fbase.getRef("web/data/users/n:"+field[1]+"/teams/nt:"+field[0]);
       requested++;
-      if (requested % 100 == 0) {
-        console.log("requested: ", requested);
-      }
-      var ref = window.Fbase.getRef("web/data/teams/nt:"+field[0]+"/players");
-      ref.set(players, function(err) {
-        if (err) {
-          console.log(err);
-        } else {
+      var rating = {
+        ntrp: field[2],
+        date: field[3],
+      };
+      // console.log(field)
+      ref.set(rating, function(err) {
+        if (!err) {
           completed++;
-          if (completed % 100 == 0) console.log(window.now()+" complete:" + completed)
+          if (completed == requested) {
+            self.updateTeamPlayer(lines, start + batch);
+          }
+        }
+      });
+      ref = window.Fbase.getRef("web/data/teams/nt:"+field[0]+"/users/"+field[1]);
+      requested++;
+      // console.log(field)
+      ref.set("1", function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateTeamPlayer(lines, start + batch);
+          }
         }
       });
     }
@@ -175,7 +178,8 @@ var NorcalSync = React.createClass({
         var teamMatch = {
           teams: ["nt:"+field[1], "nt:"+field[2]],
           status: "completed",
-          matchTime: window.now(new Date(field[6]).getTime())
+          time: window.now(new Date(field[6]).getTime(), true),
+          matchTime: null
         };
         // console.log(teamMatch);
 
@@ -216,11 +220,13 @@ var NorcalSync = React.createClass({
       var players = field[5].split(",");
       var match = {
         line: field[3],
-        teamMatchId: "ntm:"+field[0],
+        tmId: "ntm:"+field[0],
+        teamMatchId: null,
         scores: [],
         players: [],
         status: "completed",
-        matchTime: window.now(new Date(field[6]).getTime())
+        matchTime: null,
+        time: window.now(new Date(field[6]).getTime(), true)
       }
       var scores = field[4].split(",");
       for (let s in scores) {
@@ -257,7 +263,7 @@ var NorcalSync = React.createClass({
       for (let p in players) {
         ref = window.Fbase.getRef("web/data/users/n:"+players[p]+"/matches/nm:"+field[0]+":"+field[3]);
         requested++;
-        ref.set({matchTime:match.matchTime}, function(err) {
+        ref.set({time:match.time}, function(err) {
           if (!err) {
             completed++;
             if (completed == requested) {
@@ -284,7 +290,7 @@ var NorcalSync = React.createClass({
         status: field[4],
       };
       if (new Date(field[3]) != "Invalid Date") {
-        teamMatch["matchTime"] = window.now(new Date(field[3]).getTime());
+        teamMatch["time"] = window.now(new Date(field[3]).getTime(), true);
       }
       // console.log(teamMatch);
 
@@ -335,10 +341,10 @@ var NorcalSync = React.createClass({
           self.updateTeam(lines);
           break;
         case "leagueteam":
-          self.updateLeagueTeam(lines);
+          self.updateLeagueTeam(lines, 1);
           break;
         case "teamplayer":
-          self.updateTeamPlayer(lines);
+          self.updateTeamPlayer(lines, 1);
           break;
         case "player":
           self.updatePlayer(lines);

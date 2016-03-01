@@ -8,6 +8,7 @@ import ScoreBoard from './ScoreBoard';
 import CommentsBox from './CommentsBox';
 import Linkify from 'react-linkify';
 import Progress from './Progress';
+import { Link } from 'react-router'
 
 import Modal from 'react-modal';
 
@@ -110,6 +111,34 @@ var MatchBrief = React.createClass({
   componentWillMount () {
     var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
     this.bindAsObject(ref, "match");
+    var self = this;
+    ref.once("value", function(snapshot) {
+      var data = snapshot.val();
+      if (data && data.tmId) {
+        var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
+        r.once("value", function(snapshot) {
+          var teams = snapshot.val();
+          if (teams) {
+            self.setState({teams:teams})
+            let t0 = window.Fbase.getRef("web/data/teams/"+teams[0]);
+            t0.once("value", function(t) {
+              self.setState({team0: t.val()});
+            })
+            let t1 = window.Fbase.getRef("web/data/teams/"+teams[1]);
+            t1.once("value", function(t) {
+              self.setState({team1: t.val()});
+            })
+          }
+        })
+      }
+      // console.log(data)
+      if (data && data.ladderId) {
+        let l = window.Fbase.getRef("web/data/ladders/"+data.ladderId);
+        l.once("value", function(ladder) {
+          self.setState({ladder: ladder.val(), ladderId:data.ladderId});
+        })
+      }
+    });
   },
   getWinSetNum() {
     var winningSet = 0;
@@ -132,9 +161,9 @@ var MatchBrief = React.createClass({
       match.status = "active";
       window.Fbase.updateMatchStatus(match);
     }
-    if (this.state.match.teamMatchId) {
+    if (this.state.match.tmId) {
       window.Fbase.createComment(
-        this.state.match.teamMatchId,
+        this.state.match.tmId,
         "Updated line "+this.props.line+": set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)][0] + " : " + match.scores[Math.floor(index/2)][1],
         "system",
         true
@@ -149,7 +178,7 @@ var MatchBrief = React.createClass({
   },
   completeMatch() {
     var match = this.state.match;
-    if (window.now(match.matchTime) > window.now() + 24*3600*1000) {
+    if (window.now(match.time) > window.now() + 24*3600*1000) {
       match.status = "pending";
     } else {
       if (match.scores[0][0] + match.scores[0][1] > 0) {
@@ -158,9 +187,9 @@ var MatchBrief = React.createClass({
         match.status = "canceled";
       }
     }
-    if (match.teamMatchId) {
+    if (match.tmId) {
       window.Fbase.createComment(
-        this.teamMatchId,
+        match.tmId,
         "Marked line "+this.props.line+" as " + match.status + ".",
         "system",
         true
@@ -283,14 +312,15 @@ var MatchBrief = React.createClass({
     // if (this.state.refreshName != nextState.refreshName) {
     //   return true;
     // }
-    return JSON.stringify(this.state.match) != JSON.stringify(nextState.match);
+    // return true;
+    return JSON.stringify(this.state) != JSON.stringify(nextState);
   },
   canEditMatch() {
     return this.state.match.creator == window.Fbase.authUid;
   },
   getFooter() {
     var match = this.state.match;
-    if (match.teamMatchId) {
+    if (match.tmId) {
       if (this.canEditMatch()) {
         if (match.status == "active") {
           return (<button onClick={this.completeMatch} >Complete</button>);
@@ -305,7 +335,7 @@ var MatchBrief = React.createClass({
       };
       return (
         <div>
-          <Timestamp time={match.matchTime} className="floatleft" />
+          <Timestamp time={match.time} format="date" className="floatleft" />
           <div style={progressStyle} >
             <Progress radius="8" strokeWidth="3" percentage={this.state.uploadPercentage}/>
           </div>
@@ -335,13 +365,22 @@ var MatchBrief = React.createClass({
   },
   showTeam() {
     if (this.props.showTeam) {
-      return (
-        <tr>
-          <td></td>
-          <td><Timestamp format="date" time={this.state.match.matchTime} /></td>
-          <td></td>
-        </tr>
-      );
+      if (this.state.team0 && this.state.team1) {
+        return (
+          <tr className='headerRow'>
+            <td className="centerContainer"><Link to={"/ladder/"+this.state.team0.ladderId+"/"+this.state.teams[0]}>{this.state.team0.displayName}</Link></td>
+            <td className="centerContainer"><Timestamp format="date" time={this.state.match.time} /></td>
+            <td className="centerContainer"><Link to={"/ladder/"+this.state.team1.ladderId+"/"+this.state.teams[1]}>{this.state.team1.displayName}</Link></td>
+          </tr>
+        );
+      }
+      if (this.state.ladder) {
+        return (
+          <tr className='headerRow'>
+            <td colSpan="3" className="centerContainer"><Link to={"/ladder/"+this.state.ladderId}>{this.state.ladder.displayName}</Link></td>
+          </tr>
+        );
+      }
     }
   },
   render() {
@@ -355,9 +394,12 @@ var MatchBrief = React.createClass({
       }
       if (this.props.visible && this.state.match.players && this.state.match.status != "canceled") {
         var winSetNum = this.getWinSetNum();
-
+        var cls = "";
+        if (!this.props.isTeamMatchView) {
+          cls = "matchBriefBody"
+        }
         return (
-          <div className="matchBriefBody">
+          <div className={cls}>
             { window.Fbase.isDebug() &&
               <div>{match['.key']}</div>
             }
@@ -367,22 +409,22 @@ var MatchBrief = React.createClass({
                   {this.showTeam()}
                   <tr>
                     <td className="playersection centerContainer">
-                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0]} playerId={match.players[0]} />
-                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2]} playerId={match.players[2]} />
+                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0] && "player0"} playerId={match.players[0]} />
+                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2] && "player2"} playerId={match.players[2]} />
                     </td>
                     <td className="scoresection">
                       <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
                         editable={!!window.Fbase.authUid && match.status == "active"} />
                     </td>
                     <td className="playersection centerContainer">
-                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1]} playerId={match.players[1]} />
-                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3]} playerId={match.players[3]} />
+                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1] && "player1"} playerId={match.players[1]} />
+                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3] && "player3"} playerId={match.players[3]} />
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            {!this.state.match.teamMatchId &&
+            {!this.state.match.tmId &&
               <div>
                 <Linkify>{this.state.match.message}</Linkify>
                 <CommentsBox status={match.status} comments={match.comments} />

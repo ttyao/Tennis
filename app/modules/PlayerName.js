@@ -35,6 +35,8 @@ var PlayerName = React.createClass({
     // } else {
       if (this.state.player) {
         return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName} {this.getNTRP()}</Link>);
+      } else if (!this.props.playerId) {
+        return "Default"
       }
     // }
   },

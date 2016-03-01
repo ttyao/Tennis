@@ -156,8 +156,7 @@ window.Fbase = {
     var m = {};
     var createdTime = window.now();
     var matchId = "match:"+createdTime+":"+this.authUid;
-    m["creator"] = this.authUid;
-    m["matchTime"] = window.now(match.matchMoment.unix()*1000);
+    m["time"] = window.now(match.matchMoment.unix()*1000);
 
     // There is no transaction support...
 
@@ -174,12 +173,13 @@ window.Fbase = {
       }
     }, this);
 
-    if (match.teamMatchId) {
-      m["teamMatchId"] = match.teamMatchId;
-      let Ref = this.getRef("web/data/teammatches/"+match.teamMatchId+"/matches/"+matchId);
+    if (match.tmId) {
+      m["tmId"] = match.tmId;
+      let Ref = this.getRef("web/data/teammatches/"+match.tmId+"/matches/"+matchId);
       Ref.set(m);
     }
 
+    m["creator"] = this.authUid;
     m["scores"] = match.scores;
     m["updatedTime"] = createdTime;
     m["status"] = match.status;
@@ -252,10 +252,10 @@ window.Fbase = {
           return;
         }
         log.userAgent = navigator.userAgent;
-        var ref = this.getRef('web/data/logs/visitlog/'+window.now()+"-"+id);
+        var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/visitlog/'+window.now()+"-"+id);
         ref.set(log);
       }
-      var logRef = this.getRef('web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
+      var logRef = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
       logRef.set(log);
     } catch (err) {
       console.log(err)
@@ -461,6 +461,10 @@ window.Fbase = {
   },
   updateLadderStats(ladderId, stats) {
     var ref = this.getRef("web/data/ladders/"+ladderId+"/stats");
+    ref.set(stats);
+  },
+  updateTeamStats(teamId, stats) {
+    var ref = this.getRef("web/data/teams/"+teamId+"/stats");
     ref.set(stats);
   }
 };

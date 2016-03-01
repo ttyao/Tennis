@@ -11,6 +11,7 @@ import Progress from './Progress';
 import moment from 'moment';
 import PlayersSelect from './PlayersSelect';
 import MatchBrief from './MatchBrief';
+import { Link } from 'react-router'
 
 import Modal from 'react-modal';
 
@@ -116,17 +117,17 @@ var TeamMatches = React.createClass({
     ref.once('value', function(snapshot) {
       let data = snapshot.val();
       if (!data || !data.teams || Object.keys(data.teams).length != 2) return;
-
+      console.log(data)
       var teamIds = Object.keys(data.teams);
       self.setState({
-        teamIds: teamIds
+        teamIds: data.teams
       });
 
-      ref = window.Fbase.getRef("web/data/teams/"+teamIds[0]);
+      ref = window.Fbase.getRef("web/data/teams/"+data.teams[0]);
       ref.once('value', function(snapshot) {
         self.setState({team0: snapshot.val()});
       })
-      ref = window.Fbase.getRef("web/data/teams/"+teamIds[1]);
+      ref = window.Fbase.getRef("web/data/teams/"+data.teams[1]);
       ref.once('value', function(snapshot) {
         self.setState({team1: snapshot.val()});
       })
@@ -265,7 +266,7 @@ var TeamMatches = React.createClass({
           scores: [{scores:[0,0]},{scores:[0,0]},{scores:[0,0]}],
           creator: window.Fbase.authUid,
           ladder: this.props.ladder,
-          teamMatchId: this.props.teamMatchId,
+          tmId: this.props.teamMatchId,
           status: "active",
           players: pendingMatches[i],
           matchMoment: moment(),
@@ -275,6 +276,11 @@ var TeamMatches = React.createClass({
       }
     }
     window.Fbase.updateTeamMatchStatus(this.props.teamMatchId, "active");
+  },
+  onAfterLoad(matchId, match) {
+    if (this.props.onAfterLoad) {
+      this.props.onAfterLoad(matchId, match)
+    }
   },
   getMatches() {
     if (this.state.teamMatch.status == "pending") {
@@ -291,7 +297,7 @@ var TeamMatches = React.createClass({
       var line = 1;
       for (let i in this.state.teamMatch.matches) {
         result.push(
-          <MatchBrief visible={true} key={i} matchId={i} line={line++} />
+          <MatchBrief isTeamMatchView={true} visible={true} key={i} matchId={i} line={line++} onAfterLoad={this.onAfterLoad} />
         );
       }
       return result;
@@ -311,32 +317,27 @@ var TeamMatches = React.createClass({
           <Dropzone onDrop={this.onUploadPics} className="pictureUpload">
             <img src="images/camera-icon.png" className="cameraIcon" />
           </Dropzone>
-        </div>
-        <div>
-          <Timestamp time={teamMatch.matchTime} className="floatleft" />
           <div style={progressStyle} >
             <Progress radius="8" strokeWidth="3" percentage={this.state.uploadPercentage}/>
           </div>
-          <div className='floatright'>
-            <Modal
-              className="Modal__Bootstrap modal-dialog"
-              closeTimeoutMS={150}
-              isOpen={this.state.showNewCommentsBox}
-              onRequestClose={this.handleModalCloseRequest}
-            >
-              <div>Video Title:</div>
-              <input ref="newVideoTitle" />
-              <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
-              <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
-            </Modal>
-            {teamMatch.status}
-          </div>
+        </div>
+        <div>
+          <Modal
+            className="Modal__Bootstrap modal-dialog"
+            closeTimeoutMS={150}
+            isOpen={this.state.showNewCommentsBox}
+            onRequestClose={this.handleModalCloseRequest}
+          >
+            <div>Video Title:</div>
+            <input ref="newVideoTitle" />
+            <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
+            <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+          </Modal>
         </div>
       </div>
     );
   },
   render() {
-    console.log(this.state)
     if (this.state.teamMatch && this.state.team0 && this.state.team1) {
       var matches = this.state.matches;
       return (
@@ -344,14 +345,15 @@ var TeamMatches = React.createClass({
           <div>
             <table className="wholerow">
               <tbody>
-                <tr>
+                <tr className="headerRow">
                   <td className="playersection centerContainer">
-                  {this.state.team0.name}
+                    <Link to={"/ladder/"+this.state.team0.ladderId+"/"+this.state.teamIds[0]}>{this.state.team0.displayName}</Link>
                   </td>
-                  <td className="scoresection">
+                  <td className="centerContainer">
+                    <Timestamp format="date" time={this.state.teamMatch.time} />
                   </td>
                   <td className="playersection centerContainer">
-                  {this.state.team1.name}
+                    <Link to={"/ladder/"+this.state.team1.ladderId+"/"+this.state.teamIds[1]}>{this.state.team1.displayName}</Link>
                   </td>
                 </tr>
               </tbody>

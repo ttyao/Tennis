@@ -99,9 +99,9 @@ export default class Menu extends React.Component {
   getTabIndex(value) {
     const tab_maps = {
       "ladder" : 1,
-      "recent" : 2,
-      "player" : 3,
-      "create" : 4
+      "recent" : 3,
+      "player" : 2,
+      "profile" : 4
     }
     var index = parseInt(value);
     if (index) {
@@ -118,31 +118,26 @@ export default class Menu extends React.Component {
         </div>
         <Tabs tabActive={this.getTabIndex(this.props.params.tab)} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
           <Tabs.Panel title='Ladder'>
-            <LadderOverview ladderId={this.props.params.ladderId} {...this.props} />
-          </Tabs.Panel>
-          <Tabs.Panel title="USTA">
-            <MatchList value={this.state.scores} />
+            <LadderOverview ladderId={this.props.params.ladderId} {...this.props} teamId={this.props.params.playerId} />
           </Tabs.Panel>
           <Tabs.Panel title="Player">
             <PlayerDetails playerId={this.props.params.playerId} {...this.props} />
             <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
-          <Tabs.Panel title="Me">
-            <Profile />
+          <Tabs.Panel title="Recent">
+            <MatchList value={this.state.scores} />
           </Tabs.Panel>
           {window.Fbase.authUid == window.Fbase.Henry &&
-
-              <Tabs.Panel title="Ad">
-                <Dropzone onDrop={this.onUpload} className="pictureUpload">
-                  <div>Try</div>
-                </Dropzone>
-                <button onClick={this.onTestButtonClick}>Test</button>
-                <img src={this.state.file} className="player" />
-                <div>from ID:<input ref="fromId"/></div>
-                <div>to ID:<input ref="toId"/></div>
-                <NorcalSync />
-              </Tabs.Panel>
-
+            <Tabs.Panel title="Ad">
+              <Dropzone onDrop={this.onUpload} className="pictureUpload">
+                <div>Try</div>
+              </Dropzone>
+              <button onClick={this.onTestButtonClick}>Test</button>
+              <img src={this.state.file} className="player" />
+              <div>from ID:<input ref="fromId"/></div>
+              <div>to ID:<input ref="toId"/></div>
+              <NorcalSync />
+            </Tabs.Panel>
           }
         </Tabs>
       </div>

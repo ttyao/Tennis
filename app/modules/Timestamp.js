@@ -161,7 +161,10 @@ class Timestamp extends React.Component {
         for (var i in t) {
             if (t[i] !== '' && isNaN(parseInt(t[i], 10))) return false;
         }
-        if (t.length < 6) return false;
+
+        while (t.length < 7) {
+            t.push(0);
+        }
 
         var d = new Date(t[0], t[1]-1, t[2], t[3], t[4], t[5], t[6]);
         // // offset from Pacific

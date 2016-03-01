@@ -1,6 +1,7 @@
 import React from 'react';
 import MatchBrief from './MatchBrief';
 import PlayerSelect from './PlayerSelect';
+import TeamName from "./TeamName";
 var ReactFireMixin = require('reactfire');
 
 var PlayerDetails = React.createClass({
@@ -136,19 +137,51 @@ var PlayerDetails = React.createClass({
       window.Fbase.mergeNorcalAccount(event.target.value, this.state.playerId);
     }
   },
+  getCurrentTeams() {
+    var t = [];
+    if (this.state.player.teams) {
+      var keys = Object.keys(this.state.player.teams);
+      for (let key in this.state.player.teams) {
+        let year = (new Date(this.state.player.teams[key].date)).getYear();
+        if (year >= (new Date()).getYear() - 1) {
+          t.push(<TeamName key={key} teamId={key} />);
+        }
+      }
+    }
+    if (this.state.merges) {
+      for (let i = 0; i< this.state.merges; i++) {
+        if (this.state["merge"+i]) {
+          var keys = Object.keys(this.state["merge"+i].teams);
+          for (let key in this.state["merge"+i].teams) {
+            let year = (new Date(this.state["merge"+i].teams[key].date)).getYear();
+            if (year >= (new Date()).getYear() - 1) {
+              t.push(<TeamName key={key} teamId={key} />);
+            }
+          }
+        }
+      }
+    }
+    return t;
+  },
   getPlayerDetails() {
     if (this.state.player) {
       return (
         <div className="matchBriefBody">
-          <table className="wholerow"><tbody><tr>
-            <td><b>NTRP:</b></td>
-            {this.state.player.ntrp ?
-              <td>{this.state.player.ntrp}{this.state.player.ntrpType}</td> :
-              null
-            }
-            <td><b>City:</b></td>
-            {this.state.player.residence && <td>{this.state.player.residence}</td>}
-          </tr></tbody></table>
+          <table className="wholerow"><tbody>
+            <tr>
+              <td className="rightalign"><b>NTRP:</b></td>
+              {this.state.player.ntrp ?
+                <td className="leftalign">{this.state.player.ntrp}{this.state.player.ntrpType}</td> :
+                null
+              }
+              <td className="rightalign"><b>City:</b></td>
+              {this.state.player.residence && <td  className="leftalign">{this.state.player.residence}</td>}
+            </tr>
+            <tr>
+              <td className="rightalign"><b>Current:</b></td>
+              <td className="leftalign" colSpan="3">{this.getCurrentTeams()}</td>
+            </tr>
+          </tbody></table>
           {window.Fbase.authUid == window.Fbase.Henry && !this.state.player.norcal &&
             <input ref="norcalIdInput" onKeyPress={this.onNorcalIdEntered}/>
           }
@@ -156,13 +189,44 @@ var PlayerDetails = React.createClass({
       );
     }
   },
+  updateTime(key) {
+    var ref = window.Fbase.getRef("web/data/matches/"+key);
+    ref.once("value", function(snapshot) {
+      var data = snapshot.val();
+      if (data) {
+        var time = data.time;
+        if (!time) {
+          time = window.now(data.matchTime);
+          console.log(key, data.time, window.now(data.matchTime), data.matchTime)
+          if (time) {
+            // var r = window.Fbase.getRef("web/data/matches/"+key);
+            ref.update({
+              time: time,
+              matchTime: null
+            })
+          }
+        }
+        if (data && time && data.players) {
+          for (var i in data.players) {
+            // console.log(data.players[i],key, time)
+            var r = window.Fbase.getRef("web/data/users/"+data.players[i]+"/matches/"+ key);
+            r.set({time:time});
+          }
+        }
+      }
+    });
+  },
   getMatches() {
+
     var m = [];
     if (this.state.player.matches) {
       var keys = Object.keys(this.state.player.matches);
       for (let key in this.state.player.matches) {
-        m.push({key:key, matchTime:this.state.player.matches[key].matchTime})
-        // console.log(this.state.player.matches[key]);
+        if (!this.state.player.matches[key].time) {
+          this.updateTime(key);
+        } else {
+          m.push({key:key, time:this.state.player.matches[key].time});
+        }
       }
     }
     if (this.state.merges) {
@@ -170,26 +234,33 @@ var PlayerDetails = React.createClass({
         if (this.state["merge"+i]) {
           var keys = Object.keys(this.state["merge"+i].matches);
           for (let key in this.state["merge"+i].matches) {
-            m.push({key:key, matchTime:this.state["merge"+i].matches[key].matchTime});
-            console.log(this.state["merge"+i].matches[key]);
+            m.push({key:key, time:this.state["merge"+i].matches[key].time});
+            // console.log(this.state["merge"+i].matches[key]);
           }
         }
       }
     }
     var result = [];
     var visited = {};
+    var keys = {}
+    var max = 10;
     for (let i in m) {
-      // console.log(visited)
       let candidate = -1;
       for (let j in m) {
-        if (!visited[j] && (candidate < 0 || m[j].matchTime > m[candidate].matchTime)) {
+        if (!visited[j] && (candidate < 0 || m[j].time > m[candidate].time)) {
           candidate = j;
         }
       }
-      // console.log(candidate, m[candidate])
-      result.push(
-        <MatchBrief key={m[candidate].key} matchId={m[candidate].key} showTeam={true} visible={true} onAfterLoad={this.onMatchBriefLoad} />
-      );
+      if (max > 0) {
+        result.push(
+          <MatchBrief key={m[candidate].key} matchId={m[candidate].key} showTeam={true} visible={true} onAfterLoad={this.onMatchBriefLoad} />
+        );
+      } else {
+        return result;
+        result.push(
+        <div key={m[candidate].key}>{m[candidate].key}</div>);
+      }
+      max--;
       visited[candidate] = true;
     }
     return result;
@@ -209,7 +280,7 @@ var PlayerDetails = React.createClass({
               </td>
             </tr></tbody>
           </table>
-          { this.state.player.matches ? this.getMatches() : ""}
+          {this.getMatches()}
         </div>
       );
     }

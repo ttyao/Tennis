@@ -7,6 +7,7 @@ import Modal from 'react-modal';
 import MatchRecorder from './MatchRecorder';
 import TeamMatches from './TeamMatches';
 import ReactDOM from 'react-dom';
+
 var update = require('react-addons-update');
 
 var appElement = document.getElementById('modal');
@@ -20,7 +21,6 @@ var LadderOverview = React.createClass({
   // mixins: [ReactFireMixin],
   getInitialState () {
     return {
-      ladderId: this.props.ladderId || "ladder:2016-02-15-07-42-03-177:facebook:539060618",
       matches: {},
       loadedMatches:{},
       showAddPlayerModal: false,
@@ -30,44 +30,92 @@ var LadderOverview = React.createClass({
     };
   },
   componentWillMount() {
-    this.loadLadder(this.state.ladderId)
+    this.loadLadder(this.props.ladderId || "ladder:2016-02-15-07-42-03-177:facebook:539060618", this.props.teamId);
   },
-  loadLadder(ladderId) {
-    var ref = window.Fbase.getRef("web/data/ladders/"+ladderId);
+  loadTeam(ladderId, ladder, playerId) {
+    var u = window.Fbase.getRef("web/data/users/"+playerId);
     var self = this;
-    ref.once('value', function(snapshot) {
-      var ladder = snapshot.val();
-      if (!ladder) {
-        self.setState({ ladder: null, ladderId: null });
-        return;
-      }
-      ladder.matches = ladder.matches || {}
-      ladder.teamMatches = ladder.teamMatches || {}
-      ladder.type = ladder.type || "normal"
-      ladder.id = ladderId
-
-      // {
-      //   matches: ladder.matches || {},
-      //   teamMatches: ladder.teammatches || {},
-      //   teams: ladder.teams || {},
-      //   type: ladder.type || "normal",
-      //   players: ladder.users ? Object.keys(ladder.users).join(",") : "",
-      //   stats: ladder.stats
-      // }
-
-      self.setState({
-        ladder: ladder,
-        ladderId: ladderId,
-        players: ladder.users ? Object.keys(ladder.users).join(",") : "",
-        loadedMatches: {},
-      });
-
-      if (ladder.users && Object.keys(ladder.users).length) {
-        for (let id in ladder.users) {
-          window.Fbase.getDisplayName(id);
+    u.once("value", function(snapshot) {
+      var data = snapshot.val();
+      if (data) {
+        console.log(ladder)
+        let teamIds = Object.keys(ladder.teams);
+        for (let i in data.teams) {
+          if (teamIds.indexOf(i) >= 0) {
+            self.loadLadder(ladderId, i);
+            return;
+          }
         }
+        if (data.merges) {
+          for (let i in data.merges) {
+            self.loadTeam(ladderId, ladder, i);
+          }
+        }
+      } else {
+        self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
       }
-    });
+    })
+  },
+  loadLadder(ladderId, teamId) {
+    var self = this;
+    if (ladderId != this.state.ladderId) {
+      var ref = window.Fbase.getRef("web/data/ladders/"+ladderId);
+      ref.once('value', function(snapshot) {
+        var ladder = snapshot.val();
+        if (!ladder) {
+          self.setState({ ladder: null, ladderId: null });
+          return;
+        }
+        ladder.matches = ladder.matches || {}
+        ladder.teamMatches = ladder.teamMatches || {}
+        ladder.type = ladder.type || "normal"
+        ladder.id = ladderId
+
+        var areas = {}
+        if (ladder.teams) {
+          for (let i in ladder.teams) {
+            if (!areas[ladder.teams[i].area]) {
+              areas[ladder.teams[i].area] = ladder.teams[i].area;
+            }
+          }
+          if (!teamId) {
+            if (window.Fbase.authUid) {
+              self.loadTeam(ladderId, ladder, window.Fbase.authUid);
+            } else {
+              self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
+            }
+
+          }
+        }
+
+        self.setState({
+          ladder: ladder,
+          ladderId: ladderId,
+          players: ladder.users ? Object.keys(ladder.users).join(",") : "",
+          loadedMatches: {},
+          areas: areas
+        });
+
+        if (ladder.users && Object.keys(ladder.users).length) {
+          for (let id in ladder.users) {
+            window.Fbase.getDisplayName(id);
+          }
+        }
+      });
+    }
+
+    if (teamId && teamId != this.state.teamId) {
+      ref = window.Fbase.getRef("web/data/teams/"+teamId);
+      ref.once("value", function(snapshot) {
+        var team = snapshot.val();
+        if (!team) {
+          self.setState({team: null, teamId: null, area: null})
+        } else {
+          team.id = teamId;
+          self.setState({team: team, teamId: teamId, area: team.area});
+        }
+      });
+    }
   },
   onLadderChange(value) {
     this.loadLadder(value);
@@ -78,14 +126,14 @@ var LadderOverview = React.createClass({
   },
   onMatchBriefLoad(matchId, match) {
 
-    if (this.state.ladder.matches[matchId]) {
+    // if (this.state.ladder.matches[matchId]) {
       var matches = this.state.loadedMatches;
       if (!matches[matchId]) {
         matches[matchId] = match;
         this.setState({loadedMatches:matches});
       }
       // console.log("loaded", matches)
-    }
+    // }
   },
   getMatchList() {
     if (this.state.ladder.type == "normal") {
@@ -95,11 +143,17 @@ var LadderOverview = React.createClass({
           <MatchBrief key={matchId} matchId={matchId} visible={true} onAfterLoad={this.onMatchBriefLoad} />);
       }
       return (<div>{result.reverse()}</div>);
-    } else if (this.state.ladder.type.indexOf("usta") >= 0) {
+    } else {
       var result = [];
       for (let teamMatchId in this.state.ladder.teamMatches) {
         result.push(
-          <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder} />);
+          <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder} onAfterLoad={this.onMatchBriefLoad} />);
+      }
+      if (this.state.team) {
+        for (let teamMatchId in this.state.team.matches) {
+          result.push(
+            <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder}  onAfterLoad={this.onMatchBriefLoad} />);
+        }
       }
       return (<div>{result.reverse()}</div>);
     }
@@ -188,6 +242,39 @@ var LadderOverview = React.createClass({
   onMatchCreated() {
     this.setState({showCreateMatchModal: false});
   },
+  onTeamChange(event) {
+    this.loadLadder(this.state.ladderId, event.target.value);
+    this.props.history.push("/ladder/"+this.state.ladderId+"/"+event.target.value);
+  },
+  onAreaChange(event) {
+    var area = event.target.value;
+    for (var i in this.state.ladder.teams) {
+      if (this.state.ladder.teams[i].area == area) {
+        this.loadLadder(this.state.ladderId, i);
+        this.props.history.push("/ladder/"+this.state.ladderId+"/"+i);
+        return;
+      }
+    }
+  },
+  getTeamSelect() {
+    if (this.state.ladder.type && this.state.ladder.type != "normal" && this.state.team) {
+      var options = [];
+      var teams = [];
+      for (let a in this.state.areas) {
+        options.push(<option label={a} value={a} />);
+      }
+      for (let a in this.state.ladder.teams) {
+        if (this.state.ladder.teams[a].area == this.state.team.area) {
+          teams.push(<option label={this.state.ladder.teams[a].displayName} value ={a} />);
+        }
+      }
+      return (
+        <div>
+          Area: <select onChange={this.onAreaChange} defaultValue={this.state.area}>{options}</select> Team: <select className="teamSelect" onChange={this.onTeamChange} defaultValue={this.state.teamId}>{teams}</select>
+        </div>
+      );
+    }
+  },
   render () {
     if (!this.state.ladder) {
       return (
@@ -196,7 +283,7 @@ var LadderOverview = React.createClass({
             <td className="playersection">
               <span className="section">
                 <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
-                <LadderStats ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
+                <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
               </span>
             </td>
           </tr></tbody>
@@ -218,7 +305,8 @@ var LadderOverview = React.createClass({
             <td className="playersection">
               <span className="section">
                 <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
-                <LadderStats ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
+                {this.getTeamSelect()}
+                <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
               </span>
             </td>
           </tr></tbody>
