@@ -119,14 +119,25 @@ window.Fbase = {
     });
   },
   updateLadderRoster: function(roster, ladder) {
-    var ref = this.getRef("web/data/ladders/"+ladder+"/users");
-    var players = {}
+    // remove player
     var users = roster ? roster.split(",") : [];
+    console.log(roster, ladder)
+    for (let player in ladder.users) {
+      if (users.indexOf(player) < 0) {
+        let ref = this.getRef("web/data/users/"+player+"/ladders/"+ladder.id);
+        ref.remove();
+      }
+    }
+
+    var ref = this.getRef("web/data/ladders/"+ladder.id+"/users");
+    var players = {}
     for (let i in users) {
       players[users[i]] = users[i];
+      if (!ladder.users[users[i]]) {
+        let p = this.getRef("web/data/users/"+users[i]+"/ladders/"+ladder.id+"/date");
+        p.set(window.now());
+      }
     }
-    console.log(players)
-    console.log(users)
     ref.set(players);
     this.log("update ladder roster:"+ladder,"write", "updateRoster");
   },

@@ -635,7 +635,16 @@ h6,
   background-color: rgba(210, 210, 255, 0.3);
 }
 .teamSelect {
-  width: 55%;
+  width: 100%;
+}
+.smallpercent {
+  width: 2%;
+}
+.notablespacing {
+  border-spacing: 0;
+}
+.checkmark {
+  width: 20px;
 }
 /*
 

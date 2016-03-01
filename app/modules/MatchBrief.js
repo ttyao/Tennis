@@ -404,7 +404,7 @@ var MatchBrief = React.createClass({
               <div>{match['.key']}</div>
             }
             <div>
-              <table className="wholerow">
+              <table className="wholerow notablespacing">
                 <tbody>
                   {this.showTeam()}
                   <tr>

@@ -102,7 +102,7 @@ var LadderStats = React.createClass({
         }
         return result;
       } else {
-        return (<tr><td></td><td><div>Loading ... ({found} / {Object.keys(this.props.ladder.matches).length})</div></td></tr>);
+        // return (<tr><td></td><td><div>Loading ... ({found} / {Object.keys(this.props.ladder.matches).length})</div></td></tr>);
       }
     }
   },

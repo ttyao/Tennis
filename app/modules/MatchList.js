@@ -9,16 +9,20 @@ var MatchList = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var ref = window.Fbase.getRef("web/data/matches").limitToLast(15);
+    var ref = window.Fbase.getRef("web/data/matches").limitToLast(10);
     this.bindAsArray(ref, "matches");
   },
   render() {
-    var matches = this.state.matches.map(function(match) {
-      return (
-        <MatchBrief visible={true} key={match['.key']} matchId={match['.key']} />
-      );
-    });
-    return <div>{ matches.reverse() }</div>;
+    if (this.state.matches) {
+      var matches = this.state.matches.map(function(match) {
+        return (
+          <MatchBrief visible={true} key={match['.key']} showTeam={true} matchId={match['.key']} />
+        );
+      });
+      return <div>{ matches.reverse() }</div>;
+    } else {
+      return (<div>Loading...</div>);
+    }
   }
 });
 

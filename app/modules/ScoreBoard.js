@@ -63,43 +63,81 @@ var ScoreBoard = React.createClass({
   onChange5(event) {
     this.props.onChange(event, 5)
   },
-
   getScores() {
-    if (this.props.scores) {
-      var index = 0;
-      return (
+    var index = 0;
+    var scores = this.props.scores.map(function(score) {
+      index += 2;
+      if (this.props.editable) {
+        return (
+          <td key={"score"+index}>
+            {this.getScoreCell(index - 2, score[0])}
+            {this.getScoreCell(index - 1, score[1])}
+          </td>
+        );
+      } else {
+        if (this.props.status != "completed" || score[0] + score[1] > 0) {
+          return (
+            <td key={"score"+index}>
+              <div>{score[0]}</div>
+              <div>{score[1]}</div>
+            </td>
+          );
+        } else {
+          return null;
+        }
+      }
+    }, this);
+    return (
+      <td>
         <table className="scoreBoardContainer">
-        <tbody><tr>
-        {this.props.scores.map(function(score) {
-          index += 2;
-          if (this.props.editable) {
-            return (
-              <td key={"score"+index}>
-                {this.getScoreCell(index - 2, score[0])}
-                {this.getScoreCell(index - 1, score[1])}
-              </td>
-            );
-          } else {
-            if (this.props.status != "completed" || score[0] + score[1] > 0) {
-              return (
-                <td key={"score"+index}>
-                  <div>{score[0]}</div>
-                  <div>{score[1]}</div>
-                </td>
-              );
-            } else {
-              return null;
-            }
+          <tbody><tr>
+          {scores}
+          </tr></tbody>
+        </table>
+      </td>
+    );
+  },
+  getScoreBoard() {
+    if (this.props.scores) {
+      var cells = [];
+      if (this.props.status == "completed") {
+        var setWin = 0;
+        for (let i in this.props.scores) {
+          if (this.props.scores[i][0] > this.props.scores[i][1]) {
+            setWin++;
+          } else if (this.props.scores[i][0] < this.props.scores[i][1]) {
+            setWin--;
           }
-        }, this)}
-        </tr></tbody></table>
+        }
+        if (setWin > 0) {
+          cells =
+            <tr>
+              <td><img className="checkmark" src="images/checkmark-green.png"/></td>
+              {this.getScores()}
+              <td><img className="checkmark" src="images/transparent.ico"/></td>
+            </tr>;
+        } else if (setWin < 0) {
+          cells =
+            <tr>
+              <td><img className="checkmark" src="images/transparent.ico"/></td>
+              {this.getScores()}
+              <td><img className="checkmark" src="images/checkmark-green.png"/></td>
+            </tr>;
+        } else {
+          cells = <tr>{this.getScores}</tr>;
+        }
+      }
+      return (
+        <table className="wholerow"><tbody>
+          {cells}
+        </tbody></table>
       );
     }
   },
   render() {
     return (
       <div className="centerContainer">
-        {this.getScores()}
+        {this.getScoreBoard()}
       </div>
     );
   }

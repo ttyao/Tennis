@@ -142,26 +142,62 @@ var PlayerDetails = React.createClass({
     if (this.state.player.teams) {
       var keys = Object.keys(this.state.player.teams);
       for (let key in this.state.player.teams) {
-        let year = (new Date(this.state.player.teams[key].date)).getYear();
-        if (year >= (new Date()).getYear() - 1) {
-          t.push(<TeamName key={key} teamId={key} />);
-        }
+        t.push({key: key, type:"team", date: new Date(this.state.player.teams[key].date)});
+      }
+    }
+    if (this.state.player.ladders) {
+      var keys = Object.keys(this.state.player.ladders);
+      for (let key in this.state.player.ladders) {
+        t.push({key: key, type:"ladder", date: new Date(this.state.player.ladders[key].date)});
       }
     }
     if (this.state.merges) {
       for (let i = 0; i< this.state.merges; i++) {
         if (this.state["merge"+i]) {
-          var keys = Object.keys(this.state["merge"+i].teams);
-          for (let key in this.state["merge"+i].teams) {
-            let year = (new Date(this.state["merge"+i].teams[key].date)).getYear();
-            if (year >= (new Date()).getYear() - 1) {
-              t.push(<TeamName key={key} teamId={key} />);
+          if (this.state["merge"+i].teams) {
+            var keys = Object.keys(this.state["merge"+i].teams);
+            for (let key in this.state["merge"+i].teams) {
+              t.push({key:key, type:"team", date:new Date(this.state["merge"+i].teams[key].date)});
+            }
+          }
+          if (this.state["merge"+i].ladders) {
+            var keys = Object.keys(this.state["merge"+i].ladders);
+            for (let key in this.state["merge"+i].ladders) {
+              t.push({key:key, type:"ladder", date:new Date(this.state["merge"+i].ladders[key].date)});
             }
           }
         }
       }
     }
-    return t;
+    var visited = {};
+    var result = []
+    for (let i in t) {
+      let candidate = -1;
+      for (let j in t) {
+        if (!visited[j] && (candidate < 0 || t[candidate].date < t[j].date)) {
+          candidate = j;
+        }
+      }
+      visited[candidate] = true;
+      if (t[candidate].type == "team") {
+        result.push(<TeamName key={t[candidate].key} teamId={t[candidate].key} />);
+      } else {
+        result.push(<TeamName key={t[candidate].key} ladderId={t[candidate].key} />);
+      }
+      if (result.length > 4) {
+        return result;
+      }
+    }
+    return result;
+  },
+  getNTRP(ntrp) {
+    if (!ntrp) {
+      return null;
+    }
+    if (ntrp == Math.floor(ntrp)) {
+      return ntrp+".0"
+    }
+    return ntrp;
   },
   getPlayerDetails() {
     if (this.state.player) {
@@ -171,14 +207,14 @@ var PlayerDetails = React.createClass({
             <tr>
               <td className="rightalign"><b>NTRP:</b></td>
               {this.state.player.ntrp ?
-                <td className="leftalign">{this.state.player.ntrp}{this.state.player.ntrpType}</td> :
+                <td className="leftalign">{this.getNTRP(this.state.player.ntrp)}{this.state.player.ntrpType}</td> :
                 null
               }
               <td className="rightalign"><b>City:</b></td>
               {this.state.player.residence && <td  className="leftalign">{this.state.player.residence}</td>}
             </tr>
             <tr>
-              <td className="rightalign"><b>Current:</b></td>
+              <td className="rightalign"><b>Recent:</b></td>
               <td className="leftalign" colSpan="3">{this.getCurrentTeams()}</td>
             </tr>
           </tbody></table>

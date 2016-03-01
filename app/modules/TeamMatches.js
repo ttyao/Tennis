@@ -4,7 +4,6 @@ var TimerMixin = require('react-timer-mixin');
 var Dropzone = require('react-dropzone');
 import PlayerName from './PlayerName';
 import Timestamp from './Timestamp';
-import ScoreBoard from './ScoreBoard';
 import CommentsBox from './CommentsBox';
 import Linkify from 'react-linkify';
 import Progress from './Progress';
@@ -343,7 +342,7 @@ var TeamMatches = React.createClass({
       return (
         <div className="matchBriefBody">
           <div>
-            <table className="wholerow">
+            <table className="wholerow notablespacing">
               <tbody>
                 <tr className="headerRow">
                   <td className="playersection centerContainer">

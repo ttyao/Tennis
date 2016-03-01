@@ -9,6 +9,7 @@ import TeamMatches from './TeamMatches';
 import ReactDOM from 'react-dom';
 
 var update = require('react-addons-update');
+var TimerMixin = require('react-timer-mixin');
 
 var appElement = document.getElementById('modal');
 Modal.setAppElement(appElement);
@@ -17,8 +18,10 @@ var LadderOverview = React.createClass({
   displayName: 'LadderOverview',
   propTypes: {
     ladderId: React.PropTypes.string,
+    teamId: React.PropTypes.string,
   },
   // mixins: [ReactFireMixin],
+  mixins: [TimerMixin],
   getInitialState () {
     return {
       matches: {},
@@ -30,7 +33,13 @@ var LadderOverview = React.createClass({
     };
   },
   componentWillMount() {
-    this.loadLadder(this.props.ladderId || "ladder:2016-02-15-07-42-03-177:facebook:539060618", this.props.teamId);
+    this.loadLadder(this.props.ladderId || "l:1", this.props.teamId);
+  },
+  componentWillUpdate(nextProps, nextState) {
+    if (nextProps.teamId != this.props.teamId &&
+        JSON.stringify(nextState) == JSON.stringify(this.state)) {
+      this.loadLadder(nextProps.ladderId, nextProps.teamId);
+    }
   },
   loadTeam(ladderId, ladder, playerId) {
     var u = window.Fbase.getRef("web/data/users/"+playerId);
@@ -195,13 +204,8 @@ var LadderOverview = React.createClass({
     for (let i in keys) {
       ops.push({value : keys[i], label : window.Fbase.getDisplayName(keys[i])});
     };
-    // if (!input) {
-    //   console.log(ops)
-    //   callback(null, {options:ops, complete: false});
-    //   return;
-    // }
-    if (typeof(input) != "string") {
-      callback(null, {options:ops, complete: false});
+    if (!input || typeof(input) != "string") {
+      this.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
       return;
     }
     userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(20).once("value", function(snapshot) {
@@ -221,7 +225,7 @@ var LadderOverview = React.createClass({
     }, function() {}, this);
   },
   onAddPlayerSaveClick() {
-    window.Fbase.updateLadderRoster(this.state.players, this.state.ladderId);
+    window.Fbase.updateLadderRoster(this.state.players, this.state.ladder);
     this.setState({
       showAddPlayerModal: false,
       players: this.state.players
@@ -257,11 +261,11 @@ var LadderOverview = React.createClass({
     }
   },
   getTeamSelect() {
-    if (this.state.ladder.type && this.state.ladder.type != "normal" && this.state.team) {
+    if (this.state.ladder.type != "normal" && this.state.team) {
       var options = [];
       var teams = [];
       for (let a in this.state.areas) {
-        options.push(<option label={a} value={a} />);
+        options.push(<option label={a} value={a}/>);
       }
       for (let a in this.state.ladder.teams) {
         if (this.state.ladder.teams[a].area == this.state.team.area) {
@@ -269,13 +273,17 @@ var LadderOverview = React.createClass({
         }
       }
       return (
-        <div>
-          Area: <select onChange={this.onAreaChange} defaultValue={this.state.area}>{options}</select> Team: <select className="teamSelect" onChange={this.onTeamChange} defaultValue={this.state.teamId}>{teams}</select>
-        </div>
+        <tr>
+          <td className='rightalign smallpercent'>Area:</td>
+          <td className="smallpercent"><select onChange={this.onAreaChange} value={this.state.area}>{options}</select></td>
+          <td className='rightalign smallpercent'>Team:</td>
+          <td><select className="teamSelect" onChange={this.onTeamChange} value={this.state.teamId}>{teams}</select></td>
+        </tr>
       );
     }
   },
   render () {
+    // console.log(this.state.teamId, this.state.team)
     if (!this.state.ladder) {
       return (
         <table className="wholerow">
@@ -301,16 +309,20 @@ var LadderOverview = React.createClass({
           }
         </div>
         <table className="wholerow">
-          <tbody><tr>
-            <td className="playersection">
-              <span className="section">
-                <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
-                {this.getTeamSelect()}
-                <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
-              </span>
-            </td>
-          </tr></tbody>
+          <tbody>
+            <tr>
+              <td className='rightalign smallpercent'>Ladder:</td>
+              <td colSpan="3" className="playersection">
+                <span className="section">
+                  <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
+                </span>
+              </td>
+            </tr>
+          {this.getTeamSelect()}
+          </tbody>
         </table>
+        <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
+
         {this.getMatchList()}
         <Modal
           className="Modal__Bootstrap modal-dialog"

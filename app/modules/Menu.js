@@ -122,7 +122,6 @@ export default class Menu extends React.Component {
           </Tabs.Panel>
           <Tabs.Panel title="Player">
             <PlayerDetails playerId={this.props.params.playerId} {...this.props} />
-            <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
           </Tabs.Panel>
           <Tabs.Panel title="Recent">
             <MatchList value={this.state.scores} />
@@ -137,6 +136,7 @@ export default class Menu extends React.Component {
               <div>from ID:<input ref="fromId"/></div>
               <div>to ID:<input ref="toId"/></div>
               <NorcalSync />
+              <button className="submitButton centerContainer" onClick={this.logout} >logout</button>
             </Tabs.Panel>
           }
         </Tabs>
