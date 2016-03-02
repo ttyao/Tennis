@@ -1,6 +1,7 @@
 import React from 'react';
 import Timestamp from './Timestamp';
 import Linkify from 'react-linkify';
+import PlayerName from './PlayerName';
 
 var Comment = React.createClass({
   propTypes: {
@@ -72,7 +73,7 @@ var Comment = React.createClass({
   getCommentTitle() {
     var comment = this.props.comment;
     var type = comment.type || "comment";
-    var creator = window.Fbase.getDisplayName(this.props.comment.creator);
+    var creator = <PlayerName playerId={this.props.comment.creator} />;
     var time = <Timestamp time={this.props.comment.createdTime} />;
     switch (comment.type) {
       case "video":

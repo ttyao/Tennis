@@ -2,7 +2,7 @@ import Firebase from 'firebase';
 
 window.Fbase = {
   baseUrl : "http://www.google.com",
-  Henry: "facebook:539060618",
+  Henry: "ef4b838a-13db-470c-a0b5-669234fa09c6",
   isHenry: function() {
     return this.Henry == this.authUid;
   },
@@ -34,6 +34,9 @@ window.Fbase = {
   init: function(callback) {
     this.authUid = this.getAuthUid();
     this.displayNames = {};
+    // if (this.isDebug()) {
+    //   Firebase.enableLogging(true);
+    // }
     this.refreshDisplayNames(this.authUid, function(){
       window.Fbase.log("init", "visit");
       if (callback) {
@@ -297,6 +300,7 @@ window.Fbase = {
       }
       delete oldUser.teams;
       delete oldUser.matches;
+      delete oldUser.ladders;
       console.log(oldUser)
       ref = window.Fbase.getRef("web/data/users/"+toId);
       ref.update(oldUser);

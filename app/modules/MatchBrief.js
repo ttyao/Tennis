@@ -97,7 +97,8 @@ var MatchBrief = React.createClass({
 
   getInitialState () {
     return {
-      file: null
+      file: null,
+      loading: true,
     };
   },
   getDefaultProps () {
@@ -109,14 +110,18 @@ var MatchBrief = React.createClass({
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
 
   componentWillMount () {
+    console.log("start mounting match: " + this.props.matchId, window.now().slice(10))
     var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
     this.bindAsObject(ref, "match");
     var self = this;
     ref.once("value", function(snapshot) {
+      console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
+      self.setState({loading: false});
       var data = snapshot.val();
       if (data && data.tmId) {
         var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
         r.once("value", function(snapshot) {
+          console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
           var teams = snapshot.val();
           if (teams) {
             self.setState({teams:teams})
@@ -313,7 +318,11 @@ var MatchBrief = React.createClass({
     //   return true;
     // }
     // return true;
-    return JSON.stringify(this.state) != JSON.stringify(nextState);
+    var result = JSON.stringify(this.state) != JSON.stringify(nextState);
+    if (result) {
+      console.log("updating match: " + this.props.matchId, window.now().slice(10))
+    }
+    return result;
   },
   canEditMatch() {
     return this.state.match.creator == window.Fbase.authUid;
@@ -409,16 +418,18 @@ var MatchBrief = React.createClass({
                   {this.showTeam()}
                   <tr>
                     <td className="playersection centerContainer">
-                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[0])} status={match.status} key={match.players[0] && "player0"} playerId={match.players[0]} />
-                      <PlayerName winSetNum={winSetNum} playerName={window.Fbase.getDisplayName(match.players[2])} status={match.status} key={match.players[2] && "player2"} playerId={match.players[2]} />
+                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[0])} key={match.players[0] && "player0"} playerId={match.players[0]} />
+                      <br/>
+                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[2])} key={match.players[2] && "player2"} playerId={match.players[2]} />
                     </td>
                     <td className="scoresection">
                       <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
                         editable={!!window.Fbase.authUid && match.status == "active"} />
                     </td>
                     <td className="playersection centerContainer">
-                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[1])} status={match.status} key={match.players[1] && "player1"} playerId={match.players[1]} />
-                      <PlayerName winSetNum={-winSetNum} playerName={window.Fbase.getDisplayName(match.players[3])} status={match.status} key={match.players[3] && "player3"} playerId={match.players[3]} />
+                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[1])} key={match.players[1] && "player1"} playerId={match.players[1]} />
+                      <br/>
+                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[3])} key={match.players[3] && "player3"} playerId={match.players[3]} />
                     </td>
                   </tr>
                 </tbody>
@@ -438,6 +449,11 @@ var MatchBrief = React.createClass({
           </div>
         );
       }
+    }
+    if (this.state.loading) {
+      return (
+        <div className="centerContainer"><img src="/images/Tennisbatting.gif"/></div>
+      )
     }
     return null;
   }

@@ -110,11 +110,12 @@ export default class Menu extends React.Component {
     return tab_maps[value];
   }
   render() {
-    // console.log("menu", this.props.params)
+    console.log("menu", this.props.params, window.Fbase.authUid)
+    window.GoogleAnalytics();
     return (
       <div className="container">
         <div className="page-header">
-          <h2 className="titleText">Live Tennis Ladder</h2>
+          <h2 className="titleText">Tennis Database</h2>
         </div>
         <Tabs tabActive={this.getTabIndex(this.props.params.tab)} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
           <Tabs.Panel title='Ladder'>
@@ -122,9 +123,6 @@ export default class Menu extends React.Component {
           </Tabs.Panel>
           <Tabs.Panel title="Player">
             <PlayerDetails playerId={this.props.params.playerId} {...this.props} />
-          </Tabs.Panel>
-          <Tabs.Panel title="Recent">
-            <MatchList value={this.state.scores} />
           </Tabs.Panel>
           {window.Fbase.authUid == window.Fbase.Henry &&
             <Tabs.Panel title="Ad">

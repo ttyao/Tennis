@@ -94,8 +94,9 @@ var PlayersSelect = React.createClass({
     }
   },
   getSelects() {
+    console.log(this.props.ladder)
     if (this.props.ladder) {
-      if (this.props.ladder.type == "normal") {
+      if (!this.props.ladder.type || this.props.ladder.type == "normal") {
         return (
           <tr>
             <td className="playerselect">

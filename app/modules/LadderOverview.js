@@ -47,7 +47,6 @@ var LadderOverview = React.createClass({
     u.once("value", function(snapshot) {
       var data = snapshot.val();
       if (data) {
-        console.log(ladder)
         let teamIds = Object.keys(ladder.teams);
         for (let i in data.teams) {
           if (teamIds.indexOf(i) >= 0) {
@@ -59,10 +58,10 @@ var LadderOverview = React.createClass({
           for (let i in data.merges) {
             self.loadTeam(ladderId, ladder, i);
           }
+          return;
         }
-      } else {
-        self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
       }
+      self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
     })
   },
   loadLadder(ladderId, teamId) {
@@ -102,7 +101,7 @@ var LadderOverview = React.createClass({
           ladderId: ladderId,
           players: ladder.users ? Object.keys(ladder.users).join(",") : "",
           loadedMatches: {},
-          areas: areas
+          areas: Object.keys(areas).sort()
         });
 
         if (ladder.users && Object.keys(ladder.users).length) {
@@ -124,6 +123,8 @@ var LadderOverview = React.createClass({
           self.setState({team: team, teamId: teamId, area: team.area});
         }
       });
+    } else {
+      self.setState({team: null, teamId: null, area: null})
     }
   },
   onLadderChange(value) {
@@ -144,12 +145,26 @@ var LadderOverview = React.createClass({
       // console.log("loaded", matches)
     // }
   },
+  isMyActiveMatch(matchId) {
+    if (!window.Fbase.authUid || !this.state.loadedMatches[matchId] || this.state.loadedMatches[matchId].status != "active") {
+      return false;
+    }
+    return this.state.loadedMatches[matchId].players.indexOf(window.Fbase.authUid) >= 0;
+  },
   getMatchList() {
     if (this.state.ladder.type == "normal") {
       var result = [];
       for (let matchId in this.state.ladder.matches) {
-        result.push(
-          <MatchBrief key={matchId} matchId={matchId} visible={true} onAfterLoad={this.onMatchBriefLoad} />);
+        if (!this.isMyActiveMatch(matchId)) {
+          result.push(
+            <MatchBrief key={matchId} matchId={matchId} visible={true} onAfterLoad={this.onMatchBriefLoad} />);
+        }
+      }
+      for (let matchId in this.state.ladder.matches) {
+        if (this.isMyActiveMatch(matchId)) {
+          result.push(
+            <MatchBrief key={matchId} matchId={matchId} visible={true} onAfterLoad={this.onMatchBriefLoad} />);
+        }
       }
       return (<div>{result.reverse()}</div>);
     } else {
@@ -265,7 +280,7 @@ var LadderOverview = React.createClass({
       var options = [];
       var teams = [];
       for (let a in this.state.areas) {
-        options.push(<option label={a} value={a}/>);
+        options.push(<option label={this.state.areas[a]} value={this.state.areas[a]}/>);
       }
       for (let a in this.state.ladder.teams) {
         if (this.state.ladder.teams[a].area == this.state.team.area) {
@@ -281,6 +296,19 @@ var LadderOverview = React.createClass({
         </tr>
       );
     }
+  },
+  getMegaphone() {
+    if (this.state.ladderId.indexOf("l:") == 0) {
+      return (
+        <div>
+          <div className="megaphone">
+            Welcome to 2016 BAT spring tournaments! Please checkout the rules at <a href="https://mp.weixin.qq.com/s?__biz=MzI2NzE1NjQ1Ng==&mid=401965328&idx=1&sn=9bf99f400aaa8aff83795941d55f798c&scene=1&srcid=0228XdIqgfah57Cggw84fVLb&key=710a5d99946419d972692065f8c94e47ac942a141495f02ca051abfb6cc0e7850c2012c7145124cc3ecd0b6ab1219f59&ascene=0&uin=MTM5MjA0NzU1&devicetype=iMac+MacBookPro11%2C2+OSX+OSX+10.10.5+build(14F1021)&version=11020201&pass_ticket=XBF7q%2F%2BdaypV3wdo8xaofxu2eGotnh9vZVwVtfB8Mso%3D">here</a>.
+            The draw will be out soon, check back regularly to see who your next opponent will be. Good luck and have fun!
+          </div>
+        </div>
+      );
+    }
+    return null;
   },
   render () {
     // console.log(this.state.teamId, this.state.team)
@@ -321,6 +349,7 @@ var LadderOverview = React.createClass({
           {this.getTeamSelect()}
           </tbody>
         </table>
+        {this.getMegaphone()}
         <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
 
         {this.getMatchList()}
@@ -330,7 +359,7 @@ var LadderOverview = React.createClass({
           isOpen={this.state.showAddPlayerModal}
           onRequestClose={this.handleModalCloseRequest}
         >
-          <div>Add new player:</div>
+          <div>Players:</div>
           <Select multi value={this.state.players ? this.state.players.split(",") : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
           <button className='floatright' onClick={this.onAddPlayerSaveClick}>Save</button>
           <button className='floatright' onClick={this.onAddPlayerCancelClick}>Cancel</button>

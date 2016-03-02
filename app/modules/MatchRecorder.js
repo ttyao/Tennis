@@ -13,7 +13,7 @@ export default class MatchRecorder extends React.Component {
 
     this.state = {
       players: [null, null, null, null],
-      scores: [{scores: [0,0]}, {scores: [0,0]}, {scores: [0,0]}],
+      scores: [[0,0], [0,0], [0,0]],
       message: "",
       matchMoment: moment(),
       status: "completed",

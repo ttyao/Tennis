@@ -9,7 +9,7 @@ var MatchList = React.createClass({
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    var ref = window.Fbase.getRef("web/data/matches").limitToLast(10);
+    var ref = window.Fbase.getRef("web/data/matches").orderByKey().limitToLast(10);
     this.bindAsArray(ref, "matches");
   },
   render() {

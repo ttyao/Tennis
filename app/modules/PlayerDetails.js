@@ -19,9 +19,11 @@ var PlayerDetails = React.createClass({
     }
   },
   bindPlayer(playerId) {
+    console.log("start binding player: " + playerId, window.now().slice(10))
     var player = window.Fbase.getRef("web/data/users/"+playerId);
     var self = this;
     player.once("value", function(snapshot) {
+      console.log("retrived data for player: " + playerId, window.now().slice(10))
       var data = snapshot.val();
       if (data) {
         if (data.claimerId) {
@@ -139,16 +141,23 @@ var PlayerDetails = React.createClass({
   },
   getCurrentTeams() {
     var t = [];
+    var loadedKeys = {};
     if (this.state.player.teams) {
       var keys = Object.keys(this.state.player.teams);
       for (let key in this.state.player.teams) {
-        t.push({key: key, type:"team", date: new Date(this.state.player.teams[key].date)});
+        if (!loadedKeys[key]) {
+          t.push({key: key, type:"team", date: new Date(this.state.player.teams[key].date)});
+          loadedKeys[key] = true;
+        }
       }
     }
     if (this.state.player.ladders) {
       var keys = Object.keys(this.state.player.ladders);
       for (let key in this.state.player.ladders) {
-        t.push({key: key, type:"ladder", date: new Date(this.state.player.ladders[key].date)});
+        if (!loadedKeys[key]) {
+          t.push({key: key, type:"ladder", date: new Date(this.state.player.ladders[key].date)});
+          loadedKeys[key] = true;
+        }
       }
     }
     if (this.state.merges) {
@@ -157,13 +166,19 @@ var PlayerDetails = React.createClass({
           if (this.state["merge"+i].teams) {
             var keys = Object.keys(this.state["merge"+i].teams);
             for (let key in this.state["merge"+i].teams) {
-              t.push({key:key, type:"team", date:new Date(this.state["merge"+i].teams[key].date)});
+              if (!loadedKeys[key]) {
+                t.push({key:key, type:"team", date:new Date(this.state["merge"+i].teams[key].date)});
+                loadedKeys[key] = true;
+              }
             }
           }
           if (this.state["merge"+i].ladders) {
             var keys = Object.keys(this.state["merge"+i].ladders);
             for (let key in this.state["merge"+i].ladders) {
-              t.push({key:key, type:"ladder", date:new Date(this.state["merge"+i].ladders[key].date)});
+              if (!loadedKeys[key]) {
+                t.push({key:key, type:"ladder", date:new Date(this.state["merge"+i].ladders[key].date)});
+                loadedKeys[key] = true;
+              }
             }
           }
         }
@@ -233,7 +248,6 @@ var PlayerDetails = React.createClass({
         var time = data.time;
         if (!time) {
           time = window.now(data.matchTime);
-          console.log(key, data.time, window.now(data.matchTime), data.matchTime)
           if (time) {
             // var r = window.Fbase.getRef("web/data/matches/"+key);
             ref.update({
@@ -267,7 +281,7 @@ var PlayerDetails = React.createClass({
     }
     if (this.state.merges) {
       for (let i = 0; i< this.state.merges; i++) {
-        if (this.state["merge"+i]) {
+        if (this.state["merge"+i] && this.state["merge"+i].matches) {
           var keys = Object.keys(this.state["merge"+i].matches);
           for (let key in this.state["merge"+i].matches) {
             m.push({key:key, time:this.state["merge"+i].matches[key].time});
@@ -293,8 +307,8 @@ var PlayerDetails = React.createClass({
         );
       } else {
         return result;
-        result.push(
-        <div key={m[candidate].key}>{m[candidate].key}</div>);
+        // result.push(
+        // <div key={m[candidate].key}>{m[candidate].key}</div>);
       }
       max--;
       visited[candidate] = true;

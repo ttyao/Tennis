@@ -337,7 +337,8 @@ var TeamMatches = React.createClass({
     );
   },
   render() {
-    if (this.state.teamMatch && this.state.team0 && this.state.team1) {
+    console.log(this.state.teamMatch)
+    if (this.state.teamMatch && this.state.team0 && this.state.team1 && this.state.teamMatch.status != "merged") {
       var matches = this.state.matches;
       return (
         <div className="matchBriefBody">
@@ -362,7 +363,6 @@ var TeamMatches = React.createClass({
           {this.getComments()}
         </div>
       );
-
     }
     return null;
   }

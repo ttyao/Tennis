@@ -283,6 +283,7 @@ var NorcalSync = React.createClass({
     console.log("teammatch starting:", start);
     for (let i = 0; i < batch && start+i < lines.length; i++) {
       var field = lines[i+start].split(";");
+      if (field.length < 3) return;
       var ref = window.Fbase.getRef("web/data/teammatches/ntm:"+field[0]);
       requested++;
       var teamMatch = {
@@ -322,9 +323,61 @@ var NorcalSync = React.createClass({
           }
         }
       });
-
-      // merge pending match
+      if (field[4] == "completed") {
+        requested++;
+        this.mergePendingMatch(field, function() {
+          completed++;
+          if (completed == requested) {
+            self.updateTeamMatch(lines, start + batch);
+          }
+        })
+      }
     }
+  },
+  mergePendingMatch(field, callback) {
+    var requested=1;
+    var completed=0;
+    var ref = window.Fbase.getRef("web/data/teams/nt:"+field[1]+"/matches");
+    ref.once("value", function(snap) {
+      let data = snap.val();
+      if (data) {
+        let keys = Object.keys(data);
+        for (let i in keys) {
+          if (keys[i].indexOf("ntm:pending:"+field[1]) >= 0 && data[keys[i]].teamId.split(":")[1] == field[2]) {
+            let cref = window.Fbase.getRef("web/data/teammatches/"+keys[i]);
+            cref.child("comments").once("value", function(s) {
+              console.log("merging ", field)
+              let comments = s.val();
+              requested++;
+              cref.update({status:"merged"}, function(err) {
+                completed++;
+                if (completed == requested) {
+                  callback();
+                }
+              })
+              if (comments) {
+                window.Fbase.getRef("web/data/teammatches/ntm:"+field[0]+"/comments").set(comments, function(err) {
+                  completed++;
+                  if (completed == requested) {
+                    callback();
+                  }
+                })
+              } else {
+                completed++;
+                if (completed == requested) {
+                  callback();
+                }
+              }
+            })
+            return;
+          }
+        }
+      }
+      completed++;
+      if (completed == requested) {
+        callback();
+      }
+    })
   },
   onUpload(files){
     console.log(files)

@@ -1,5 +1,6 @@
 .DS_Store
 bundle.js
+sftp-config.json
 build/bundle.js
 app/modules/aws.js
 app/data

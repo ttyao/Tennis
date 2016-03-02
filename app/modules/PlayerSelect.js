@@ -1,6 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 
+var ReactFireMixin = require('reactfire');
 var TimerMixin = require('react-timer-mixin');
 
 var PlayerSelect = React.createClass({
@@ -18,13 +19,21 @@ var PlayerSelect = React.createClass({
     this.props.onChange(value);
   },
   componentWillMount() {
-    window.Fbase.getDisplayName(this.state.playerId)
+    window.Fbase.getDisplayName(this.state.playerId);
+    var userRef = window.Fbase.getRef("web/data/users").orderByChild("displayName_").startAt("he").limitToFirst(2);
+      // this.bindAsArray(userRef, "players");
+    userRef.once("value", function(snapshot) {});
   },
 
-  mixins: [TimerMixin],
+  mixins: [TimerMixin, ReactFireMixin],
   shouldComponentUpdate(nextProps, nextState) {
-    return JSON.stringify(nextState) != JSON.stringify(this.state) ||
-           JSON.stringify(nextProps) != JSON.stringify(this.props)
+
+    var result = JSON.stringify(nextState) != JSON.stringify(this.state) ||
+                 JSON.stringify(nextProps) != JSON.stringify(this.props)
+    if (result) {
+      console.log("updating player select: " + this.props.playerId, window.now().slice(10))
+    }
+    return result;
   },
   loadOptions(input, callback) {
     var ops = [{value: this.state.playerId, label: this.state.player.displayName}];
@@ -37,6 +46,7 @@ var PlayerSelect = React.createClass({
       }
     }
     if (!input) {
+      console.log("loading player select options: " + this.props.playerId, window.now().slice(10))
       this.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
       return;
     }
@@ -57,6 +67,8 @@ var PlayerSelect = React.createClass({
   },
 
   render () {
+    console.log("rendering player select: " + this.props.playerId, window.now().slice(10))
+
     return (
       <table className="wholerow">
         <tbody><tr>

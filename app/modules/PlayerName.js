@@ -6,8 +6,11 @@ var PlayerName = React.createClass({
   propTypes: {
     playerId: React.PropTypes.string,
     playerName: React.PropTypes.string,
-    winSetNum: React.PropTypes.number,
-    status: React.PropTypes.string,
+    showNTRP: React.PropTypes.bool,
+  },
+
+  defaultProps: {
+    showNTRP: false,
   },
 
   getInitialState () {
@@ -21,13 +24,21 @@ var PlayerName = React.createClass({
     // }
   },
   getNTRP() {
-    var ntrp = this.state.player.ntrp;
-    if (ntrp) {
-      if (ntrp.toString().length == 1) {
-        ntrp=ntrp+".0";
+    if (this.props.showNTRP) {
+      var ntrp = this.state.player.ntrp;
+      if (ntrp) {
+        if (ntrp.toString().length == 1) {
+          ntrp=ntrp+".0";
+        }
+        return (<span>({ntrp})</span>);
       }
-      return (<span>({ntrp})</span>);
     }
+    return null;
+  },
+  shouldComponentUpdate(nextProps, nextState) {
+    var result = JSON.stringify(nextState) != JSON.stringify(this.state) ||
+                 JSON.stringify(nextProps) != JSON.stringify(this.props)
+    return result;
   },
   getName() {
     // if (window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading") {
@@ -35,22 +46,18 @@ var PlayerName = React.createClass({
     // } else {
       if (this.state.player) {
         return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName} {this.getNTRP()}</Link>);
-      } else if (!this.props.playerId) {
+      } else if (this.props.playerId == 0) {
         return "Default"
+      } else {
+        return (<img className="checkmark" src="/images/circle.gif" />);
       }
     // }
   },
   render() {
-    var cls = "";
-    if (this.props.status == "completed" && this.props.winSetNum > 0) {
-      cls = "winningPlayer";
-    } else if (this.props.status == "completed" && this.props.winSetNum < 0) {
-      cls = "losingPlayer";
-    }
     return (
-      <div className={cls}>
+      <span>
         {this.getName()}
-      </div>
+      </span>
     );
   }
 });

@@ -34,49 +34,46 @@ var Login = React.createClass({
       var displayName = this.state.displayName;
       var email = this.state.email;
       var password = this.state.password;
-      window.Fbase.onceDisplayNameExists(displayName, function(uid) {
-        if (uid && uid.slice(0, 6) != 'guest:') {
-          alert("username is already taken.");
-          return;
+
+      ref.createUser({
+        email: email,
+        password: password,
+      }, function(error, userData) {
+        console.log("create user", userData);
+        if (error) {
+          switch (error.code) {
+            case "EMAIL_TAKEN":
+              alert("The new user account cannot be created because the email is already in use.");
+              location.reload();
+              break;
+            case "INVALID_EMAIL":
+              alert("The specified email is not a valid email.");
+              break;
+            default:
+              console.log(error);
+              alert("Error creating user.");
+          }
         } else {
-          ref.createUser({
-            email: email,
-            password: password,
-          }, function(error, userData) {
-            if (error) {
-              switch (error.code) {
-                case "EMAIL_TAKEN":
-                  alert("The new user account cannot be created because the email is already in use.");
-                  location.reload();
-                  break;
-                case "INVALID_EMAIL":
-                  alert("The specified email is not a valid email.");
-                  break;
-                default:
-                  console.log(error);
-                  alert("Error creating user.");
-              }
-            } else {
-              ref.authWithPassword({
-                "email": email,
-                "password": password
-                }, function (error, authData) {
-                  if (error) {
-                    alert("Login Failed!");
-                  } else {
-                    var userRef = ref.child("/web/data/users/"+userData["uid"]);
-                    userRef.set({
-                      displayName: displayName,
-                      createdAt: window.now()
-                    }, function(error){
-                      if (!error) {
-                        location.reload();
-                      }
-                    });
-                    window.Fbase.log("trying to create user: "+displayName, "write", "createUser");
+          ref.authWithPassword({
+            "email": email,
+            "password": password
+            }, function (error, authData) {
+              console.log("login", authData)
+              if (error) {
+                alert("Login Failed!");
+              } else {
+                var userRef = ref.child("/web/data/users/"+userData["uid"]);
+                userRef.set({
+                  displayName: displayName,
+                  displayName_: displayName.toLowerCase(),
+                  createdAt: window.now()
+                }, function(error){
+                  if (!error) {
+                    location.reload();
                   }
-              });
-            }
+                });
+                window.Fbase.log("trying to create user: "+displayName, "write", "createUser");
+              }
           });
         }
       });

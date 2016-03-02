@@ -1,6 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
-import { Link } from 'react-router'
+import PlayerName from "./PlayerName";
 
 var LadderStats = React.createClass({
   displayName: 'LadderStats',
@@ -92,7 +92,7 @@ var LadderStats = React.createClass({
           result.push(
             <tr key={stats[best].id}>
               <td>{rank++}</td>
-              <td><Link to={"/player/0/"+stats[best].id}>{window.Fbase.getDisplayName(stats[best].id)}</Link></td>
+              <td><PlayerName playerId={stats[best].id} /></td>
               <td>{stats[best].totalWin}</td>
               <td>{stats[best].totalMatch}</td>
               <td>{stats[best].setWin}</td>
@@ -110,7 +110,7 @@ var LadderStats = React.createClass({
     if (!this.props.ladder) {
       return null;
     }
-    if (this.props.ladder.type == "usta combo") {
+    if (this.props.ladder.type != "normal") {
       return null; //todo
     }
     if (this.props.team) {

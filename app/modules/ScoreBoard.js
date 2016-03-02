@@ -100,7 +100,7 @@ var ScoreBoard = React.createClass({
   getScoreBoard() {
     if (this.props.scores) {
       var cells = [];
-      if (this.props.status == "completed") {
+      if (!this.props.status || this.props.status == "completed") {
         var setWin = 0;
         for (let i in this.props.scores) {
           if (this.props.scores[i][0] > this.props.scores[i][1]) {
@@ -124,8 +124,10 @@ var ScoreBoard = React.createClass({
               <td><img className="checkmark" src="images/checkmark-green.png"/></td>
             </tr>;
         } else {
-          cells = <tr>{this.getScores}</tr>;
+          cells = <tr>{this.getScores()}</tr>;
         }
+      } else if (this.props.status == "active") {
+        cells = <tr>{this.getScores()}</tr>;
       }
       return (
         <table className="wholerow"><tbody>
