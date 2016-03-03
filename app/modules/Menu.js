@@ -14,7 +14,6 @@ export default class Menu extends React.Component {
   constructor(props) {
     super(props);
     this.state = {authData: null};
-    this.onUpload = this.onUpload.bind(this);
     this.onTestButtonClick = this.onTestButtonClick.bind(this);
     this.onBeforeChange = this.onBeforeChange.bind(this);
   }
@@ -34,9 +33,6 @@ export default class Menu extends React.Component {
     var ref = window.Fbase.getRef();
     ref.unauth();
     location.reload();
-  }
-
-  onUpload(files){
   }
 
   onTestButtonClick() {
@@ -107,10 +103,12 @@ export default class Menu extends React.Component {
     if (index) {
       return index;
     }
-    return tab_maps[value];
+    if (tab_maps[value]) {
+      return tab_maps[value];
+    }
+    return 2;
   }
   render() {
-    console.log("menu", this.props.params, window.Fbase.authUid)
     window.GoogleAnalytics();
     return (
       <div className="container">
@@ -126,9 +124,6 @@ export default class Menu extends React.Component {
           </Tabs.Panel>
           {window.Fbase.authUid == window.Fbase.Henry &&
             <Tabs.Panel title="Ad">
-              <Dropzone onDrop={this.onUpload} className="pictureUpload">
-                <div>Try</div>
-              </Dropzone>
               <button onClick={this.onTestButtonClick}>Test</button>
               <img src={this.state.file} className="player" />
               <div>from ID:<input ref="fromId"/></div>

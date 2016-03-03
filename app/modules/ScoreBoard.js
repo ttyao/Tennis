@@ -8,9 +8,11 @@ var ScoreBoard = React.createClass({
     status: React.PropTypes.string,
   },
 
-  defaultProps: {
-    editable: false,
-    status: "completed",
+  getDefaultProps () {
+    return ({
+      editable: false,
+      status: "completed"
+    });
   },
 
   getInitialState () {

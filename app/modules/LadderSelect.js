@@ -47,8 +47,17 @@ var LadderSelect = React.createClass({
     var ops = [{value: this.props.ladder.id, label: this.props.ladder.displayName}];
     var keys = {};
     keys[this.props.ladder.id] = true;
+    for (let l in window.Caching.ladders) {
+      if (typeof(window.Caching.ladders[l]) == "object" && !keys[l]) {
+        keys[l] = true;
+        ops.push({value: l, label:window.Caching.ladders[l].displayName});
+        console.log(l, window.Caching.ladders[l])
+      }
+    }
     var userRef = window.Fbase.getRef("web/data/ladders");
     if (!input) {
+      // window.setTimeout(function() {callback(null, {options: ops, complete: false});}, 10000);
+      // return;
       input = "2016";
     }
     userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(10).once("value", function(snapshot) {

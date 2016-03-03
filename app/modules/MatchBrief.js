@@ -99,6 +99,7 @@ var MatchBrief = React.createClass({
     return {
       file: null,
       loading: true,
+      waitForCache: false
     };
   },
   getDefaultProps () {
@@ -110,18 +111,62 @@ var MatchBrief = React.createClass({
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
 
   componentWillMount () {
-    console.log("start mounting match: " + this.props.matchId, window.now().slice(10))
-    var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
-    this.bindAsObject(ref, "match");
+    // console.log("start mounting match: " + this.props.matchId, window.now().slice(10))
+    if (!this.props.waitForCache) {
+      var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
+      var self = this;
+      ref.once("value", function(snapshot) {
+        // console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
+        var data = snapshot.val();
+        self.setState({
+          loading: false,
+          match: data
+        });
+        if (data.status == "active") {
+          self.bindAsObject(ref, "match");
+        }
+        if (data && data.tmId) {
+          var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
+          r.once("value", function(snapshot) {
+            // console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
+            var teams = snapshot.val();
+            if (teams) {
+              self.setState({teams:teams})
+              let t0 = window.Fbase.getRef("web/data/teams/"+teams[0]);
+              t0.once("value", function(t) {
+                self.setState({team0: t.val()});
+              })
+              let t1 = window.Fbase.getRef("web/data/teams/"+teams[1]);
+              t1.once("value", function(t) {
+                self.setState({team1: t.val()});
+              })
+            }
+          })
+        }
+        // console.log(data)
+        if (data && data.ladderId) {
+          let l = window.Fbase.getRef("web/data/ladders/"+data.ladderId);
+          l.once("value", function(ladder) {
+            self.setState({ladder: ladder.val(), ladderId:data.ladderId});
+          })
+        }
+      });
+    } else {
+      this.waitForCache();
+    }
+  },
+  waitForCache() {
     var self = this;
-    ref.once("value", function(snapshot) {
-      console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
-      self.setState({loading: false});
-      var data = snapshot.val();
-      if (data && data.tmId) {
-        var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
+    if (typeof(window.Caching.matches[this.props.matchId]) == "object") {
+      var match = window.Caching.matches[this.props.matchId];
+      this.setState({
+        loading: false,
+        match: match
+      })
+      if (match.tmId) {
+        var r = window.Fbase.getRef("web/data/teammatches/"+match.tmId+"/teams");
         r.once("value", function(snapshot) {
-          console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
+          // console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
           var teams = snapshot.val();
           if (teams) {
             self.setState({teams:teams})
@@ -136,14 +181,15 @@ var MatchBrief = React.createClass({
           }
         })
       }
-      // console.log(data)
-      if (data && data.ladderId) {
-        let l = window.Fbase.getRef("web/data/ladders/"+data.ladderId);
-        l.once("value", function(ladder) {
-          self.setState({ladder: ladder.val(), ladderId:data.ladderId});
+      if (match.ladderId) {
+        let l = window.Fbase.getRef("web/data/ladders/"+match.ladderId);
+          l.once("value", function(ladder) {
+            self.setState({ladder: ladder.val(), ladderId:match.ladderId});
         })
       }
-    });
+      return;
+    }
+    this.setTimeout(function() {self.waitForCache()}, 10);
   },
   getWinSetNum() {
     var winningSet = 0;
@@ -320,7 +366,7 @@ var MatchBrief = React.createClass({
     // return true;
     var result = JSON.stringify(this.state) != JSON.stringify(nextState);
     if (result) {
-      console.log("updating match: " + this.props.matchId, window.now().slice(10))
+      // console.log("updating match: " + this.props.matchId, window.now().slice(10))
     }
     return result;
   },

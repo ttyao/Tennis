@@ -1,4 +1,5 @@
 import moment from 'moment';
+require("setimmediate");
 
 window.now = function(date, onlyDate) {
   if (date === '' || date === false || date === null) {
@@ -77,7 +78,172 @@ window.GoogleAnalytics = function() {
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
   ga('create', 'UA-74582373-1', 'auto');
-  ga('require', 'linkid');
+  // ga('require', 'linkid');
   ga('set', 'userId', window.Fbase.authUid); // Set the user ID using signed-in user_id.
   ga('send', 'pageview');
+}
+
+window.Caching = {
+  players : {},
+  simplePlayers: {},
+  matches: {},
+  teams: {},
+  ladders: {},
+  loadPlayers: function() {
+    for (let i in this.players) {
+      if (this.players[i] == "pending") {
+        console.log("warming up player: " + i, window.now().slice(11))
+        var player = window.Fbase.getRef("web/data/users/"+i);
+        var self = this;
+        player.once("value", function(snapshot) {
+          var data = snapshot.val();
+          if (data) {
+            self.players[i] = data;
+            self.simplePlayers[i] = {
+              displayName: data.displayName,
+              ntrp: data.ntrp,
+            }
+            for (let m in data.matches) {
+              self.matches[m] = "pending";
+            }
+            for (let t in data.teams) {
+              self.teams[t] = "pending";
+            }
+            for (let l in data.ladders) {
+              self.ladders[l] = "pending";
+            }
+            self.loadMatches();
+            self.loadTeams();
+            self.loadLadders();
+            if (data.merges) {
+              for (let i in data.merges) {
+                self.players[i] = "pending";
+              }
+            }
+          }
+          self.loadPlayers();
+        })
+        return;
+      }
+    }
+  },
+  loadMatches: function() {
+    for (let i in this.matches) {
+      if (this.matches[i] == "pending") {
+        var ref = window.Fbase.getRef("web/data/matches/"+i);
+        ref.once('value', function(snap) {
+          window.Caching.matches[i] = snap.val();
+          window.Caching.loadMatches();
+        })
+        return;
+      }
+    }
+  },
+  loadTeams: function() {
+    for (let i in this.teams) {
+      if (this.teams[i] == "pending") {
+        var ref = window.Fbase.getRef("web/data/teams/"+i);
+        ref.once('value', function(snap) {
+          var team = snap.val();
+          window.Caching.teams[i] = team;
+          window.Caching.loadTeams();
+          window.Caching.ladders[team.ladderId] = "pending";
+        })
+        return;
+      }
+    }
+  },
+  loadLadders: function() {
+    for (let i in this.ladders) {
+      if (this.ladders[i] == "pending") {
+        var ref = window.Fbase.getRef("web/data/ladders/"+i);
+        ref.once('value', function(snap) {
+          window.Caching.ladders[i] = snap.val();
+          window.Caching.loadLadders();
+        })
+        return;
+      }
+    }
+    window.setTimeout(function() {window.Caching.loadLadders();}, 10);
+  },
+  loadSimplePlayer: function(uid, callback) {
+    var ref = window.Fbase.getRef("web/data/simpleusers/"+uid);
+    ref.once('value', function(snap) {
+      var u = snap.val();
+      if (u) {
+        window.Caching.simplePlayers[uid] = u;
+        if (callback) {
+          callback(u);
+        }
+      } else {
+        ref = window.Fbase.getRef("web/data/users/"+uid);
+        ref.once('value', function(snap) {
+          var user = snap.val();
+          if (user) {
+            if (user.claimerId) {
+              ref = window.Fbase.getRef("web/data/users/"+user.claimerId);
+              ref.once('value', function(snap) {
+                var claimer = snap.val();
+                if (claimer) {
+                  window.Caching.simplePlayers[uid] = {
+                    claimerId: user.claimerId,
+                    displayName: claimer.displayName,
+                    ntrp: claimer.ntrp || ""
+                  };
+                  window.Fbase.getRef("web/data/simpleusers/"+uid).set(window.Caching.simplePlayers[uid]);
+                  if (callback) {
+                    callback(window.Caching.simplePlayers[uid]);
+                  }
+                } else {
+                  window.Caching.simplePlayers[uid] = "not found";
+                  if (callback) {
+                    callback(window.Caching.simplePlayers[uid]);
+                  }
+                }
+              });
+            } else {
+              let s = {
+                displayName: user.displayName,
+                ntrp: user.ntrp || ""
+              }
+              window.Caching.simplePlayers[uid] = s;
+              window.Fbase.getRef("web/data/simpleusers/"+uid).set(s);
+              if (callback) {
+                callback(window.Caching.simplePlayers[uid]);
+              }
+            }
+          } else {
+            window.Caching.simplePlayers[uid] = "not found";
+            if (callback) {
+              callback(window.Caching.simplePlayers[uid]);
+            }
+          }
+        });
+      }
+    })
+  },
+  loadSimplePlayers: function() {
+    for (let i in this.simplePlayers) {
+      if (this.ladders[i] == "pending") {
+        this.loadSimplePlayer(i);
+        break;
+      }
+    }
+    window.setTimeout(function() {window.Caching.loadLadders();}, 100);
+  },
+  getSimplePlayer: function(uid, callback) {
+    if (!uid) {
+      if (callback) {
+        callback(null);
+      }
+      return null;
+    }
+    if (this.simplePlayers[uid]) {
+      if (callback) {
+        callback(this.simplePlayers[uid]);
+      }
+    }
+    this.loadSimplePlayer(uid, callback);
+    return "pending";
+  },
 }

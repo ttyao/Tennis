@@ -106,7 +106,7 @@ var LadderOverview = React.createClass({
 
         if (ladder.users && Object.keys(ladder.users).length) {
           for (let id in ladder.users) {
-            window.Fbase.getDisplayName(id);
+            window.Caching.getDisplayName(id);
           }
         }
       });

@@ -7,21 +7,30 @@ var PlayerName = React.createClass({
     playerId: React.PropTypes.string,
     playerName: React.PropTypes.string,
     showNTRP: React.PropTypes.bool,
+    isLink: React.PropTypes.bool,
   },
 
-  defaultProps: {
-    showNTRP: false,
+  getDefaultProps () {
+    return ({
+      showNTRP: false,
+      isLink: true
+    });
   },
 
   getInitialState () {
-    return {};
+    var player = window.Caching.getSimplePlayer(this.props.playerId);
+    return {player: player};
   },
   mixins: [ReactFireMixin],
   componentWillMount () {
-    // if (!this.props.playerName || this.props.playerName == "loading") {
-      var playerRef = window.Fbase.getRef("web/data/users/"+this.props.playerId);
-      this.bindAsObject(playerRef, "player");
-    // }
+    if (typeof(this.state.player) != "object") {
+      var self = this;
+      var player = window.Caching.getSimplePlayer(this.props.playerId, function(p) {
+        if (typeof(self.state.player) != "object") {
+          self.setState({player: p});
+        }
+      });
+    }
   },
   getNTRP() {
     if (this.props.showNTRP) {
@@ -41,17 +50,19 @@ var PlayerName = React.createClass({
     return result;
   },
   getName() {
-    // if (window.Fbase.isValidDisplayName(this.props.playerName) && this.props.playerName != "loading") {
-    //   return (<Link to={"/player/0/"+this.props.playerId}>{this.props.playerName}</Link>);
-    // } else {
-      if (this.state.player) {
+    if (this.state.player && typeof(this.state.player) == "object") {
+      if (this.props.isLink) {
         return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName} {this.getNTRP()}</Link>);
-      } else if (this.props.playerId == 0) {
-        return "Default"
       } else {
-        return (<img className="checkmark" src="/images/circle.gif" />);
+        return (<span>{this.state.player.displayName} {this.getNTRP()}</span>);
       }
-    // }
+    } else if (this.props.playerId == 0) {
+      return "Default"
+    } else if (!this.props.playerId) {
+      return null;
+    } else {
+      return (<img className="checkmark" src="/images/circle.gif" />);
+    }
   },
   render() {
     return (

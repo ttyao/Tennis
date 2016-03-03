@@ -303,7 +303,7 @@ var PlayerDetails = React.createClass({
       }
       if (max > 0) {
         result.push(
-          <MatchBrief key={m[candidate].key} matchId={m[candidate].key} showTeam={true} visible={true} onAfterLoad={this.onMatchBriefLoad} />
+          <MatchBrief key={m[candidate].key} matchId={m[candidate].key} waitForCache={this.state.playerId == window.Fbase.authUid} showTeam={true} visible={true} onAfterLoad={this.onMatchBriefLoad} />
         );
       } else {
         return result;

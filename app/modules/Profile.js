@@ -10,11 +10,6 @@ var Profile = React.createClass({
     status: React.PropTypes.string,
   },
 
-  defaultProps: {
-    editable: false,
-    status: "completed",
-  },
-
   getInitialState () {
     return {};
   },

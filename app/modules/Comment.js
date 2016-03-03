@@ -73,7 +73,7 @@ var Comment = React.createClass({
   getCommentTitle() {
     var comment = this.props.comment;
     var type = comment.type || "comment";
-    var creator = <PlayerName playerId={this.props.comment.creator} />;
+    var creator = <PlayerName isLink={false} playerId={this.props.comment.creator} />;
     var time = <Timestamp time={this.props.comment.createdTime} />;
     switch (comment.type) {
       case "video":

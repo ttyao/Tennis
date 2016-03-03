@@ -37,6 +37,8 @@ window.Fbase = {
     // if (this.isDebug()) {
     //   Firebase.enableLogging(true);
     // }
+    window.Caching.players[this.authUid || this.Henry] = "pending";
+    window.Caching.loadPlayers();
     this.refreshDisplayNames(this.authUid, function(){
       window.Fbase.log("init", "visit");
       if (callback) {
@@ -302,12 +304,11 @@ window.Fbase = {
       delete oldUser.matches;
       delete oldUser.ladders;
       console.log(oldUser)
-      ref = window.Fbase.getRef("web/data/users/"+toId);
-      ref.update(oldUser);
-      ref = window.Fbase.getRef("web/data/users/"+toId+"/merges/"+oldUserId);
-      ref.set(oldUserId);
-      ref = window.Fbase.getRef("web/data/users/"+oldUserId+"/claimerId");
-      ref.set(toId);
+      window.Fbase.getRef("web/data/users/"+toId).update(oldUser);
+      window.Fbase.getRef("web/data/users/"+toId+"/merges/"+oldUserId).set(oldUserId);
+      window.Fbase.getRef("web/data/users/"+oldUserId+"/claimerId").set(toId);
+      window.Fbase.getRef("web/data/simpleusers/"+toId).remove();
+      window.Fbase.getRef("web/data/simpleusers/"+oldUserId).remove();
 
       // window.Fbase.mergeAccountA2B(Object.keys(oldUser)[0], toId);
     });

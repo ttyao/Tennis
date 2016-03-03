@@ -2,6 +2,7 @@
 bundle.js
 sftp-config.json
 build/bundle.js
+wwc
 app/modules/aws.js
 app/data
 node_modules
