@@ -120,6 +120,8 @@ window.Caching = {
                 self.players[i] = "pending";
               }
             }
+          } else {
+            self.players[i] = "not found";
           }
           self.loadPlayers();
         })

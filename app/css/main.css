@@ -619,6 +619,9 @@ h6,
 .rightalign {
   text-align: right;
 }
+.topalign {
+  vertical-align: top;
+}
 .leftalign {
   text-align: left;
 }

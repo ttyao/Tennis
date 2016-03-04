@@ -122,7 +122,7 @@ export default class Menu extends React.Component {
           <Tabs.Panel title="Player">
             <PlayerDetails playerId={this.props.params.playerId} {...this.props} />
           </Tabs.Panel>
-          {window.Fbase.authUid == window.Fbase.Henry &&
+          {(window.Fbase.authUid == window.Fbase.Henry) &&
             <Tabs.Panel title="Ad">
               <button onClick={this.onTestButtonClick}>Test</button>
               <img src={this.state.file} className="player" />

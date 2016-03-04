@@ -22,18 +22,20 @@ var TeamName = React.createClass({
     }
   },
   render() {
-    if (this.state.team) {
-      return (
-        <div>
-          <Link to={"/ladder/"+this.state.team.ladderId+"/"+this.props.teamId}>{this.state.team.displayName}</Link>
-        </div>
-      );
-    } else if (this.state.ladder) {
-      return (
-        <div>
-          <Link to={"/ladder/"+this.props.ladderId}>{this.state.ladder.displayName}</Link>
-        </div>
-      );
+    if (this.props.visible) {
+      if (this.state.team) {
+        return (
+          <div style={this.props.styles}>
+            <Link to={"/ladder/"+this.state.team.ladderId+"/"+this.props.teamId}>{this.state.team.displayName}</Link>
+          </div>
+        );
+      } else if (this.state.ladder) {
+        return (
+          <div style={this.props.styles}>
+            <Link to={"/ladder/"+this.props.ladderId}>{this.state.ladder.displayName}</Link>
+          </div>
+        );
+      }
     }
     return null;
   }

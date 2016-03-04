@@ -122,7 +122,7 @@ var MatchBrief = React.createClass({
           loading: false,
           match: data
         });
-        if (data.status == "active") {
+        if (data && data.status == "active") {
           self.bindAsObject(ref, "match");
         }
         if (data && data.tmId) {
@@ -365,9 +365,6 @@ var MatchBrief = React.createClass({
     // }
     // return true;
     var result = JSON.stringify(this.state) != JSON.stringify(nextState);
-    if (result) {
-      // console.log("updating match: " + this.props.matchId, window.now().slice(10))
-    }
     return result;
   },
   canEditMatch() {
@@ -498,7 +495,7 @@ var MatchBrief = React.createClass({
     }
     if (this.state.loading) {
       return (
-        <div className="centerContainer"><img src="/images/Tennisbatting.gif"/></div>
+        <div className="centerContainer">{window.Fbase.isDebug() && this.props.matchId}<img src="/images/Tennisbatting.gif"/></div>
       )
     }
     return null;

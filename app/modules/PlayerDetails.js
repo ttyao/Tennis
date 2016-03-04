@@ -3,6 +3,7 @@ import MatchBrief from './MatchBrief';
 import PlayerSelect from './PlayerSelect';
 import TeamName from "./TeamName";
 var ReactFireMixin = require('reactfire');
+var LineChart = require("react-chartjs").Line;
 
 var PlayerDetails = React.createClass({
   getInitialState () {
@@ -19,11 +20,11 @@ var PlayerDetails = React.createClass({
     }
   },
   bindPlayer(playerId) {
-    console.log("start binding player: " + playerId, window.now().slice(10))
+    // console.log("start binding player: " + playerId, window.now().slice(10))
     var player = window.Fbase.getRef("web/data/users/"+playerId);
     var self = this;
     player.once("value", function(snapshot) {
-      console.log("retrived data for player: " + playerId, window.now().slice(10))
+      // console.log("retrived data for player: " + playerId, window.now().slice(10))
       var data = snapshot.val();
       if (data) {
         if (data.claimerId) {
@@ -128,7 +129,7 @@ var PlayerDetails = React.createClass({
   },
   onPlayerChange(value){
     window.Fbase.log("head2head 1st player changed to: " + value, "query");
-    this.setState({playerId: value});
+    this.setState({playerId: value, showAllTeam: false});
     this.unbindPlayer();
     this.bindPlayer(value);
 
@@ -155,7 +156,7 @@ var PlayerDetails = React.createClass({
       var keys = Object.keys(this.state.player.ladders);
       for (let key in this.state.player.ladders) {
         if (!loadedKeys[key]) {
-          t.push({key: key, type:"ladder", date: new Date(this.state.player.ladders[key].date)});
+          t.push({key: key, type:"ladder", date: new Date(window.Utils.getDateString(this.state.player.ladders[key].date))});
           loadedKeys[key] = true;
         }
       }
@@ -176,7 +177,7 @@ var PlayerDetails = React.createClass({
             var keys = Object.keys(this.state["merge"+i].ladders);
             for (let key in this.state["merge"+i].ladders) {
               if (!loadedKeys[key]) {
-                t.push({key:key, type:"ladder", date:new Date(this.state["merge"+i].ladders[key].date)});
+                t.push({key:key, type:"ladder", date:new Date(window.Utils.getDateString(this.state["merge"+i].ladders[key].date))});
                 loadedKeys[key] = true;
               }
             }
@@ -184,6 +185,7 @@ var PlayerDetails = React.createClass({
         }
       }
     }
+    var max = 4;
     var visited = {};
     var result = []
     for (let i in t) {
@@ -194,16 +196,23 @@ var PlayerDetails = React.createClass({
         }
       }
       visited[candidate] = true;
-      if (t[candidate].type == "team") {
-        result.push(<TeamName key={t[candidate].key} teamId={t[candidate].key} />);
-      } else {
-        result.push(<TeamName key={t[candidate].key} ladderId={t[candidate].key} />);
+
+      let style = {
+        backgroundColor: "rgba(101,107,105,"+(((new Date()).getFullYear() + 1 - t[candidate].date.getFullYear()) % 10 * 0.1)+")"
       }
-      if (result.length > 4) {
-        return result;
+      if (t[candidate].type == "team") {
+        result.push(<TeamName visible={result.length < max || this.state.showAllTeam} key={t[candidate].key} styles={style} teamId={t[candidate].key} />);
+      } else {
+        result.push(<TeamName visible={result.length < max || this.state.showAllTeam} key={t[candidate].key} styles={style} ladderId={t[candidate].key} />);
+      }
+      if (result.length == max && !this.state.showAllTeam) {
+        result.push(<a key="showall" onClick={this.showAllTeam}>Show all ... </a>);
       }
     }
     return result;
+  },
+  showAllTeam(event) {
+    this.setState({showAllTeam:true});
   },
   getNTRP(ntrp) {
     if (!ntrp) {
@@ -213,6 +222,104 @@ var PlayerDetails = React.createClass({
       return ntrp+".0"
     }
     return ntrp;
+  },
+  getNTRPData() {
+    if (!this.state.player) {
+      return;
+    }
+    var labels = {};
+    var startingYear = 3000;
+    for (var i in this.state.player.teams) {
+      var date = new Date(this.state.player.teams[i].date);
+      if (!labels[date.getFullYear()]) {
+        if (startingYear > date.getFullYear()) {
+          startingYear = date.getFullYear();
+        }
+        labels[date.getFullYear()] = this.state.player.teams[i];
+      } else if (this.state.player.teams[i].date > labels[date.getFullYear()].date) {
+        labels[date.getFullYear()] = this.state.player.teams[i];
+      }
+    }
+    for (let m = 0; m < this.state.merges; m++) {
+      if (this.state["merge"+m]) {
+        for (var i in this.state["merge"+m].teams) {
+          var date = new Date(this.state["merge"+m].teams[i].date);
+          if (!labels[date.getFullYear()]) {
+            if (startingYear > date.getFullYear()) {
+              startingYear = date.getFullYear();
+            }
+            labels[date.getFullYear()] = this.state["merge"+m].teams[i];
+          } else if (this.state["merge"+m].teams[i].date > labels[date.getFullYear()].date) {
+            labels[date.getFullYear()] = this.state["merge"+m].teams[i];
+          }
+        }
+      }
+    }
+    for (var i in this.state.player.tls) {
+      var date = new Date(i);
+      if (!labels[date.getFullYear()]) {
+        if (startingYear > date.getFullYear()) {
+          startingYear = date.getFullYear();
+        }
+        labels[date.getFullYear()] = {};
+      }
+      labels[date.getFullYear()].tls = this.state.player.tls[i].ntrp;
+    }
+    for (let m = 0; m < this.state.merges; m++) {
+      if (this.state["merge"+m]) {
+        for (var i in this.state["merge"+m].tls) {
+          var date = new Date(i);
+          if (!labels[data.getFullYear()]) {
+            if (startingYear > date.getFullYear()) {
+              startingYear = date.getFullYear();
+            }
+            labels[date.getFullYear()] = {};
+          }
+          labels[date.getFullYear()] = this.state["merge"+m].tls[i].ntrp;
+        }
+      }
+    }
+
+    var l = [];
+    var ntrps = [];
+    var tls = [];
+    while (startingYear <= new Date().getFullYear()) {
+      if (labels[startingYear]) {
+        ntrps.push(parseFloat(labels[startingYear].ntrp) || null);
+        tls.push(parseFloat(labels[startingYear].tls) || null);
+      } else {
+        ntrps.push(null);
+        tls.push(null);
+      }
+      l.push(startingYear++);
+    }
+    return {
+        labels: l,
+        datasets: [
+            {
+                label: "NTRP",
+                fillColor: "rgba(151,187,205,0.2)",
+                strokeColor: "rgba(151,187,205,1)",
+                pointColor: "rgba(151,187,205,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(151,187,205,1)",
+                data: ntrps
+            },
+            {
+                label: "TLS",
+                fillColor: "rgba(220,120,160,0.2)",
+                strokeColor: "rgba(220,120,160,1)",
+                pointColor: "rgba(220,120,160,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(220,120,160,1)",
+                data: tls
+            },
+
+        ]
+    };
+
   },
   getPlayerDetails() {
     if (this.state.player) {
@@ -229,8 +336,13 @@ var PlayerDetails = React.createClass({
               {this.state.player.residence && <td  className="leftalign">{this.state.player.residence}</td>}
             </tr>
             <tr>
-              <td className="rightalign"><b>Recent:</b></td>
+              <td className="rightalign topalign smallpercent"><b>Ladders:</b></td>
               <td className="leftalign" colSpan="3">{this.getCurrentTeams()}</td>
+            </tr>
+            <tr>
+            <td colSpan="4">
+            <LineChart data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="300" height="150"/>
+            </td>
             </tr>
           </tbody></table>
           {window.Fbase.authUid == window.Fbase.Henry && !this.state.player.norcal &&
@@ -258,7 +370,6 @@ var PlayerDetails = React.createClass({
         }
         if (data && time && data.players) {
           for (var i in data.players) {
-            // console.log(data.players[i],key, time)
             var r = window.Fbase.getRef("web/data/users/"+data.players[i]+"/matches/"+ key);
             r.set({time:time});
           }
@@ -285,7 +396,6 @@ var PlayerDetails = React.createClass({
           var keys = Object.keys(this.state["merge"+i].matches);
           for (let key in this.state["merge"+i].matches) {
             m.push({key:key, time:this.state["merge"+i].matches[key].time});
-            // console.log(this.state["merge"+i].matches[key]);
           }
         }
       }
@@ -324,11 +434,13 @@ var PlayerDetails = React.createClass({
               <td>
                 <PlayerSelect player={this.state.player} playerId={this.state.playerId} onChange={this.onPlayerChange} />
               </td>
-            </tr><tr>
+            </tr>
+            <tr>
               <td className="centerContainer">
                 {this.getPlayerDetails()}
               </td>
-            </tr></tbody>
+            </tr>
+            </tbody>
           </table>
           {this.getMatches()}
         </div>

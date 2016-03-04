@@ -235,9 +235,8 @@ var NorcalSync = React.createClass({
       for (let p in players) {
         match.players.push("n:"+players[p]);
       }
-      ref = window.Fbase.getRef("web/data/matches/nm:"+field[0]+":"+field[3]);
       requested++;
-      ref.update(match, function(err) {
+      window.Fbase.getRef("web/data/matches/nm:"+field[0]+":"+field[3]).update(match, function(err) {
         if (!err) {
           completed++;
           if (completed == requested) {
@@ -325,7 +324,7 @@ var NorcalSync = React.createClass({
       });
       if (field[4] == "completed") {
         requested++;
-        this.mergePendingMatch(field, function() {
+        this.mergePendingTeamMatch(field, function() {
           completed++;
           if (completed == requested) {
             self.updateTeamMatch(lines, start + batch);
@@ -334,7 +333,7 @@ var NorcalSync = React.createClass({
       }
     }
   },
-  mergePendingMatch(field, callback) {
+  mergePendingTeamMatch(field, callback) {
     var requested=1;
     var completed=0;
     var ref = window.Fbase.getRef("web/data/teams/nt:"+field[1]+"/matches");
@@ -379,7 +378,62 @@ var NorcalSync = React.createClass({
       }
     })
   },
-  onUpload(files){
+  parseTLS(lines) {
+    var players = {};
+    for (var l in lines) {
+      var field = lines[l].split(";");
+      if (field.length < 5) continue;
+      var name = field[1].replace(".","").toLowerCase();
+      if (!players[name]) {
+        players[name] = {};
+      }
+      if (!players[name][field[0]]) {
+        if (parseFloat(field[2])) {
+          players[name][field[0]] = field;
+        }
+      } else if (parseFloat(players[name][field[0]][2]) < parseFloat(field[2])) {
+        players[name][field[0]] = field;
+      }
+    }
+    console.log(Object.keys(players).length);
+    console.log(players['henry yao'])
+
+    var names = Object.keys(players).sort();
+    // for (let i = 0 ; i < 10; i++) {
+      this.updateTLS(names, players, 0)
+    // }
+  },
+  updateTLS(names, players, i) {
+    if (i > names.length) return;
+    if (i % 100 == 0) console.log(i, names[i])
+    var self = this;
+    window.Fbase.getRef("web/data/users").orderByChild("displayName_").startAt(names[i]).limitToFirst(1).once("value", function(snap) {
+      var data = snap.val();
+      if (data) {
+        for (let p in data) {
+          if (names[i] == data[p].displayName_) {
+            for (let year in players[names[i]]) {
+              if (parseFloat(players[names[i]][year][2]) > 0) {
+                // console.log(p)
+                var ref =window.Fbase.getRef("web/data/users/"+p+"/tls");
+                if (parseInt(year) == 2016) {
+                  ref.update({"2016-03-03": {ntrp: parseFloat(players[names[i]][year][2]), data: players[names[i]][year]}})
+                } else {
+                  ref.child(year+"-12-31").update({ntrp: parseFloat(players[names[i]][year][2]), data: players[names[i]][year]})
+                }
+              }
+            }
+            // console.log(players[names[i]])
+            // window.Fbase.getRef("web/data/users/tls/"+)
+          }
+        }
+      } else {
+        console.log(names[i], " not found")
+      }
+      self.updateTLS(names, players, i+1);
+    })
+  },
+  onUpload(files) {
     console.log(files)
     var reader = new FileReader();
     var self = this;
@@ -407,6 +461,9 @@ var NorcalSync = React.createClass({
           break;
         case "score":
           self.updateScores(lines, 1);
+          break;
+        case "TLS":
+          self.parseTLS(lines);
           break;
       }
     };
