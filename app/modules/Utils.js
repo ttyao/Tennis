@@ -169,6 +169,12 @@ window.Caching = {
     window.setTimeout(function() {window.Caching.loadLadders();}, 10);
   },
   loadSimplePlayer: function(uid, callback) {
+    if (!uid  || uid == "n:0") {
+      if (callback) {
+        callback(null);
+      }
+      return null;
+    }
     var ref = window.Fbase.getRef("web/data/simpleusers/"+uid);
     ref.once('value', function(snap) {
       var u = snap.val();
@@ -234,7 +240,7 @@ window.Caching = {
     window.setTimeout(function() {window.Caching.loadLadders();}, 100);
   },
   getSimplePlayer: function(uid, callback) {
-    if (!uid) {
+    if (!uid || uid == "n:0") {
       if (callback) {
         callback(null);
       }

@@ -56,7 +56,7 @@ var PlayerName = React.createClass({
       } else {
         return (<span>{this.state.player.displayName} {this.getNTRP()}</span>);
       }
-    } else if (this.props.playerId == 0) {
+    } else if (this.props.playerId == 0 || this.props.playerId == "n:0") {
       return "Default"
     } else if (!this.props.playerId) {
       return null;

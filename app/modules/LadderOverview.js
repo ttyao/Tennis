@@ -135,7 +135,6 @@ var LadderOverview = React.createClass({
     select.blur();
   },
   onMatchBriefLoad(matchId, match) {
-
     // if (this.state.ladder.matches[matchId]) {
       var matches = this.state.loadedMatches;
       if (!matches[matchId]) {

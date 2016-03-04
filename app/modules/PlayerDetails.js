@@ -185,7 +185,7 @@ var PlayerDetails = React.createClass({
         }
       }
     }
-    var max = 4;
+    var max = 3;
     var visited = {};
     var result = []
     for (let i in t) {
@@ -236,9 +236,12 @@ var PlayerDetails = React.createClass({
           startingYear = date.getFullYear();
         }
         labels[date.getFullYear()] = this.state.player.teams[i];
+        labels[date.getFullYear()].teams = 0;
       } else if (this.state.player.teams[i].date > labels[date.getFullYear()].date) {
-        labels[date.getFullYear()] = this.state.player.teams[i];
+        labels[date.getFullYear()].date = this.state.player.teams[i].date;
+        labels[date.getFullYear()].ntrp = this.state.player.teams[i].ntrp;
       }
+      labels[date.getFullYear()].teams++;
     }
     for (let m = 0; m < this.state.merges; m++) {
       if (this.state["merge"+m]) {
@@ -249,9 +252,12 @@ var PlayerDetails = React.createClass({
               startingYear = date.getFullYear();
             }
             labels[date.getFullYear()] = this.state["merge"+m].teams[i];
+            labels[date.getFullYear()].teams = 0;
           } else if (this.state["merge"+m].teams[i].date > labels[date.getFullYear()].date) {
-            labels[date.getFullYear()] = this.state["merge"+m].teams[i];
+            labels[date.getFullYear()].date = this.state["merge"+m].teams[i].date;
+            labels[date.getFullYear()].ntrp = this.state["merge"+m].teams[i].ntrp;
           }
+          labels[date.getFullYear()].teams++;
         }
       }
     }
@@ -283,41 +289,56 @@ var PlayerDetails = React.createClass({
     var l = [];
     var ntrps = [];
     var tls = [];
+    var teams = [];
     while (startingYear <= new Date().getFullYear()) {
       if (labels[startingYear]) {
         ntrps.push(parseFloat(labels[startingYear].ntrp) || null);
         tls.push(parseFloat(labels[startingYear].tls) || null);
+        teams.push(labels[startingYear].teams || null);
       } else {
         ntrps.push(null);
         tls.push(null);
+        teams.push(null);
       }
       l.push(startingYear++);
     }
+    let teamColor = "131,237,195";
+    let ntrpColor = "151,187,205";
+    let tlsColor = "220,120,160";
     return {
-        labels: l,
-        datasets: [
-            {
-                label: "NTRP",
-                fillColor: "rgba(151,187,205,0.2)",
-                strokeColor: "rgba(151,187,205,1)",
-                pointColor: "rgba(151,187,205,1)",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "rgba(151,187,205,1)",
-                data: ntrps
-            },
-            {
-                label: "TLS",
-                fillColor: "rgba(220,120,160,0.2)",
-                strokeColor: "rgba(220,120,160,1)",
-                pointColor: "rgba(220,120,160,1)",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "rgba(220,120,160,1)",
-                data: tls
-            },
-
-        ]
+      labels: l,
+      datasets: [
+        {
+          label: "teams",
+          fillColor: "rgba("+teamColor+",0.2)",
+          strokeColor: "rgba("+teamColor+",1)",
+          pointColor: "rgba("+teamColor+",1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba("+teamColor+",1)",
+          data: teams
+        },
+        {
+          label: "NTRP",
+          fillColor: "rgba("+ntrpColor+",0.2)",
+          strokeColor: "rgba("+ntrpColor+",1)",
+          pointColor: "rgba("+ntrpColor+",1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba("+ntrpColor+",1)",
+          data: ntrps
+        },
+        {
+          label: "TLS",
+          fillColor: "rgba("+tlsColor+",0.2)",
+          strokeColor: "rgba("+tlsColor+",1)",
+          pointColor: "rgba("+tlsColor+",1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba("+tlsColor+",1)",
+          data: tls
+        },
+      ]
     };
 
   },
@@ -342,6 +363,11 @@ var PlayerDetails = React.createClass({
             <tr>
             <td colSpan="4">
             <LineChart data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="300" height="150"/>
+            <div>
+              <span style={{color:"rgba(151,187,205,1)"}}> · NTRP </span>
+              <span style={{color:"rgba(220,120,160,1)"}}> · TLS </span>
+              <span style={{color:"rgba(131,237,195,1)"}}> · Ladder played </span>
+            </div>
             </td>
             </tr>
           </tbody></table>

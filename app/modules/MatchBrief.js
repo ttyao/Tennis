@@ -439,10 +439,9 @@ var MatchBrief = React.createClass({
     if (this.state.match) {
       var match = this.state.match;
       var self = this;
-      var matchId = match['.key'];
       if (this.props.onAfterLoad) {
         var self = this;
-        this.setTimeout(function() { self.props.onAfterLoad(matchId, match);}, 0);
+        this.setTimeout(function() { self.props.onAfterLoad(this.props.matchId, match);}, 0);
       }
       if (this.props.visible && this.state.match.players && this.state.match.status != "canceled") {
         var winSetNum = this.getWinSetNum();

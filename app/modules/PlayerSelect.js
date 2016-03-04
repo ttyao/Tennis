@@ -36,7 +36,11 @@ var PlayerSelect = React.createClass({
     return result;
   },
   loadOptions(input, callback) {
-    var ops = [{value: this.state.playerId, label: this.state.player.displayName}];
+    var ops = [];
+    if (!input) {
+      ops.push({label:"Type in first name to search for player ...", value:-1})
+    }
+    ops.push({value: this.state.playerId, label: this.state.player.displayName});
     for (let i in window.Fbase.displayNames) {
       if (window.Fbase.displayNames[i] != "loading" && i != this.state.playerId) {
         ops.push({

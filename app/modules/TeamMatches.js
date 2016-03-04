@@ -100,6 +100,7 @@ var TeamMatches = React.createClass({
   getInitialState () {
     return {
       pendingMatches: [[],[],[],[],[]],
+      teamScores: {},
     };
   },
   getDefaultProps () {
@@ -116,7 +117,6 @@ var TeamMatches = React.createClass({
     ref.once('value', function(snapshot) {
       let data = snapshot.val();
       if (!data || !data.teams || Object.keys(data.teams).length != 2) return;
-      console.log(data)
       var teamIds = Object.keys(data.teams);
       self.setState({
         teamIds: data.teams
@@ -277,6 +277,21 @@ var TeamMatches = React.createClass({
     window.Fbase.updateTeamMatchStatus(this.props.teamMatchId, "active");
   },
   onAfterLoad(matchId, match) {
+    var setWin = 0;
+    var scores = match.scores;
+    for (let i in scores) {
+      if (scores[i][0] > scores[i][1]) {
+        setWin++;
+      } else if (scores[i][0] < scores[i][1]) {
+        setWin--;
+      }
+    }
+    if (setWin) {
+      var teamScores = this.state.teamScores;
+      if (setWin > 0) teamScores[match.line] = 1;
+      if (setWin < 0) teamScores[match.line] = -1;
+      this.setState({teamScores: teamScores});
+    }
     if (this.props.onAfterLoad) {
       this.props.onAfterLoad(matchId, match)
     }
@@ -336,8 +351,19 @@ var TeamMatches = React.createClass({
       </div>
     );
   },
+  getTeamScores() {
+    var a=0, b=0;
+    for (let i in this.state.teamScores) {
+      if (this.state.teamScores[i] > 0) {
+        a++;
+      }
+      if (this.state.teamScores[i] < 0) {
+        b++;
+      }
+    }
+    return <div>{a} : {b} </div>;
+  },
   render() {
-    console.log(this.state.teamMatch)
     if (this.state.teamMatch && this.state.team0 && this.state.team1 && this.state.teamMatch.status != "merged") {
       var matches = this.state.matches;
       return (
@@ -351,6 +377,7 @@ var TeamMatches = React.createClass({
                   </td>
                   <td className="centerContainer">
                     <Timestamp format="date" time={this.state.teamMatch.time} />
+                    {this.getTeamScores()}
                   </td>
                   <td className="playersection centerContainer">
                     <Link to={"/ladder/"+this.state.team1.ladderId+"/"+this.state.teamIds[1]}>{this.state.team1.displayName}</Link>
