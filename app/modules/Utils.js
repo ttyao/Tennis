@@ -102,6 +102,8 @@ window.Caching = {
             self.simplePlayers[i] = {
               displayName: data.displayName,
               ntrp: data.ntrp,
+              ntrpType: data.ntrpType,
+              claimerId: data.claimerId
             }
             for (let m in data.matches) {
               self.matches[m] = "pending";
@@ -196,7 +198,8 @@ window.Caching = {
                   window.Caching.simplePlayers[uid] = {
                     claimerId: user.claimerId,
                     displayName: claimer.displayName,
-                    ntrp: claimer.ntrp || ""
+                    ntrp: claimer.ntrp || "",
+                    ntrpType: claimer.ntrpType || "",
                   };
                   window.Fbase.getRef("web/data/simpleusers/"+uid).set(window.Caching.simplePlayers[uid]);
                   if (callback) {
@@ -212,7 +215,8 @@ window.Caching = {
             } else {
               let s = {
                 displayName: user.displayName,
-                ntrp: user.ntrp || ""
+                ntrp: user.ntrp || "",
+                ntrpType: user.ntrpType || "",
               }
               window.Caching.simplePlayers[uid] = s;
               window.Fbase.getRef("web/data/simpleusers/"+uid).set(s);
@@ -250,8 +254,50 @@ window.Caching = {
       if (callback) {
         callback(this.simplePlayers[uid]);
       }
+      return this.simplePlayers[uid];
     }
     this.loadSimplePlayer(uid, callback);
     return "pending";
   },
+  setSimplePlayer: function(uid, player) {
+    this.simplePlayers[uid] = player;
+  },
+  getDisplayName: function(uid, callback) {
+    if (!uid || uid == "n:0") {
+      if (callback) {
+        callback(null);
+      }
+      return null;
+    }
+    if (typeof(this.simplePlayers[uid]) == "object") {
+      if (callback) {
+        callback(this.simplePlayers[uid].displayName);
+      }
+      return this.simplePlayers[uid].displayName;
+    } else if (this.simplePlayers[uid]) {
+      if (callback) {
+        callback(this.simplePlayers[uid]);
+      }
+      return this.simplePlayers[uid];
+    }
+    this.loadSimplePlayer(uid, function(player) {
+      if (callback) {
+        if (typeof(player) == "object") {
+          callback(player.displayName);
+        } else {
+          callback(player)
+        }
+      }
+    });
+    return "pending";
+  },
+  getPlayerId: function(displayName) {
+    for (var key in this.simplePlayers) {
+      if (typeof(this.simplePlayer) == "object" && this.simplePlayers[key].displayName == displayName) {
+        return key;
+      }
+    }
+    return displayName;
+  },
+
 }

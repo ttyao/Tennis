@@ -18,11 +18,8 @@ var PlayerSelect = React.createClass({
     this.setState({ player: value });
     this.props.onChange(value);
   },
-  componentWillMount() {
-    window.Fbase.getDisplayName(this.state.playerId);
-    var userRef = window.Fbase.getRef("web/data/users").orderByChild("displayName_").startAt("he").limitToFirst(2);
-      // this.bindAsArray(userRef, "players");
-    userRef.once("value", function(snapshot) {});
+  componentDidMount() {
+    window.Caching.getDisplayName(this.state.playerId);
   },
 
   mixins: [TimerMixin, ReactFireMixin],
@@ -41,11 +38,11 @@ var PlayerSelect = React.createClass({
       ops.push({label:"Type in first name to search for player ...", value:-1})
     }
     ops.push({value: this.state.playerId, label: this.state.player.displayName});
-    for (let i in window.Fbase.displayNames) {
-      if (window.Fbase.displayNames[i] != "loading" && i != this.state.playerId) {
+    for (let i in window.Caching.simplePlayers) {
+      if (typeof(window.Caching.simplePlayers[i]) == "object" && !window.Caching.simplePlayers[i].claimerId && i != this.state.playerId) {
         ops.push({
           value: i,
-          label: window.Fbase.getDisplayName(i)
+          label: window.Caching.getDisplayName(i)
         });
       }
     }
@@ -58,11 +55,11 @@ var PlayerSelect = React.createClass({
     userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(10).once("value", function(snapshot) {
       var object = snapshot.val();
       for (var key in object) {
-        if (object[key] && !window.Fbase.displayNames[key] && !object[key].claimerId) {
+        if (object[key] && typeof(window.Caching.simplePlayers[key]) != "object" && !object[key].claimerId) {
           var item = {};
           item.value = key;
           item.label = object[key].displayName;
-          window.Fbase.displayNames[key] = item.label;
+          window.Caching.setSimplePlayer(key, object[key]);
           ops.push(item);
         }
       }

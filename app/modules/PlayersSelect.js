@@ -41,7 +41,7 @@ var PlayersSelect = React.createClass({
           if (input == inputs[inputs.length - 1]) {
             current = displayName;
           }
-          var d = window.Fbase.getDisplayName(input);
+          var d = window.Caching.getDisplayName(input);
           if ( d != input && d != "loading") {
             displayName = d;
           }
@@ -49,7 +49,7 @@ var PlayersSelect = React.createClass({
         } else if (input.split(":")[0].split("-")[0] == input) { // unchanged displayname
           ops.push({value : "guest:"+input, label : input});
         } else {
-          ops.push({value : input, label : window.Fbase.getDisplayName(input)})
+          ops.push({value : input, label : window.Caching.getDisplayName(input)})
         }
       });
       input = input.split(",").slice(-1)[0].split(":")[0];
@@ -63,7 +63,7 @@ var PlayersSelect = React.createClass({
             var item = {};
             item.value = key;
             item.label = object[key].displayName;
-            window.Fbase.setDisplayName(key, item.label)
+            window.Fbase.setSimplePlayer(key, object[key])
             ops.push(item);
           }
         }
@@ -75,7 +75,7 @@ var PlayersSelect = React.createClass({
     var result = [<option key="none" label="select player ..." value="none"/>]
     if (type == "normal") {
       for (let i in this.props.ladder.users) {
-        result.push(<option key={i} label={window.Fbase.getDisplayName(i)} value={i}/>);
+        result.push(<option key={i} label={window.Caching.getDisplayName(i)} value={i}/>);
       }
     }
     return result;

@@ -148,7 +148,14 @@ var NorcalSync = React.createClass({
           }
         }
       });
-      ref = window.Fbase.getRef("web/data/teams/nt:"+field[0]+"/users/"+field[1]);
+      // requested++;
+      // window.Fbase.getRef("web/data/teams/nt:"+field[0]).remove(function() {
+      //   completed++;
+      //   if (completed == requested) {
+      //     self.updateTeamPlayer(lines, start + batch);
+      //   }
+      // });
+      ref = window.Fbase.getRef("web/data/teams/nt:"+field[0]+"/players/n:"+field[1]);
       requested++;
       // console.log(field)
       ref.set("1", function(err) {

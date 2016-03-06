@@ -127,7 +127,7 @@ var Login = React.createClass({
         >
           <div className="modal-content">
             <div className="modal-header">
-              <h4 className="modal-title centerContainer">Login Required</h4>
+              <h4 className="modal-title centerContainer">Tennis Database</h4>
             </div>
             <div className="modal-body centerContainer">
             <table>

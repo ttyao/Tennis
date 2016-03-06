@@ -51,7 +51,7 @@ var LadderSelect = React.createClass({
       if (typeof(window.Caching.ladders[l]) == "object" && !keys[l]) {
         keys[l] = true;
         ops.push({value: l, label:window.Caching.ladders[l].displayName});
-        console.log(l, window.Caching.ladders[l])
+        // console.log(l, window.Caching.ladders[l])
       }
     }
     var userRef = window.Fbase.getRef("web/data/ladders");

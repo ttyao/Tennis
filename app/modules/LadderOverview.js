@@ -6,6 +6,7 @@ import MatchBrief from './MatchBrief';
 import Modal from 'react-modal';
 import MatchRecorder from './MatchRecorder';
 import TeamMatches from './TeamMatches';
+import TeamStats from "./TeamStats";
 import ReactDOM from 'react-dom';
 
 var update = require('react-addons-update');
@@ -32,10 +33,10 @@ var LadderOverview = React.createClass({
       type: "normal"
     };
   },
-  componentWillMount() {
+  componentDidMount() {
     this.loadLadder(this.props.ladderId || "l:1", this.props.teamId);
   },
-  componentWillUpdate(nextProps, nextState) {
+  componentDidUpdate(nextProps, nextState) {
     if (nextProps.teamId != this.props.teamId &&
         JSON.stringify(nextState) == JSON.stringify(this.state)) {
       this.loadLadder(nextProps.ladderId, nextProps.teamId);
@@ -56,21 +57,28 @@ var LadderOverview = React.createClass({
         }
         if (data.merges) {
           for (let i in data.merges) {
-            self.loadTeam(ladderId, ladder, i);
+            if (i.indexOf("n:") == 0) { // hacky way to prevent other merged ids to override default team.
+              self.loadTeam(ladderId, ladder, i);
+            }
           }
           return;
         }
       }
-      self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
+      self.loadLadder(ladderId, Object.keys(ladder.teams)[0], true);
     })
   },
-  loadLadder(ladderId, teamId) {
+  loadLadder(ladderId, teamId, isDefaultTeam) {
     var self = this;
+    // if (!ladderId) {
+    //   window.Caching.getSimplePlayer
+    //   return;
+    // }
     if (ladderId != this.state.ladderId) {
       var ref = window.Fbase.getRef("web/data/ladders/"+ladderId);
       ref.once('value', function(snapshot) {
         var ladder = snapshot.val();
         if (!ladder) {
+
           self.setState({ ladder: null, ladderId: null });
           return;
         }
@@ -90,19 +98,20 @@ var LadderOverview = React.createClass({
             if (window.Fbase.authUid) {
               self.loadTeam(ladderId, ladder, window.Fbase.authUid);
             } else {
-              self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
+              self.loadLadder(ladderId, Object.keys(ladder.teams)[0], true);
             }
 
           }
         }
-
-        self.setState({
-          ladder: ladder,
-          ladderId: ladderId,
-          players: ladder.users ? Object.keys(ladder.users).join(",") : "",
-          loadedMatches: {},
-          areas: Object.keys(areas).sort()
-        });
+        if (self.isMounted()) {
+          self.setState({
+            ladder: ladder,
+            ladderId: ladderId,
+            players: ladder.users ? Object.keys(ladder.users).join(",") : "",
+            loadedMatches: {},
+            areas: Object.keys(areas).sort()
+          });
+        }
 
         if (ladder.users && Object.keys(ladder.users).length) {
           for (let id in ladder.users) {
@@ -112,26 +121,36 @@ var LadderOverview = React.createClass({
       });
     }
 
+
     if (teamId && teamId != this.state.teamId) {
+      // console.log(teamId, this.state.teamId,isDefaultTeam)
+      // // default team means the user isn't found in current ladder, so showing first team of the ladder.
+      // // this should not replace the current teamId.
+      // if (isDefaultTeam && this.state.teamId) {
+      //   return;
+      // }
       ref = window.Fbase.getRef("web/data/teams/"+teamId);
       ref.once("value", function(snapshot) {
         var team = snapshot.val();
-        if (!team) {
-          self.setState({team: null, teamId: null, area: null})
-        } else {
-          team.id = teamId;
-          self.setState({team: team, teamId: teamId, area: team.area});
+        if (self.isMounted()) {
+          if (!team) {
+            self.setState({team: null, teamId: null, area: null})
+          } else {
+            team.id = teamId;
+            self.setState({team: team, teamId: teamId, area: team.area});
+          }
         }
       });
     } else {
-      self.setState({team: null, teamId: null, area: null})
+      if (self.isMounted()) {
+        self.setState({team: null, teamId: null, area: null})
+      }
     }
   },
   onLadderChange(value) {
     this.loadLadder(value);
     this.props.history.push("/ladder/"+value);
     var select = ReactDOM.findDOMNode(this.refs.ladderSelect).getElementsByTagName('input')[1];
-    // console.log(select)
     select.blur();
   },
   onMatchBriefLoad(matchId, match) {
@@ -188,8 +207,8 @@ var LadderOverview = React.createClass({
     var players = [];
     for (let matchId in this.state.loadedMatches) {
       for (let player in this.state.loadedMatches[matchId].players) {
-        if (players.indexOf(window.Fbase.getDisplayName(this.state.loadedMatches[matchId].players[player])) < 0) {
-          players.push(window.Fbase.getDisplayName(this.state.loadedMatches[matchId].players[player]));
+        if (players.indexOf(window.Caching.getDisplayName(this.state.loadedMatches[matchId].players[player])) < 0) {
+          players.push(window.Caching.getDisplayName(this.state.loadedMatches[matchId].players[player]));
         }
       }
     }
@@ -197,7 +216,7 @@ var LadderOverview = React.createClass({
     players.sort();
     var options = [];
     for (let i in players) {
-      options.push(<option key={window.Fbase.getUserId(players[i])} value={window.Fbase.getUserId(players[i])} label={players[i]} />);
+      options.push(<option key={window.Caching.getPlayerId(players[i])} value={window.Caching.getPlayerId(players[i])} label={players[i]} />);
     }
 
     return (
@@ -216,7 +235,7 @@ var LadderOverview = React.createClass({
     var keys = this.state.players.split(",");
 
     for (let i in keys) {
-      ops.push({value : keys[i], label : window.Fbase.getDisplayName(keys[i])});
+      ops.push({value : keys[i], label : window.Caching.getDisplayName(keys[i])});
     };
     if (!input || typeof(input) != "string") {
       this.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
@@ -230,7 +249,7 @@ var LadderOverview = React.createClass({
           var item = {};
           item.value = key;
           item.label = object[key].displayName;
-          window.Fbase.setDisplayName(key, item.label);
+          window.Fbase.setSimplePlayer(key, object[key]);
           ops.push(item);
           keys.push(key);
         }
@@ -312,17 +331,18 @@ var LadderOverview = React.createClass({
   render () {
     // console.log(this.state.teamId, this.state.team)
     if (!this.state.ladder) {
-      return (
-        <table className="wholerow">
-          <tbody><tr>
-            <td className="playersection">
-              <span className="section">
-                <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
-                <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
-              </span>
-            </td>
-          </tr></tbody>
-        </table>);
+      return (<div style={{height:"80vh",background:"url(/images/roundPreloader.gif) no-repeat center center"}}/>);
+        // <table className="wholerow">
+        //   <tbody><tr>
+        //     <td className="playersection">
+        //       <span className="section">
+        //         <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
+        //         <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
+        //         <TeamStats team={this.state.team} loadedMatches={this.state.loadedMatches} />
+        //       </span>
+        //     </td>
+        //   </tr></tbody>
+        // </table>);
     }
     return (
       <div>
@@ -350,7 +370,7 @@ var LadderOverview = React.createClass({
         </table>
         {this.getMegaphone()}
         <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
-
+        <TeamStats team={this.state.team} loadedMatches={this.state.loadedMatches} />
         {this.getMatchList()}
         <Modal
           className="Modal__Bootstrap modal-dialog"

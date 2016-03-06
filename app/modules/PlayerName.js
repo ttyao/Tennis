@@ -13,7 +13,8 @@ var PlayerName = React.createClass({
   getDefaultProps () {
     return ({
       showNTRP: false,
-      isLink: true
+      isLink: true,
+      format: "full"
     });
   },
 
@@ -22,11 +23,11 @@ var PlayerName = React.createClass({
     return {player: player};
   },
   mixins: [ReactFireMixin],
-  componentWillMount () {
+  componentDidMount () {
     if (typeof(this.state.player) != "object") {
       var self = this;
       var player = window.Caching.getSimplePlayer(this.props.playerId, function(p) {
-        if (typeof(self.state.player) != "object") {
+        if (self.isMounted() && typeof(self.state.player) != "object") {
           self.setState({player: p});
         }
       });
@@ -39,6 +40,9 @@ var PlayerName = React.createClass({
         if (ntrp.toString().length == 1) {
           ntrp=ntrp+".0";
         }
+        if (this.props.format == "none") {
+          return (<span>{ntrp}{this.state.player.ntrpType}</span>);
+        }
         return (<span>({ntrp})</span>);
       }
     }
@@ -49,12 +53,25 @@ var PlayerName = React.createClass({
                  JSON.stringify(nextProps) != JSON.stringify(this.props)
     return result;
   },
+  getDisplayName() {
+    if (this.props.format == "short") {
+      var names = this.state.player.displayName.split(" ");
+      if (names.length <= 1) {
+        return this.state.player.displayName;
+      } else {
+        return names[0][0]+" "+names[names.length - 1];
+      }
+    } else if (this.props.format == "none") {
+      return null;
+    }
+    return this.state.player.displayName;
+  },
   getName() {
     if (this.state.player && typeof(this.state.player) == "object") {
       if (this.props.isLink) {
-        return (<Link to={"/player/0/"+this.props.playerId}>{this.state.player.displayName} {this.getNTRP()}</Link>);
+        return (<Link to={"/player/0/"+this.props.playerId}>{this.getDisplayName()} {this.getNTRP()}</Link>);
       } else {
-        return (<span>{this.state.player.displayName} {this.getNTRP()}</span>);
+        return (<span>{this.getDisplayName()} {this.getNTRP()}</span>);
       }
     } else if (this.props.playerId == 0 || this.props.playerId == "n:0") {
       return "Default"

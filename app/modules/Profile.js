@@ -14,7 +14,6 @@ var Profile = React.createClass({
     return {};
   },
   componentWillMount() {
-    window.Fbase.getDisplayName(this.state.playerId)
   },
   render() {
     return (

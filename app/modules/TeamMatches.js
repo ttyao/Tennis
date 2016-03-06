@@ -110,7 +110,7 @@ var TeamMatches = React.createClass({
   },
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
 
-  componentWillMount () {
+  componentDidMount () {
     var ref = window.Fbase.getRef("web/data/teammatches/"+this.props.teamMatchId);
     this.bindAsObject(ref, "teamMatch");
     var self = this;

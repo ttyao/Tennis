@@ -9,7 +9,7 @@ var PlayerDetails = React.createClass({
   getInitialState () {
     var playerId = window.Fbase.authUid || window.Fbase.Henry;
     if (this.props.playerId) {
-      playerId = window.Fbase.getUserId(this.props.playerId);
+      playerId = window.Caching.getPlayerId(this.props.playerId);
     }
     return {playerId: playerId, win1: 0, win2: 0};
   },
@@ -357,16 +357,16 @@ var PlayerDetails = React.createClass({
               {this.state.player.residence && <td  className="leftalign">{this.state.player.residence}</td>}
             </tr>
             <tr>
-              <td className="rightalign topalign smallpercent"><b>Ladders:</b></td>
+              <td className="rightalign topalign smallpercent"><b>Teams / Ladders:</b></td>
               <td className="leftalign" colSpan="3">{this.getCurrentTeams()}</td>
             </tr>
             <tr>
             <td colSpan="4">
             <LineChart data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="300" height="150"/>
             <div>
-              <span style={{color:"rgba(151,187,205,1)"}}> · NTRP </span>
-              <span style={{color:"rgba(220,120,160,1)"}}> · TLS </span>
-              <span style={{color:"rgba(131,237,195,1)"}}> · Ladder played </span>
+              <span style={{color:"rgba(151,187,205,1)"}}> &#x25cf; NTRP </span>
+              <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TLS </span>
+              <span style={{color:"rgba(131,237,195,1)"}}> &#x25cf; Team played </span>
             </div>
             </td>
             </tr>

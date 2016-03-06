@@ -94,7 +94,6 @@ var MatchBrief = React.createClass({
     visible: React.PropTypes.bool,
     showTeam: React.PropTypes.bool,
   },
-
   getInitialState () {
     return {
       file: null,
@@ -109,8 +108,7 @@ var MatchBrief = React.createClass({
     };
   },
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
-
-  componentWillMount () {
+  componentDidMount () {
     // console.log("start mounting match: " + this.props.matchId, window.now().slice(10))
     if (!this.props.waitForCache) {
       var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
@@ -118,10 +116,12 @@ var MatchBrief = React.createClass({
       ref.once("value", function(snapshot) {
         // console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
         var data = snapshot.val();
-        self.setState({
-          loading: false,
-          match: data
-        });
+        if (self.isMounted()) {
+          self.setState({
+            loading: false,
+            match: data
+          });
+        }
         if (data && data.status == "active") {
           self.bindAsObject(ref, "match");
         }
@@ -131,14 +131,20 @@ var MatchBrief = React.createClass({
             // console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
             var teams = snapshot.val();
             if (teams) {
-              self.setState({teams:teams})
+              if (self.isMounted()) {
+                self.setState({teams:teams})
+              }
               let t0 = window.Fbase.getRef("web/data/teams/"+teams[0]);
               t0.once("value", function(t) {
-                self.setState({team0: t.val()});
+                if (self.isMounted()) {
+                  self.setState({team0: t.val()});
+                }
               })
               let t1 = window.Fbase.getRef("web/data/teams/"+teams[1]);
               t1.once("value", function(t) {
-                self.setState({team1: t.val()});
+                if (self.isMounted()) {
+                  self.setState({team1: t.val()});
+                }
               })
             }
           })
@@ -147,7 +153,9 @@ var MatchBrief = React.createClass({
         if (data && data.ladderId) {
           let l = window.Fbase.getRef("web/data/ladders/"+data.ladderId);
           l.once("value", function(ladder) {
-            self.setState({ladder: ladder.val(), ladderId:data.ladderId});
+            if (self.isMounted()) {
+              self.setState({ladder: ladder.val(), ladderId:data.ladderId});
+            }
           })
         }
       });
@@ -360,10 +368,6 @@ var MatchBrief = React.createClass({
     if (!this.state.match && !!nextState.match) {
       return true;
     }
-    // if (this.state.refreshName != nextState.refreshName) {
-    //   return true;
-    // }
-    // return true;
     var result = JSON.stringify(this.state) != JSON.stringify(nextState);
     return result;
   },
@@ -460,18 +464,18 @@ var MatchBrief = React.createClass({
                   {this.showTeam()}
                   <tr>
                     <td className="playersection centerContainer">
-                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[0])} key={match.players[0] && "player0"} playerId={match.players[0]} />
+                      <PlayerName showNTRP={true} key={match.players[0] && "player0"} playerId={match.players[0]} />
                       <br/>
-                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[2])} key={match.players[2] && "player2"} playerId={match.players[2]} />
+                      <PlayerName showNTRP={true} key={match.players[2] && "player2"} playerId={match.players[2]} />
                     </td>
                     <td className="scoresection">
                       <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
                         editable={!!window.Fbase.authUid && match.status == "active"} />
                     </td>
                     <td className="playersection centerContainer">
-                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[1])} key={match.players[1] && "player1"} playerId={match.players[1]} />
+                      <PlayerName showNTRP={true} key={match.players[1] && "player1"} playerId={match.players[1]} />
                       <br/>
-                      <PlayerName showNTRP={true} playerName={window.Fbase.getDisplayName(match.players[3])} key={match.players[3] && "player3"} playerId={match.players[3]} />
+                      <PlayerName showNTRP={true} key={match.players[3] && "player3"} playerId={match.players[3]} />
                     </td>
                   </tr>
                 </tbody>

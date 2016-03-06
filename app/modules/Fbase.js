@@ -6,78 +6,19 @@ window.Fbase = {
   isHenry: function() {
     return this.Henry == this.authUid;
   },
-  refreshDisplayNames: function(uid, callback) {
-    if (!uid) {
-      if (callback) {
-        callback(null);
-      }
-      return;
-    }
-    this.displayNames[uid] = "loading";
-    var ref = this.getRef("web/data/users/"+uid);
-    ref.once('value', function(snapshot) {
-      var data = snapshot.val();
-      if (data) {
-        if (data.displayName && !data.claimerId) {
-          window.Fbase.displayNames[uid] = data.displayName;
-          // if (!data[key].displayName_) {
-          //   var f = window.Fbase.getRef("web/data/users/"+key+"/displayName_");
-          //   f.set(data[key].displayName.toLowerCase());
-          // }
-        }
-        if (callback) {
-          callback(data.displayName || null);
-        }
-      }
-    });
-  },
   init: function(callback) {
     this.authUid = this.getAuthUid();
-    this.displayNames = {};
     // if (this.isDebug()) {
     //   Firebase.enableLogging(true);
     // }
     window.Caching.players[this.authUid || this.Henry] = "pending";
     window.Caching.loadPlayers();
-    this.refreshDisplayNames(this.authUid, function(){
+    window.Caching.getDisplayName(this.authUid, function(){
       window.Fbase.log("init", "visit");
       if (callback) {
         callback();
       }
     })
-  },
-  getAuthName: function() {
-    return this.getDisplayName(this.authUid);
-  },
-  setDisplayName: function(uid, displayName) {
-    this.displayNames[uid] = displayName;
-  },
-  getDisplayName: function(uid, callback) {
-    if (!uid) {
-      if (callback) {
-        callback(null);
-      }
-      return null;
-    }
-    if (this.displayNames[uid]) {
-      if (callback) {
-        callback(this.displayNames[uid]);
-      }
-      return this.displayNames[uid];
-    }
-    this.refreshDisplayNames(uid, callback);
-    return "loading";
-  },
-  getUserId: function(displayName) {
-    for (var key in this.displayNames) {
-      if (this.displayNames[key] == displayName) {
-        return key;
-      }
-    }
-    return displayName;
-  },
-  isValidDisplayName: function(displayName) {
-    return displayName && displayName.indexOf(':') < 0 && displayName.indexOf("-") < 0;
   },
   isDebug: function() {
     return window.location.hostname == 'localhost';
@@ -88,6 +29,55 @@ window.Fbase = {
     this.authUid = authData ? authData["uid"] : "";
     return this.authUid;
   },
+  getNRef: function(path) {
+    var id = parseInt(path.split("/")[4].split(":")[1]);
+    if (id >= 540000) {
+      return new Firebase("https://tennismatches54.firebaseio.com" + path);
+    } else if (id >=510000 && id < 540000) {
+      return new Firebase("https://tennismatches51.firebaseio.com" + path);
+    } else if (id >= 480000 && id < 510000) {
+      return new Firebase("https://tennismatches48.firebaseio.com" + path);
+    } else if (id >=450000 && id < 480000) {
+      return new Firebase("https://tennismatches45.firebaseio.com" + path);
+    } else if (id >=430000 && id < 450000) {
+      return new Firebase("https://tennismatches43.firebaseio.com" + path);
+    } else if (id >=420000 && id < 430000) {
+      return new Firebase("https://tennismatches42.firebaseio.com" + path);
+    } else if (id >=410000 && id < 420000) {
+      return new Firebase("https://tennismatches41.firebaseio.com" + path);
+    } else if (id >=400000 && id < 410000) {
+      return new Firebase("https://tennismatches40.firebaseio.com" + path);
+    } else if (id >=390000 && id < 400000) {
+      return new Firebase("https://tennismatches39.firebaseio.com" + path);
+    } else if (id >=360000 && id < 390000) {
+      return new Firebase("https://tennismatches36.firebaseio.com" + path);
+    } else if (id >=330000 && id < 360000) {
+      return new Firebase("https://tennismatches33.firebaseio.com" + path);
+    } else if (id >=300000 && id < 330000) {
+      return new Firebase("https://tennismatches30.firebaseio.com" + path);
+    } else if (id >=270000 && id < 300000) {
+      return new Firebase("https://tennismatches27.firebaseio.com" + path);
+    } else if (id >=240000 && id < 270000) {
+      return new Firebase("https://tennismatches24.firebaseio.com" + path);
+    } else if (id >=210000 && id < 240000) {
+      return new Firebase("https://tennismatches21.firebaseio.com" + path);
+    } else if (id >=180000 && id < 210000) {
+      return new Firebase("https://tennismatches18.firebaseio.com" + path);
+    } else if (id >=150000 && id < 180000) {
+      return new Firebase("https://tennismatches15.firebaseio.com" + path);
+    } else if (id >=120000 && id < 150000) {
+      return new Firebase("https://tennismatches12.firebaseio.com" + path);
+    } else if (id >=90000 && id < 120000) {
+      return new Firebase("https://tennismatches09.firebaseio.com" + path);
+    } else if (id >=60000 && id < 90000) {
+      return new Firebase("https://tennismatches06.firebaseio.com" + path);
+    } else if (id >=30000 && id < 60000) {
+      return new Firebase("https://tennismatches03.firebaseio.com" + path);
+    } else if (id >= 0 && id < 30000) {
+      return new Firebase("https://tennismatches00.firebaseio.com" + path);
+    }
+    return new Firebase(this.baseUrl+path);
+  },
   getRef: function(path) {
     if (path && path[0] != '/') {
       path = "/" + path;
@@ -97,43 +87,33 @@ window.Fbase = {
     if (path.indexOf("/web/data/simpleusers") >= 0) {
       return new Firebase("https://tennisladders.firebaseio.com" + path);
     }
-    if (path.indexOf("/web/data/matches/nm:") == 0) {
+    if (path.indexOf("/web/data/matches/nm:") == 0 ||
+        path.indexOf("/web/data/teammatches/ntm:") == 0) {
+      return this.getNRef(path);
+    }
+    if (path.indexOf("/web/data/teams/nt:") == 0) {
       var id = parseInt(path.split("/")[4].split(":")[1]);
-      if (id >=430000 && id < 440000) {
-        return new Firebase("https://tennismatches43.firebaseio.com" + path);
-      } else if (id >=420000 && id < 430000) {
-        return new Firebase("https://tennismatches42.firebaseio.com" + path);
-      } else if (id >=410000 && id < 420000) {
-        return new Firebase("https://tennismatches41.firebaseio.com" + path);
-      } else if (id >=400000 && id < 410000) {
-        return new Firebase("https://tennismatches40.firebaseio.com" + path);
-      } else if (id >=390000 && id < 400000) {
-        return new Firebase("https://tennismatches39.firebaseio.com" + path);
-      } else if (id >=360000 && id < 390000) {
-        return new Firebase("https://tennismatches36.firebaseio.com" + path);
-      } else if (id >=330000 && id < 360000) {
-        return new Firebase("https://tennismatches33.firebaseio.com" + path);
-      } else if (id >=300000 && id < 330000) {
+      if (id >= 100000) {
         return new Firebase("https://tennismatches30.firebaseio.com" + path);
-      } else if (id >=270000 && id < 300000) {
+      } else if (id >= 90000 && id < 100000) {
         return new Firebase("https://tennismatches27.firebaseio.com" + path);
-      } else if (id >=240000 && id < 270000) {
+      } else if (id >= 80000 && id < 90000) {
         return new Firebase("https://tennismatches24.firebaseio.com" + path);
-      } else if (id >=210000 && id < 240000) {
+      } else if (id >= 70000 && id < 80000) {
         return new Firebase("https://tennismatches21.firebaseio.com" + path);
-      } else if (id >=180000 && id < 210000) {
+      } else if (id >= 60000 && id < 70000) {
         return new Firebase("https://tennismatches18.firebaseio.com" + path);
-      } else if (id >=150000 && id < 180000) {
+      } else if (id >= 50000 && id < 60000) {
         return new Firebase("https://tennismatches15.firebaseio.com" + path);
-      } else if (id >=120000 && id < 150000) {
+      } else if (id >= 40000 && id < 50000) {
         return new Firebase("https://tennismatches12.firebaseio.com" + path);
-      } else if (id >=90000 && id < 120000) {
+      } else if (id >= 30000 && id < 40000) {
         return new Firebase("https://tennismatches09.firebaseio.com" + path);
-      } else if (id >=60000 && id < 90000) {
+      } else if (id >= 20000 && id < 30000) {
         return new Firebase("https://tennismatches06.firebaseio.com" + path);
-      } else if (id >=30000 && id < 60000) {
+      } else if (id >= 10000 && id < 20000) {
         return new Firebase("https://tennismatches03.firebaseio.com" + path);
-      } else if (id >= 0 && id < 30000) {
+      } else if (id >= 0 && id < 10000) {
         return new Firebase("https://tennismatches00.firebaseio.com" + path);
       }
     }
@@ -506,7 +486,6 @@ window.Fbase = {
     }
     var ref = this.getRef("web/data/"+type+"/"+objectId+"/users/"+uid);
     ref.set({
-      creator: this.getAuthName(),
       createTime: window.now()
     });
   },
