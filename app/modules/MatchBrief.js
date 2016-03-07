@@ -110,8 +110,9 @@ var MatchBrief = React.createClass({
   mixins: [ReactFireMixin, TimerMixin, Reflux.connect(imageStore), 'exif'],
   componentDidMount () {
     // console.log("start mounting match: " + this.props.matchId, window.now().slice(10))
+    var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
+    this.bindAsObject(ref, "match");
     if (!this.props.waitForCache) {
-      var ref = window.Fbase.getRef("web/data/matches/"+this.props.matchId);
       var self = this;
       ref.once("value", function(snapshot) {
         // console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
@@ -121,9 +122,6 @@ var MatchBrief = React.createClass({
             loading: false,
             match: data
           });
-        }
-        if (data && data.status == "active") {
-          self.bindAsObject(ref, "match");
         }
         if (data && data.tmId) {
           var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
@@ -229,7 +227,7 @@ var MatchBrief = React.createClass({
       );
     } else {
       window.Fbase.createComment(
-        this.state.match[".key"],
+        this.props.matchId,
         "Updated set "+ (Math.floor(index/2)+1) + " score to " + match.scores[Math.floor(index/2)][0] + " : " + match.scores[Math.floor(index/2)][1],
         "system"
       );
@@ -255,7 +253,7 @@ var MatchBrief = React.createClass({
       );
     }
     window.Fbase.createComment(
-      this.state.match[".key"],
+      this.props.matchId,
       "Marked this match as " + match.status + ".",
       "system"
     );
@@ -279,12 +277,12 @@ var MatchBrief = React.createClass({
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
-    window.Fbase.updateVideoTitle(this.state.match[".key"], this.state.latestVideoId, this.refs["newVideoTitle"].value);
+    window.Fbase.updateVideoTitle(this.props.matchId, this.state.match, this.state.latestVideoId, this.refs["newVideoTitle"].value);
     this.setState({showNewCommentsBox: false});
   },
   onCommentInputChange(event) {
     if (event.key == 'Enter' && event.target.value) {
-      window.Fbase.createComment(this.state.match[".key"], event.target.value, "text");
+      window.Fbase.createComment(this.props.matchId, event.target.value, "text");
       this.refs["commentInput"].value = "";
     }
   },
@@ -293,8 +291,8 @@ var MatchBrief = React.createClass({
       var time = window.now();
       window.Fbase.log(files[0].size + ","+files[0].type, "debug");
 
-      var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.state.match['.key']+"/"+window.Fbase.authUid}});
-      var matchId = this.state.match['.key'];
+      var bucket = new AWS.S3({params: {Bucket: 'baytennis/matches/'+this.props.matchId+"/"+window.Fbase.authUid}});
+      var matchId = this.props.matchId;
       var self = this;
       files.forEach(function(file) {
         var i = files.indexOf(file);
@@ -322,7 +320,7 @@ var MatchBrief = React.createClass({
               bucket.upload(params, function (err, data) {
                 if (!err) {
                   console.log("thumb", key, data);
-                  window.Fbase.createPicThumb(matchId, "comment:"+key, exif, data.Location, type);
+                  window.Fbase.createPicThumb(matchId, [self.state.match], "comment:"+key, exif, data.Location, type);
                 } else {
                   console.log(err);
                   window.Fbase.log(err, "error");
@@ -345,7 +343,7 @@ var MatchBrief = React.createClass({
               self.setState({uploadPercentage: 0});
             }
             if (!err) {
-              window.Fbase.createPic(matchId, "comment:"+key, data.Location, type);
+              window.Fbase.createPic(matchId, [self.state.match], "comment:"+key, data.Location, type);
               if (type == "video") {
                 self.setState({
                   showNewCommentsBox: true,
@@ -369,6 +367,7 @@ var MatchBrief = React.createClass({
       return true;
     }
     var result = JSON.stringify(this.state) != JSON.stringify(nextState);
+
     return result;
   },
   canEditMatch() {
@@ -456,7 +455,7 @@ var MatchBrief = React.createClass({
         return (
           <div className={cls}>
             { window.Fbase.isDebug() &&
-              <div>{match['.key']}</div>
+              <div>{this.props.matchId}</div>
             }
             <div>
               <table className="wholerow notablespacing">

@@ -388,33 +388,69 @@ window.Fbase = {
     //   }
     // })
   },
-  createPic: function(matchId, picId, picUrl, type, isTeamMatch) {
-    var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
-    baseRef.child("URL").set(picUrl);
-    if (type == "video") {
-      baseRef.child("type").set(type);
-      baseRef.child("creator").set(this.authUid);
-      baseRef.child("createdTime").set(window.now());
+  createPic: function(matchId, matches, picId, picUrl, type, teamIds) {
+    var baseRef = this.getRef("web/data/"+(teamIds ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
+    // console.log(matchId, matches, picUrl, picId, type, teamIds)
+    var pic = {
+      URL: picUrl,
+      type: type,
+      creator: this.authUid,
+      createdTime: window.now(),
+      matchId: matchId,
+      teamIds: teamIds
+    }
+    baseRef.update(pic);
+
+    for (let id in teamIds) {
+      this.getRef("web/data/teams/"+teamIds[id]+"/pics/"+picId).update(pic);
+    }
+
+    for (let i in matches) {
+      for (let p in matches[i].players) {
+        this.getRef("web/data/users/"+matches[i].players[p]+"/pics/"+picId).update(pic);
+      }
     }
     this.log("create picture", "write", "createPic");
   },
-  createPicThumb:function(matchId, picId, exif, thumbUrl, type, isTeamMatch) {
-    var baseRef = this.getRef("web/data/"+(isTeamMatch ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
+  createPicThumb:function(matchId, matches, picId, exif, thumbUrl, type, teamIds) {
+    // console.log("web/data/"+(teamIds ? "team" : "")+"matches/" + matchId + '/comments/' + picId)
+    // return;
+    var baseRef = this.getRef("web/data/"+(teamIds ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
+    var thumb = {
+      thumbURL:thumbUrl,
+      type:type,
+      creator:this.authUid,
+      createdTime:window.now(),
+      exif:exif
+    };
+    baseRef.update(thumb);
 
-    baseRef.child("thumbURL").set(thumbUrl);
-    baseRef.child("type").set(type);
-    baseRef.child("creator").set(this.authUid);
-    baseRef.child("createdTime").set(window.now());
-    baseRef.child("exif").set(exif);
+    for (let id in teamIds) {
+      this.getRef("web/data/teams/"+teamIds[id]+"/pics/"+picId).update(thumb);
+    }
+    for (let i in matches) {
+      for (let p in matches[i].players) {
+        this.getRef("web/data/users/"+matches[i].players[p]+"/pics/"+picId).update(thumb);
+      }
+    }
     this.log("create thumb", "write", "createThumb");
   },
-  updateVideoTitle:function(matchId, commentId, videoTitle, isTeamMatch) {
+  updateVideoTitle:function(matchId, matches, commentId, videoTitle, teamIds) {
     var key = "web/data/matches/" + matchId + '/comments/' + commentId + "/title";
-    if (isTeamMatch) {
+    if (teamIds) {
       key = "web/data/teammatches/" + matchId + '/comments/' + commentId + "/title";
+      for (let id in teamIds) {
+        this.getRef("web/data/teams/"+teamIds[id]+"/pics/"+commentId+"/title").set(videoTitle);
+      }
     }
     var ref = this.getRef(key);
     ref.set(videoTitle);
+
+    for (let i in matches) {
+      for (let p in matches[i].players) {
+        this.getRef("web/data/users/"+matches[i].players[p]+"/pics/"+commentId+"/title").set(videoTitle);
+      }
+    }
     this.log(key, "write", "createVideoTitle");
   },
   createComment: function(matchId, comment, type, isTeamMatch) {
@@ -423,6 +459,7 @@ window.Fbase = {
     if (isTeamMatch) {
       key = "web/data/teammatches/" + matchId + '/comments/' + commentId
     }
+    // console.log(key)
     var ref = this.getRef(key);
     ref.set({
       comment: comment,
@@ -510,5 +547,10 @@ window.Fbase = {
   updatePlayerLadders(uid, ladders) {
     var ref = this.getRef("web/data/simpleusers/"+uid+"/ladders");
     ref.set(ladders);
-  }
+  },
+  print(path) {
+    this.getRef(path).once("value", function(s) {
+      console.log(s.val());
+    })
+  },
 };

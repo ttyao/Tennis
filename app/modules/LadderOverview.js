@@ -201,6 +201,9 @@ var LadderOverview = React.createClass({
           <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder} onAfterLoad={this.onMatchBriefLoad} />);
       }
       if (this.state.team) {
+        if (!this.state.team.matches) {
+          return (<div>Match schedule hasn't been published yet.</div>);
+        }
         for (let teamMatchId in this.state.team.matches) {
           result.push(
             <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder}  onAfterLoad={this.onMatchBriefLoad} />);

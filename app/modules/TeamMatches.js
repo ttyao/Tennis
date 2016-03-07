@@ -99,7 +99,7 @@ var TeamMatches = React.createClass({
 
   getInitialState () {
     return {
-      pendingMatches: [[],[],[],[],[]],
+      matches: [{players:[]},{players:[]},{players:[]},{players:[]},{players:[]},{players:[]}],
       teamScores: {},
     };
   },
@@ -118,24 +118,45 @@ var TeamMatches = React.createClass({
       let data = snapshot.val();
       if (!data || !data.teams || Object.keys(data.teams).length != 2) return;
       var teamIds = Object.keys(data.teams);
-      self.setState({
-        teamIds: data.teams
-      });
+      if (self.isMounted()) {
+        self.setState({
+          teamIds: data.teams
+        });
+      }
 
       ref = window.Fbase.getRef("web/data/teams/"+data.teams[0]);
       ref.once('value', function(snapshot) {
-        self.setState({team0: snapshot.val()});
+        if (self.isMounted()) {
+          self.setState({team0: snapshot.val()});
+        }
       })
       ref = window.Fbase.getRef("web/data/teams/"+data.teams[1]);
       ref.once('value', function(snapshot) {
-        self.setState({team1: snapshot.val()});
+        if (self.isMounted()) {
+          self.setState({team1: snapshot.val()});
+        }
       })
+      var i = 1;
+      for (let m in data.matches) {
+        self.loadMatch(m, i++)
+      }
     });
+  },
+
+  loadMatch(matchId, m) {
+    var self = this;
+    Fbase.getRef("web/data/matches/"+matchId).once("value", function(s) {
+      if (self.isMounted() && s.val()) {
+        var matches = self.state.matches;
+        matches[m] = s.val();
+        self.setState(matches);
+      }
+    })
   },
 
   onNewCommentsBoxSendClick(event) {
     console.log("title:", event, this.refs["newVideoTitle"])
-    window.Fbase.updateVideoTitle(this.props.teamMatchId, this.state.latestVideoId, this.refs["newVideoTitle"].value);
+    window.Fbase.updateVideoTitle(this.props.teamMatchId, this.state.latestVideoId, this.refs["newVideoTitle"].value, this.state.teamIds);
     this.setState({showNewCommentsBox: false});
   },
   onCommentInputChange(event) {
@@ -178,7 +199,7 @@ var TeamMatches = React.createClass({
               bucket.upload(params, function (err, data) {
                 if (!err) {
                   console.log("thumb", key, data);
-                  window.Fbase.createPicThumb(matchId, "comment:"+key, exif, data.Location, type, true);
+                  window.Fbase.createPicThumb(matchId, self.state.matches, "comment:"+key, exif, data.Location, type, self.state.teamIds);
                 } else {
                   console.log(err);
                   window.Fbase.log(err, "error");
@@ -201,7 +222,7 @@ var TeamMatches = React.createClass({
               self.setState({uploadPercentage: 0});
             }
             if (!err) {
-              window.Fbase.createPic(matchId, "comment:"+key, data.Location, type, true);
+              window.Fbase.createPic(matchId, self.state.matches, "comment:"+key, data.Location, type, self.state.teamIds);
               if (type == "video") {
                 self.setState({
                   showNewCommentsBox: true,
@@ -224,17 +245,17 @@ var TeamMatches = React.createClass({
     return this.state.match.creator == window.Fbase.authUid;
   },
   handlePlayerChange(id, value, line) {
-    var matches = this.state.pendingMatches;
+    var matches = this.state.matches;
     var players = value.split(",");
     if (id == "player0") {
-      matches[line][0] = players[0] || null;
-      matches[line][2] = players[1] || null;
+      matches[line].players[0] = players[0] || null;
+      matches[line].players[2] = players[1] || null;
     } else {
-      matches[line][1] = players[0] || null;
-      matches[line][3] = players[1] || null;
+      matches[line].players[1] = players[0] || null;
+      matches[line].players[3] = players[1] || null;
     }
     console.log(matches)
-    this.setState({pendingMatches:matches});
+    this.setState({matches:matches});
   },
   getPlayersSelects(count) {
     var result = [];
@@ -246,11 +267,11 @@ var TeamMatches = React.createClass({
     return result;
   },
   onConfirmPlayers() {
-    var pendingMatches = this.state.pendingMatches;
+    var matches = this.state.matches;
     if (this.props.type == "usta combo") {
       for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 4; j++) {
-          if (!pendingMatches[i][j]) {
+          if (!matches[i].players[j]) {
             alert("Missing player");
             return;
           }
@@ -259,7 +280,7 @@ var TeamMatches = React.createClass({
     }
     var matches = {}
     for (let i = 0; i < 5; i++) {
-      if (pendingMatches[i][0]) {
+      if (matches[i].players[0]) {
         let match = {
           message: "",
           scores: [{scores:[0,0]},{scores:[0,0]},{scores:[0,0]}],
@@ -267,7 +288,7 @@ var TeamMatches = React.createClass({
           ladder: this.props.ladder,
           tmId: this.props.teamMatchId,
           status: "active",
-          players: pendingMatches[i],
+          players: matches[i].players,
           matchMoment: moment(),
         };
         var matchId = window.Fbase.createMatch(match);
@@ -297,6 +318,7 @@ var TeamMatches = React.createClass({
     }
   },
   getMatches() {
+    // console.log(this.state.teamMatch.matches)
     if (this.state.teamMatch.status == "pending") {
       if (this.props.type == "usta combo") {
         return (
@@ -364,8 +386,8 @@ var TeamMatches = React.createClass({
     return <div>{a} : {b} </div>;
   },
   render() {
+    console.log(this.state.matches)
     if (this.state.teamMatch && this.state.team0 && this.state.team1 && this.state.teamMatch.status != "merged") {
-      var matches = this.state.matches;
       return (
         <div className="matchBriefBody">
           <div>

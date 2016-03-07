@@ -176,7 +176,7 @@ window.Caching = {
     window.setTimeout(function() {window.Caching.loadLadders();}, 10);
   },
   loadSimplePlayer: function(uid, callback) {
-    if (!uid  || uid == "n:0") {
+    if (!uid  || uid == "n:0" || uid == "n:") {
       if (callback) {
         callback(null);
       }
@@ -249,7 +249,7 @@ window.Caching = {
     window.setTimeout(function() {window.Caching.loadLadders();}, 100);
   },
   getSimplePlayer: function(uid, callback) {
-    if (!uid || uid == "n:0") {
+    if (!uid || uid == "n:0" || uid == "n:") {
       if (callback) {
         callback(null);
       }
@@ -268,7 +268,7 @@ window.Caching = {
     this.simplePlayers[uid] = player;
   },
   getDisplayName: function(uid, callback) {
-    if (!uid || uid == "n:0") {
+    if (!uid || uid == "n:0" || uid == "n:") {
       if (callback) {
         callback(null);
       }
