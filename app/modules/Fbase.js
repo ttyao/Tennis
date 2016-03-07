@@ -7,12 +7,14 @@ window.Fbase = {
     return this.Henry == this.authUid;
   },
   init: function(callback) {
+    this.startTime = new Date();
     this.authUid = this.getAuthUid();
     // if (this.isDebug()) {
     //   Firebase.enableLogging(true);
     // }
     window.Caching.players[this.authUid || this.Henry] = "pending";
     window.Caching.loadPlayers();
+    Caching.initLadders(Fbase.authUid);
     window.Caching.getDisplayName(this.authUid, function(){
       window.Fbase.log("init", "visit");
       if (callback) {
@@ -268,7 +270,7 @@ window.Fbase = {
   },
   log: function(message, type, subtype) {
     try {
-      var id = this.getDisplayName(this.authUid);
+      var id = Caching.getDisplayName(this.authUid);
       if (!id) {
         this.setSessionId();
         id = this.sessionId;
@@ -504,5 +506,9 @@ window.Fbase = {
   updateTeamStats(teamId, stats) {
     var ref = this.getRef("web/data/teams/"+teamId+"/stats");
     ref.set(stats);
+  },
+  updatePlayerLadders(uid, ladders) {
+    var ref = this.getRef("web/data/simpleusers/"+uid+"/ladders");
+    ref.set(ladders);
   }
 };

@@ -34,7 +34,15 @@ var LadderOverview = React.createClass({
     };
   },
   componentDidMount() {
-    this.loadLadder(this.props.ladderId || "l:1", this.props.teamId);
+    let ladderId = this.props.ladderId;
+    if (!ladderId) {
+      if (Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
+        ladderId = Caching.simplePlayers[Fbase.authUid].ladders[0].ladderId;
+      } else {
+        ladderId = "l:1";
+      }
+    }
+    this.loadLadder(ladderId, this.props.teamId);
   },
   componentDidUpdate(nextProps, nextState) {
     if (nextProps.teamId != this.props.teamId &&
@@ -64,11 +72,12 @@ var LadderOverview = React.createClass({
           return;
         }
       }
-      self.loadLadder(ladderId, Object.keys(ladder.teams)[0], true);
+      self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
     })
   },
-  loadLadder(ladderId, teamId, isDefaultTeam) {
+  loadLadder(ladderId, teamId) {
     var self = this;
+
     // if (!ladderId) {
     //   window.Caching.getSimplePlayer
     //   return;
@@ -98,7 +107,7 @@ var LadderOverview = React.createClass({
             if (window.Fbase.authUid) {
               self.loadTeam(ladderId, ladder, window.Fbase.authUid);
             } else {
-              self.loadLadder(ladderId, Object.keys(ladder.teams)[0], true);
+              self.loadLadder(ladderId, Object.keys(ladder.teams)[0]);
             }
 
           }

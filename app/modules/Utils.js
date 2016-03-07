@@ -89,6 +89,7 @@ window.Caching = {
   matches: {},
   teams: {},
   ladders: {},
+  playerLadders: {},
   loadPlayers: function() {
     for (let i in this.players) {
       if (this.players[i] == "pending") {
@@ -99,11 +100,13 @@ window.Caching = {
           var data = snapshot.val();
           if (data) {
             self.players[i] = data;
-            self.simplePlayers[i] = {
-              displayName: data.displayName,
-              ntrp: data.ntrp,
-              ntrpType: data.ntrpType,
-              claimerId: data.claimerId
+            if (typeof(self.simplePlayers[i]) != "object") {
+              self.simplePlayers[i] = {
+                displayName: data.displayName,
+                ntrp: data.ntrp,
+                ntrpType: data.ntrpType,
+                claimerId: data.claimerId
+              }
             }
             for (let m in data.matches) {
               self.matches[m] = "pending";
@@ -151,7 +154,9 @@ window.Caching = {
           var team = snap.val();
           window.Caching.teams[i] = team;
           window.Caching.loadTeams();
-          window.Caching.ladders[team.ladderId] = "pending";
+          if (!window.Caching.ladders[team.ladderId]) {
+            window.Caching.ladders[team.ladderId] = "pending";
+          }
         })
         return;
       }
@@ -201,7 +206,7 @@ window.Caching = {
                     ntrp: claimer.ntrp || "",
                     ntrpType: claimer.ntrpType || "",
                   };
-                  window.Fbase.getRef("web/data/simpleusers/"+uid).set(window.Caching.simplePlayers[uid]);
+                  window.Fbase.getRef("web/data/simpleusers/"+uid).update(window.Caching.simplePlayers[uid]);
                   if (callback) {
                     callback(window.Caching.simplePlayers[uid]);
                   }
@@ -219,7 +224,7 @@ window.Caching = {
                 ntrpType: user.ntrpType || "",
               }
               window.Caching.simplePlayers[uid] = s;
-              window.Fbase.getRef("web/data/simpleusers/"+uid).set(s);
+              window.Fbase.getRef("web/data/simpleusers/"+uid).update(s);
               if (callback) {
                 callback(window.Caching.simplePlayers[uid]);
               }
@@ -299,5 +304,58 @@ window.Caching = {
     }
     return displayName;
   },
-
+  initLadders: function(uid) {
+    if (typeof(this.players[uid]) == "object") {
+      let loaded = true;
+      for (let i in this.players) {
+        if (this.players[i] == "pending") {
+          loaded = false;
+          break;
+        }
+      }
+      for (let i in this.teams) {
+        if (this.teams[i] == "pending") {
+          loaded = false;
+          break;
+        }
+      }
+      for (let i in this.ladders) {
+        if (this.ladders[i] == "pending") {
+          loaded = false;
+          break;
+        }
+      }
+      if (loaded) {
+        this.playerLadders[uid] = [];
+        var uids = [uid];
+        for (let merge in this.players[uid].merges) {
+          uids.push(merge);
+        }
+        var ladders = {};
+        for (let uid in uids) {
+          for (let l in this.players[uids[uid]].ladders) {
+            ladders[l] = ({ladderId:l, ladder:this.ladders[l]});
+          }
+          for (let t in this.players[uids[uid]].teams) {
+            ladders[this.teams[t].ladderId] = ({ladderId : this.teams[t].ladderId, ladder:this.ladders[this.teams[t].ladderId]});
+          }
+        }
+        Fbase.log("time to load inital: " + (new Date() - Fbase.startTime)/1000+" sec", "perf", "init");
+        let visited = {};
+        for (let i in ladders) {
+          let candidate = -1;
+          for (let j in ladders) {
+            if (!visited[j] && (candidate == -1 || ladders[j].ladder.displayName_ > ladders[candidate].ladder.displayName_)) {
+              candidate = j
+            }
+          }
+          visited[candidate] = true
+          this.playerLadders[uid].push(ladders[candidate]);
+        }
+        Fbase.updatePlayerLadders(uid, this.playerLadders[uid]);
+        return;
+      }
+    }
+    window.setTimeout(function() {window.Caching.initLadders(uid);}, 10);
+  },
 }
