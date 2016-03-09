@@ -248,6 +248,7 @@ window.Fbase = {
     ref.set(status);
   },
   updateMatchScores: function(match) {
+    console.log(match)
     var scores = match.scores;
     var matchId = match['.key'];
 
@@ -313,14 +314,22 @@ window.Fbase = {
   },
   mergeNorcalAccount: function(usta, toId) {
     var ref = this.getRef("web/data/users");
-    ref.orderByChild("usta").equalTo(usta).limitToFirst(1).once('value', function(snapshot) {
+    ref.orderByChild("usta").equalTo(usta).limitToFirst(5).once('value', function(snapshot) {
       var oldUsers = snapshot.val();
-      if (!oldUsers) {
+      var oldUserId = null;
+      for (let id in oldUsers) {
+        if (id.indexOf("n:") == 0) {
+          oldUserId = id;
+          break;
+        }
+      }
+      if (!oldUsers || !oldUserId) {
         alert("not found");
         return;
       }
-      var oldUserId = Object.keys(oldUsers)[0];
+
       var oldUser = oldUsers[oldUserId];
+      console.log(oldUsers)
       if (oldUser.claimerId) {
         alert("account already been claimed by "+oldUser.claimerId);
         return;
@@ -396,8 +405,7 @@ window.Fbase = {
       type: type,
       creator: this.authUid,
       createdTime: window.now(),
-      matchId: matchId,
-      teamIds: teamIds
+      matchId: matchId
     }
     baseRef.update(pic);
 

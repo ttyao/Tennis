@@ -47,12 +47,13 @@ var LadderSelect = React.createClass({
     var ops = [{value: this.props.ladder.id, label: this.props.ladder.displayName}];
     var keys = {};
     keys[this.props.ladder.id] = true;
-    console.log(Caching.simplePlayers[Fbase.authUid].ladders)
-    for (let l in Caching.simplePlayers[Fbase.authUid].ladders) {
-      if (!keys[Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId]) {
-        keys[Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId] = true;
-        ops.push({value: Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId, label:Caching.simplePlayers[Fbase.authUid].ladders[l].ladder.displayName});
-        // console.log(l, window.Caching.ladders[l])
+    if (Caching.simplePlayers[Fbase.authUid]) {
+      for (let l in Caching.simplePlayers[Fbase.authUid].ladders) {
+        if (!keys[Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId]) {
+          keys[Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId] = true;
+          ops.push({value: Caching.simplePlayers[Fbase.authUid].ladders[l].ladderId, label:Caching.simplePlayers[Fbase.authUid].ladders[l].ladder.displayName});
+          // console.log(l, window.Caching.ladders[l])
+        }
       }
     }
     var userRef = window.Fbase.getRef("web/data/ladders");

@@ -479,7 +479,7 @@ var NorcalSync = React.createClass({
   render() {
     return (
       <Dropzone onDrop={this.onUpload} className="pictureUpload">
-        <div>Sync</div>
+        <div>Inmport NorcalData</div>
       </Dropzone>
     )
   }

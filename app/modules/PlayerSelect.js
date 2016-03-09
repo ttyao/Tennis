@@ -35,7 +35,7 @@ var PlayerSelect = React.createClass({
   loadOptions(input, callback) {
     var ops = [];
     if (!input) {
-      ops.push({label:"Type in first name to search for player ...", value:-1})
+      ops.push({label:"Type in name to search for player ...", value:-1})
     }
     ops.push({value: this.state.playerId, label: this.state.player.displayName});
     for (let i in window.Caching.simplePlayers) {

@@ -36,7 +36,7 @@ var LadderOverview = React.createClass({
   componentDidMount() {
     let ladderId = this.props.ladderId;
     if (!ladderId) {
-      if (Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
+      if (Caching.simplePlayers[Fbase.authUid] && Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
         ladderId = Caching.simplePlayers[Fbase.authUid].ladders[0].ladderId;
       } else {
         ladderId = "l:1";

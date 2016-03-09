@@ -275,13 +275,13 @@ var PlayerDetails = React.createClass({
       if (this.state["merge"+m]) {
         for (var i in this.state["merge"+m].tls) {
           var date = new Date(i);
-          if (!labels[data.getFullYear()]) {
+          if (!labels[date.getFullYear()]) {
             if (startingYear > date.getFullYear()) {
               startingYear = date.getFullYear();
             }
             labels[date.getFullYear()] = {};
           }
-          labels[date.getFullYear()] = this.state["merge"+m].tls[i].ntrp;
+          labels[date.getFullYear()].tls = this.state["merge"+m].tls[i].ntrp;
         }
       }
     }
