@@ -1,7 +1,6 @@
 import React from 'react';
 import Firebase from 'firebase';
 import Tabs from './Tabs';
-import MatchRecorder from './MatchRecorder';
 import MatchList from './MatchList';
 import PlayerDetails from './PlayerDetails';
 import LadderOverview from './LadderOverview';
@@ -19,17 +18,6 @@ export default class Menu extends React.Component {
     this.onBeforeChange = this.onBeforeChange.bind(this);
   }
 
-  authDataCallback(authData) {
-    if (!authData) {
-      var ref = window.Fbase.getRef();
-      ref.authWithOAuthRedirect("facebook", function (error) {
-        console.log("Login Failed!", error);
-      });
-    }
-    else {
-      console.log("Authenticated successfully with payload:", authData);
-    }
-  }
   logout() {
     var ref = window.Fbase.getRef();
     ref.unauth();

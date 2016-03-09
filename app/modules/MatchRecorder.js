@@ -25,8 +25,14 @@ export default class MatchRecorder extends React.Component {
     this.handleMessageChange = this.handleMessageChange.bind(this);
     this.handleMatchTimeChange = this.handleMatchTimeChange.bind(this);
     this.onLadderChange = this.onLadderChange.bind(this);
+    this.handleCancel = this.handleCancel.bind(this)
   }
 
+  handleCancel() {
+    if (this.props.onCancel) {
+      this.props.onCancel();
+    }
+  }
   handleMessageChange(value) {
     this.setState({message: this.refs.message.value });
   }
@@ -114,7 +120,7 @@ export default class MatchRecorder extends React.Component {
       <div>
         {this.props.showLadder && <LadderSelect value={this.state.ladder} onChange={this.onLadderChange} />}
         <PlayersSelect label="players" onChange={this.handlePlayerChange} ladder={this.props.ladder} />
-        <div>Score:</div>
+        <div className="centerContainer">Score:</div>
         <ScoreSelect id="0" onChange={this.handleScoreChange} />
         <ScoreSelect id="1" onChange={this.handleScoreChange} />
         <ScoreSelect id="2" onChange={this.handleScoreChange} />
@@ -131,6 +137,7 @@ export default class MatchRecorder extends React.Component {
         </div>
         <div className="centerContainer">
           <button className="submitButton" onClick={this.handleMatchSubmit}>Create Match</button>
+          <button className="submitButton" onClick={this.handleCancel}>Cancel</button>
         </div>
       </div>
     );

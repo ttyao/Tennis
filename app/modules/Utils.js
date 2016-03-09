@@ -351,7 +351,6 @@ window.Caching = {
           }
           visited[candidate] = true
           delete ladders[candidate].ladder.teams
-          console.log(ladders[candidate])
           this.playerLadders[uid].push(ladders[candidate]);
         }
         Fbase.updatePlayerLadders(uid, this.playerLadders[uid]);

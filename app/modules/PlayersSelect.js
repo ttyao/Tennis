@@ -99,7 +99,7 @@ var PlayersSelect = React.createClass({
       if (!this.props.ladder.type || this.props.ladder.type == "normal") {
         return (
           <tr>
-            <td className="playerselect">
+            <td className="playerselect centerContainer">
               <span className="section">
                 <select key="player0" value={this.state.player0} onChange={this.onSelectChange0}>
                   {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
@@ -107,7 +107,7 @@ var PlayersSelect = React.createClass({
               </span>
             </td>
             <td className="divider">vs</td>
-            <td className="playerselect">
+            <td className="playerselect centerContainer">
               <span className="section">
                 <select key="player1" value={this.state.player1} onChange={this.onSelectChange1}>
                   {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
@@ -120,13 +120,13 @@ var PlayersSelect = React.createClass({
     } else {
       return (
         <tr>
-          <td className="playerselect">
+          <td className="playerselect centerContainer">
             <span className="section">
               <Select multi key="player0" value={this.state.player0} placeholder="Select player(s)" onChange={this.handleSelectChange0} asyncOptions={this.loadOptions} />
             </span>
           </td>
           <td className="divider">vs</td>
-          <td className="playerselect">
+          <td className="playerselect centerContainer">
             <span className="section">
               <Select multi key="player1" value={this.state.player1} placeholder="Select player(s)" asyncOptions={this.loadOptions} onChange={this.handleSelectChange1} />
             </span>

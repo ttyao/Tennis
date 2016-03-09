@@ -9,9 +9,6 @@ window.Fbase = {
   init: function(callback) {
     this.startTime = new Date();
     this.authUid = this.getAuthUid();
-    // if (this.isDebug()) {
-    //   Firebase.enableLogging(true);
-    // }
     window.Caching.players[this.authUid || this.Henry] = "pending";
     window.Caching.loadPlayers();
     Caching.initLadders(Fbase.authUid);
@@ -247,10 +244,8 @@ window.Fbase = {
     var ref = this.getRef("web/data/teammatches/"+teamMatchId+"/status");
     ref.set(status);
   },
-  updateMatchScores: function(match) {
-    console.log(match)
+  updateMatchScores: function(match, matchId) {
     var scores = match.scores;
-    var matchId = match['.key'];
 
     var matchRef = this.getRef('web/data/matches/'+matchId+"/scores");
     matchRef.set(scores);
@@ -259,9 +254,7 @@ window.Fbase = {
     ref.set(window.now());
     this.log("update match "+matchId, "write", "updateMatchScores");
   },
-  updateMatchStatus: function(match) {
-    var matchId = match['.key'];
-
+  updateMatchStatus: function(match, matchId) {
     var matchRef = this.getRef('web/data/matches/'+matchId+"/status");
     matchRef.set(match.status);
 
@@ -286,7 +279,7 @@ window.Fbase = {
       }
       var log = {
         message: message,
-        creator: this.authUid,
+        creator: this.authUid || "visitor",
         type: type,
       };
       if (type == "visit") {
@@ -398,6 +391,10 @@ window.Fbase = {
     // })
   },
   createPic: function(matchId, matches, picId, picUrl, type, teamIds) {
+    if (!this.authUid) {
+      alert("You need to login first.")
+      return
+    }
     var baseRef = this.getRef("web/data/"+(teamIds ? "team" : "")+"matches/" + matchId + '/comments/' + picId);
     // console.log(matchId, matches, picUrl, picId, type, teamIds)
     var pic = {
@@ -462,6 +459,10 @@ window.Fbase = {
     this.log(key, "write", "createVideoTitle");
   },
   createComment: function(matchId, comment, type, isTeamMatch) {
+    if (!this.authUid) {
+      alert("You need to login first.")
+      return
+    }
     var commentId = "comment:"+window.now()+":"+this.authUid;
     var key = "web/data/matches/" + matchId + '/comments/' + commentId;
     if (isTeamMatch) {
@@ -561,4 +562,12 @@ window.Fbase = {
       console.log(s.val());
     })
   },
+  set(path, value) {
+    this.getRef(path).set(value, function(e) {
+      Fbase.print(path);
+    })
+  },
+  printme() {
+    this.print("web/data/users"+this.Henry);
+  }
 };

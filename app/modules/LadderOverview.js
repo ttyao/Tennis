@@ -36,7 +36,7 @@ var LadderOverview = React.createClass({
   componentDidMount() {
     let ladderId = this.props.ladderId;
     if (!ladderId) {
-      if (Caching.simplePlayers[Fbase.authUid] && Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
+      if (Caching.simplePlayers[Fbase.authUid] && Caching.simplePlayers[Fbase.authUid].ladders && Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
         ladderId = Caching.simplePlayers[Fbase.authUid].ladders[0].ladderId;
       } else {
         ladderId = "l:1";
@@ -344,17 +344,15 @@ var LadderOverview = React.createClass({
     // console.log(this.state.teamId, this.state.team)
     if (!this.state.ladder) {
       return (<div style={{height:"80vh",background:"url(/images/roundPreloader.gif) no-repeat center center"}}/>);
-        // <table className="wholerow">
-        //   <tbody><tr>
-        //     <td className="playersection">
-        //       <span className="section">
-        //         <LadderSelect ref="ladderSelect" ladder={this.state.ladder} onChange={this.onLadderChange} />
-        //         <LadderStats team={this.state.team} ladder={this.state.ladder} loadedMatches={this.state.loadedMatches} />
-        //         <TeamStats team={this.state.team} loadedMatches={this.state.loadedMatches} />
-        //       </span>
-        //     </td>
-        //   </tr></tbody>
-        // </table>);
+    }
+    var modalStyle = {
+      content: {
+        padding: "20px 0",
+        top: "10px",
+        bottom: "10px",
+        left: "10px",
+        right: "10px"
+      }
     }
     return (
       <div>
@@ -362,8 +360,8 @@ var LadderOverview = React.createClass({
           {false && <span> Filter: {this.getFilter()}</span>}
           {this.state.players && this.state.players.indexOf(window.Fbase.authUid) >=0 &&
             <div>
-              <button className="floatright" onClick={this.createMatchClick}>Create Match</button>
-              <button onClick={this.AddPlayerClick}>Roster</button>
+              <button onClick={this.createMatchClick} style={{margin: "0 5px"}}>Create Match</button>
+              <button onClick={this.AddPlayerClick} style={{margin: "0 5px"}}>Roster</button>
             </div>
           }
         </div>
@@ -387,23 +385,28 @@ var LadderOverview = React.createClass({
         <Modal
           className="Modal__Bootstrap modal-dialog"
           closeTimeoutMS={150}
+          style={modalStyle}
           isOpen={this.state.showAddPlayerModal}
           onRequestClose={this.handleModalCloseRequest}
         >
-          <div>Players:</div>
-          <Select multi value={this.state.players ? this.state.players.split(",") : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
-          <button className='floatright' onClick={this.onAddPlayerSaveClick}>Save</button>
-          <button className='floatright' onClick={this.onAddPlayerCancelClick}>Cancel</button>
+          <div className="wholerow">
+            Players:
+            <button className='rightalign' style={{margin: "5px 5px"}} onClick={this.onAddPlayerSaveClick}>Save</button>
+            <button className='rightalign' onClick={this.onAddPlayerCancelClick}>Cancel</button>
+          </div>
+          <div style={{padding: "5px"}}>
+            <Select multi value={this.state.players ? this.state.players.split(",") : null} placeholder="Select player(s)" onChange={this.onPlayerSelectChange} asyncOptions={this.loadOptions} />
+          </div>
         </Modal>
         <Modal
           className="Modal__Bootstrap modal-dialog"
           closeTimeoutMS={150}
+          style={modalStyle}
           isOpen={this.state.showCreateMatchModal}
           onRequestClose={this.handleModalCloseRequest}
         >
-          <div><b>Create new match</b></div>
-          <MatchRecorder ladder={this.state.ladder} showLadder={false} onMatchCreated={this.onMatchCreated} />
-          <button className='floatright' onClick={this.onAddPlayerCancelClick}>Cancel</button>
+          <div className="centerContainer"><b>Create new match</b></div>
+          <MatchRecorder ladder={this.state.ladder} showLadder={false} onMatchCreated={this.onMatchCreated} onCancel={this.onAddPlayerCancelClick} />
         </Modal>
       </div>
     );

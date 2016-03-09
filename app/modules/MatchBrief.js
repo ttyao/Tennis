@@ -213,7 +213,8 @@ var MatchBrief = React.createClass({
   onScoresChange(event, index) {
     var match = this.state.match;
     match.scores[Math.floor(index/2)][index%2] = event.target.value;
-    window.Fbase.updateMatchScores(match);
+    this.setState({match:match})
+    window.Fbase.updateMatchScores(match, this.props.matchId);
     if (match.status == "pending") {
       match.status = "active";
       window.Fbase.updateMatchStatus(match);
@@ -257,7 +258,7 @@ var MatchBrief = React.createClass({
       "Marked this match as " + match.status + ".",
       "system"
     );
-    window.Fbase.updateMatchStatus(match);
+    window.Fbase.updateMatchStatus(match, this.props.matchId);
   },
   editMatch() {
     var match = this.state.match;
@@ -401,10 +402,12 @@ var MatchBrief = React.createClass({
               isOpen={this.state.showNewCommentsBox}
               onRequestClose={this.handleModalCloseRequest}
             >
-              <div>Video Title:</div>
-              <input ref="newVideoTitle" />
-              <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
-              <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+              <div className="centerContainer"><b>Video Title</b></div>
+              <div className="wholerow"><input className="wholerow" ref="newVideoTitle" /></div>
+              <div className="rightalign">
+                <button className='submitButton' onClick={this.onNewCommentsBoxSendClick}>Save</button>
+                <button className='submitButton' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+              </div>
             </Modal>
             { this.canEditMatch() ?
                 match.status == "active" ?

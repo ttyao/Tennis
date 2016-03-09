@@ -478,11 +478,12 @@ h6,
   margin: 0 auto;
 }
 .submitButton {
-  height: 40px;
+  height: 25px;
   background-color: rgba(0, 126, 255, 0.18);
   border: 1px solid rgba(0, 126, 255, 0.03);
   box-shadow: 2px 3px 2px #888888;
   border-radius: 8px;
+  margin: 5px;
 }
 .matchBriefBody {
   padding: 8px;

@@ -362,7 +362,7 @@ var PlayerDetails = React.createClass({
             </tr>
             <tr>
             <td colSpan="4">
-            <LineChart data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="300" height="150"/>
+            <LineChart data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="280" height="150"/>
             <div>
               <span style={{color:"rgba(151,187,205,1)"}}> &#x25cf; NTRP </span>
               <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TLS </span>

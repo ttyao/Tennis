@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Modal from 'react-modal';
+import Tabs from './Tabs';
 
 var appElement = document.getElementById('modal');
 
@@ -10,13 +11,7 @@ var Login = React.createClass({
   getInitialState: function() {
     var ref = window.Fbase.getRef();
     var authData = ref.getAuth();
-    if (authData && authData.facebook) {
-      // var userRef = ref.child("/web/data/users/"+authData["uid"]);
-      // userRef.child("loggedInAt").set(window.now());
-      // if (authData.facebook) {
-      //   userRef.child("displayName").set(authData.facebook.displayName);
-      // }
-    } else {
+    if (!authData) {
       window.Fbase.setSessionId();
     }
     return { unauthed: !authData };
@@ -44,23 +39,24 @@ var Login = React.createClass({
           switch (error.code) {
             case "EMAIL_TAKEN":
               alert("The new user account cannot be created because the email is already in use.");
-              location.reload();
-              break;
+              return;
             case "INVALID_EMAIL":
               alert("The specified email is not a valid email.");
-              break;
+              return;
             default:
               console.log(error);
-              alert("Error creating user.");
+              Fbase.log(error,"error", "register");
+              alert("Error happened when creating user.");
+              return;
           }
         } else {
           ref.authWithPassword({
             "email": email,
             "password": password
             }, function (error, authData) {
-              console.log("login", authData)
               if (error) {
                 alert("Login Failed!");
+                Fbase.log({error:JSON.stringify(error), email: email}, "error", "login");
               } else {
                 var userRef = ref.child("/web/data/users/"+userData["uid"]);
                 userRef.set({
@@ -82,11 +78,13 @@ var Login = React.createClass({
 
   handleLoginClicked: function(e) {
     var ref = window.Fbase.getRef();
+    var self = this;
     ref.authWithPassword({
       "email": this.state.email,
       "password": this.state.password
       }, function (error, authData) {
         if (error) {
+          Fbase.log({error:JSON.stringify(error), email: self.state.email}, "error", "login");
           alert("Login Failed!");
         } else {
           location.reload();
@@ -117,12 +115,22 @@ var Login = React.createClass({
     return null;
   },
   render: function() {
+    var modelStyle = {
+      content: {
+        padding: "20px 0",
+        top: "20px",
+        bottom: "20px",
+        left: "20px",
+        right: "20px"
+      }
+    }
     return (
       <div>
         <Modal
           className="Modal__Bootstrap modal-dialog"
           closeTimeoutMS={150}
           isOpen={this.state.unauthed}
+          style={modelStyle}
           onRequestClose={this.handleModalCloseRequest}
         >
           <div className="modal-content">
@@ -130,33 +138,52 @@ var Login = React.createClass({
               <h4 className="modal-title centerContainer">Tennis Database</h4>
             </div>
             <div className="modal-body centerContainer">
-            <table>
-              <tbody><tr>
-                <td> Email: </td>
-                <td>
-                  <input key="email" onChange={this.onEmailChange} />
-                </td>
-                </tr><tr>
-                <td> Password: </td>
-                <td>
-                  <input key="password" type="password" onChange={this.onPasswordChange} />
-                </td>
-                </tr><tr>
-                <td> Username: </td>
-                <td>
-                  <input key="displayName" onChange={this.onDisplayNameChange} />
-                </td>
-              </tr></tbody>
-            </table>
+            <Tabs tabActive={1} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
+              <Tabs.Panel title='Login'>
+                <table className="wholerow">
+                  <tbody><tr>
+                    <td className="rightalign"> Email: </td>
+                    <td>
+                      <input key="email" onChange={this.onEmailChange} />
+                    </td>
+                    </tr><tr>
+                    <td className="rightalign"> Password: </td>
+                    <td>
+                      <input key="password" type="password" onChange={this.onPasswordChange} />
+                    </td>
+                  </tr></tbody>
+                </table>
+                <div className="modal-footer centerContainer">
+                  <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
+                  <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visit as guest</button>
+                </div>
+              </Tabs.Panel>
+              <Tabs.Panel title="Sign up">
+                <table className="wholerow">
+                  <tbody><tr>
+                    <td className="rightalign"> Email: </td>
+                    <td>
+                      <input key="email" onChange={this.onEmailChange} />
+                    </td>
+                    </tr><tr>
+                    <td className="rightalign"> Password: </td>
+                    <td>
+                      <input key="password" type="password" onChange={this.onPasswordChange} />
+                    </td>
+                    </tr><tr>
+                    <td className="rightalign"> Username: </td>
+                    <td>
+                      <input key="displayName" onChange={this.onDisplayNameChange} />
+                    </td>
+                  </tr></tbody>
+                </table>
+                <div className="modal-footer centerContainer rightalign">
+                  <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
+                </div>
+              </Tabs.Panel>
+            </Tabs>
             </div>
-            <div className="modal-footer centerContainer">
-              <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
-              <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
-              {this.fblogin()}
-            </div>
-            <div className="centerContainer">
-              <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visit as guest</button>
-            </div>
+
           </div>
         </Modal>
       </div>

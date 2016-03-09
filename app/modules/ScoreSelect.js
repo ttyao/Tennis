@@ -55,7 +55,7 @@ export default class ScoreSelect extends React.Component {
           <td className="rowlabel">
             {this.props.label}
           </td>
-          <td>
+          <td className="centerContainer">
             <select className="scoreselect" value={this.state.scores[0]} onChange={this.handleScore1Change}>
               <option value="0">0</option>
               <option value="1">1</option>
@@ -68,7 +68,7 @@ export default class ScoreSelect extends React.Component {
             </select>
           </td>
           <td className="divider">:</td>
-          <td>
+          <td className="centerContainer">
             <select className="scoreselect" value={this.state.scores[1]} onChange={this.handleScore2Change}>
               <option value="0">0</option>
               <option value="1">1</option>
