@@ -213,11 +213,11 @@ var MatchBrief = React.createClass({
   onScoresChange(event, index) {
     var match = this.state.match;
     match.scores[Math.floor(index/2)][index%2] = event.target.value;
-    this.setState({match:match})
+
     window.Fbase.updateMatchScores(match, this.props.matchId);
     if (match.status == "pending") {
       match.status = "active";
-      window.Fbase.updateMatchStatus(match);
+      window.Fbase.updateMatchStatus(match, this.props.matchId);
     }
     if (this.state.match.tmId) {
       window.Fbase.createComment(
@@ -263,7 +263,7 @@ var MatchBrief = React.createClass({
   editMatch() {
     var match = this.state.match;
     match.status = "active";
-    window.Fbase.updateMatchStatus(match);
+    window.Fbase.updateMatchStatus(match, this.props.matchId);
   },
   onNewCommentClick() {
     if (!window.Fbase.authUid) {
@@ -371,9 +371,6 @@ var MatchBrief = React.createClass({
 
     return result;
   },
-  canEditMatch() {
-    return this.state.match.creator == window.Fbase.authUid;
-  },
   getFooter() {
     var match = this.state.match;
     if (match.tmId) {
@@ -409,12 +406,7 @@ var MatchBrief = React.createClass({
                 <button className='submitButton' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
               </div>
             </Modal>
-            { this.canEditMatch() ?
-                match.status == "active" ?
-                  <button onClick={this.completeMatch} >Complete</button> :
-                  <button onClick={this.editMatch} >Edit</button> :
-                ""
-            }
+
             {match.status}
           </div>
         </div>
@@ -440,6 +432,34 @@ var MatchBrief = React.createClass({
         );
       }
     }
+  },
+  canEditMatch() {
+    var match = this.state.match;
+    if (match.status == "active" || match.status == "pending") {
+      if (this.state.ladder && this.state.ladder.users[Fbase.authUid]) {
+        return true;
+      } else if (this.state.team0 && this.state.team0.users[Fbase.authUid]) {
+        return true;
+      } else if (this.state.team1 && this.state.team1.users[Fbase.authUid]) {
+        return true;
+      }
+    }
+    if (match.status == "completed") {
+      if (match.creator == Fbase.authUid || match.players.indexOf(Fbase.authUid) >=0) {
+        return true;
+      }
+    }
+    return false;
+  },
+  showStatusButton() {
+    var match = this.state.match;
+    if (this.canEditMatch() && (match.status == "active" || match.status == "pending")) {
+      return <button onClick={this.completeMatch} >Complete</button>;
+    }
+    if (this.canEditMatch() && match.status == "completed") {
+      return <button onClick={this.editMatch} >Edit</button>;
+    }
+    return null;
   },
   render() {
     if (this.state.match) {
@@ -473,6 +493,9 @@ var MatchBrief = React.createClass({
                     <td className="scoresection">
                       <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
                         editable={!!window.Fbase.authUid && match.status == "active"} />
+                      <div className="centerContainer">
+                        {this.showStatusButton()}
+                      </div>
                     </td>
                     <td className="playersection centerContainer">
                       <PlayerName showNTRP={true} key={match.players[1] && "player1"} playerId={match.players[1]} />
