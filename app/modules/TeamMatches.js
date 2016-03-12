@@ -386,7 +386,6 @@ var TeamMatches = React.createClass({
     return <div>{a} : {b} </div>;
   },
   render() {
-    console.log(this.state.matches)
     if (this.state.teamMatch && this.state.team0 && this.state.team1 && this.state.teamMatch.status != "merged") {
       return (
         <div className="matchBriefBody">

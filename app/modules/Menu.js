@@ -26,18 +26,19 @@ export default class Menu extends React.Component {
   loadUsers(id) {
     var self = this;
     if (id % 100 == 0) console.log(id);
-    Fbase.getRef("web/data/users/n:"+id).once("value", function(s) {
+    new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id).once("value", function(s) {
       var user = s.val();
       if (user) {
-        new Firebase("https://tdb0.firebaseio.com/web/data/users/n:"+id).set(user);
-        delete users.matches;
-        new Firebase("https://tennismatches.firebaseio.com/web/data/users/n:"+id).set(user);
+        Fbase.getRef("web/data/users/n:"+id).set(user);
+        // delete users.matches;
+        new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id+"/teams").remove();
+        new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id+"/matches").remove();
       }
       self.loadUsers(id+1);
     })
   }
   onTestButtonClick() {
-
+    this.loadUsers(1);
   }
   onBeforeChange(index) {
     this.props.history.push("/"+index)

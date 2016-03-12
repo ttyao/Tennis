@@ -354,11 +354,12 @@ var LadderOverview = React.createClass({
         right: "10px"
       }
     }
+
     return (
       <div>
         <div>
           {false && <span> Filter: {this.getFilter()}</span>}
-          {this.state.players && this.state.players.indexOf(window.Fbase.authUid) >=0 &&
+          {this.state.players && Fbase.authUid && this.state.players.indexOf(Fbase.authUid) >=0 &&
             <div>
               <button onClick={this.createMatchClick} style={{margin: "0 5px"}}>Create Match</button>
               <button onClick={this.AddPlayerClick} style={{margin: "0 5px"}}>Roster</button>

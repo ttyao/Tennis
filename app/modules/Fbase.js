@@ -116,6 +116,15 @@ window.Fbase = {
         return new Firebase("https://tennismatches00.firebaseio.com" + path);
       }
     }
+    if (path.indexOf("/web/data/users/n:") == 0) {
+      var id = (Math.floor(parseInt(path.split("/")[4].split(":")[1]) / 30000) * 3).toString();
+      if (id.length == 1) id = "0"+id;
+      if (id < "31") {
+        return new Firebase("https://tennismatches"+id+".firebaseio.com" + path);
+      } else {
+        return new Firebase("https://tennismatches.firebaseio.com" + path);
+      }
+    }
     return new Firebase(this.baseUrl+path);
   },
 

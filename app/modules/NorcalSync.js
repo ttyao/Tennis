@@ -184,9 +184,8 @@ var NorcalSync = React.createClass({
         requested++;
         var teamMatch = {
           teams: ["nt:"+field[1], "nt:"+field[2]],
-          status: "completed",
-          time: window.now(new Date(field[6]).getTime(), true),
-          matchTime: null
+          status: field[4] ? "completed" : "pending",
+          time: window.now(new Date(field[6]).getTime(), true)
         };
         // console.log(teamMatch);
 
@@ -222,7 +221,9 @@ var NorcalSync = React.createClass({
         // remove pending match data
         // TODO
       }
-
+      if (!field[4]) {
+        continue;
+      }
       // create match
       var players = field[5].split(",");
       var match = {
@@ -478,7 +479,7 @@ var NorcalSync = React.createClass({
   },
   render() {
     return (
-      <Dropzone onDrop={this.onUpload} className="pictureUpload">
+      <Dropzone onDrop={this.onUpload} >
         <div>Inmport NorcalData</div>
       </Dropzone>
     )
