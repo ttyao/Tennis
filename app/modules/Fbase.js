@@ -296,7 +296,7 @@ window.Fbase = {
           return;
         }
         log.userAgent = navigator.userAgent;
-        var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/visitlog/'+window.now()+"-"+id);
+        var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/daily/'+now(new Date(), true)+"/"+window.now()+"-"+id);
         ref.set(log);
       }
       var logRef = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());

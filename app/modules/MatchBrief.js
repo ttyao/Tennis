@@ -492,7 +492,7 @@ var MatchBrief = React.createClass({
                     </td>
                     <td className="scoresection">
                       <ScoreBoard scores={match.scores} onChange={this.onScoresChange} status={match.status}
-                        editable={!!window.Fbase.authUid && match.status == "active"} />
+                        editable={this.canEditMatch()} />
                       <div className="centerContainer">
                         {this.showStatusButton()}
                       </div>

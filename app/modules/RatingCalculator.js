@@ -92,7 +92,7 @@ getCurrentRating(uid, date) {
       this.users[players[0]].currentRating = newRatingA;
       this.users[players[1]].currentRating = newRatingB;
     }
-    // console.log(currentRatingA, newRatingA, currentRatingB, newRatingB)
+    // console.log(players, scores, currentRatingA, newRatingA, currentRatingB, newRatingB)
 
     this.verifyRating(players, matchDate);
     for (let p in players) {
@@ -159,7 +159,7 @@ getCurrentRating(uid, date) {
           // if (players[p] == "n:42027") {
           //   console.log(r, l, this.users[players[p]].currentRating, matchDate)
           // }
-          console.log(r, this.users[players[p]].currentRating, a, matchDate, this.users[players[p]].currentRating*a, this.users[players[p]])
+          // console.log(r, this.users[players[p]].currentRating, a, matchDate, this.users[players[p]].currentRating*a, this.users[players[p]])
           this.users[players[p]].currentRating *= a;//2 * this.users[players[p]].currentRating / a - this.users[players[p]].currentRating / a / a;
         } else {
           if (r > l) {

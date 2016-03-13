@@ -63,7 +63,7 @@ var PlayersSelect = React.createClass({
             var item = {};
             item.value = key;
             item.label = object[key].displayName;
-            window.Fbase.setSimplePlayer(key, object[key])
+            Caching.setSimplePlayer(key, object[key])
             ops.push(item);
           }
         }
@@ -75,7 +75,7 @@ var PlayersSelect = React.createClass({
     var result = [<option key="none" label="select player ..." value="none"/>]
     if (type == "normal") {
       for (let i in this.props.ladder.users) {
-        result.push(<option key={i} label={window.Caching.getDisplayName(i)} value={i}/>);
+        result.push(<option key={i} label={Caching.getDisplayName(i)} value={i}/>);
       }
     }
     return result;

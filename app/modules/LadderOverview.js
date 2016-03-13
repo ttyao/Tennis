@@ -261,7 +261,7 @@ var LadderOverview = React.createClass({
           var item = {};
           item.value = key;
           item.label = object[key].displayName;
-          window.Fbase.setSimplePlayer(key, object[key]);
+          Caching.setSimplePlayer(key, object[key]);
           ops.push(item);
           keys.push(key);
         }

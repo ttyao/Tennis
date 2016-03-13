@@ -100,6 +100,9 @@ window.Caching = {
           var data = snapshot.val();
           if (data) {
             self.players[i] = data;
+            if (i == Fbase.authUid) {
+              Fbase.getRef("web/data/users/"+i).update({visits: data.visits ? data.visits + 1 : 1, loggedInAt: window.now()});
+            }
             if (typeof(self.simplePlayers[i]) != "object") {
               self.simplePlayers[i] = {
                 displayName: data.displayName,

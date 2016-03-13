@@ -5,6 +5,7 @@ build/bundle.js
 wwc
 app/modules/aws.js
 app/data
+app/ratings
 node_modules
 firebase.json
 public
