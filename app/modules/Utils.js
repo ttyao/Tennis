@@ -31,15 +31,15 @@ window.now = function(date, onlyDate) {
     }
   }
   if (onlyDate) {
-    return moment(date).utcOffset(-8).format("YYYY-MM-DD");
+    return moment(date).utcOffset(-7).format("YYYY-MM-DD");
   }
-  return moment(date).utcOffset(-8).format("YYYY-MM-DD-HH-mm-ss-SSS");
+  return moment(date).utcOffset(-7).format("YYYY-MM-DD-HH-mm-ss-SSS");
 };
 
 window.Utils = {
   getDateString: function(time) {
     if (time.toString().indexOf('-') >= 0) {
-      return moment(time).utcOffset(-8).format("MM/DD/YYYY");
+      return moment(time).utcOffset(-7).format("MM/DD/YYYY");
     } else {
       return new Date(time).toLocaleDateString();
     }

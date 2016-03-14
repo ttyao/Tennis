@@ -295,9 +295,17 @@ window.Fbase = {
         if (this.authUid == this.Henry) {
           return;
         }
-        log.userAgent = navigator.userAgent;
-        var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/daily/'+now(new Date(), true)+"/"+window.now()+"-"+id);
-        ref.set(log);
+        var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/daily/'+now(new Date(), true)+"/"+id);
+        var obj = {}
+        var time = now().slice(11)
+        if (message == 'init') {
+          obj[time+'-'+message] = {creator:this.authUid || "visitor"}
+          obj[time+'-'+message].userAgent = navigator.userAgent;
+        } else {
+          obj[time+"-"+message] = true;
+        }
+        ref.update(obj);
+        return;
       }
       var logRef = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/'+type+"/"+(subtype ? subtype+"/" : "")+id+"/"+window.now());
       logRef.set(log);

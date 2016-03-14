@@ -32,9 +32,12 @@ export default class Menu extends React.Component {
         Fbase.getRef("web/data/users/n:"+id).set(user);
         // delete users.matches;
         new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id+"/teams").remove();
-        new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id+"/matches").remove();
+        new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+id+"/matches").remove(function() {
+          self.loadUsers(id+1);
+        });
+      } else {
+        self.loadUsers(id+1);
       }
-      self.loadUsers(id+1);
     })
   }
   onTestButtonClick() {
@@ -61,6 +64,14 @@ export default class Menu extends React.Component {
   }
   render() {
     window.GoogleAnalytics();
+    var path = this.getTabIndex(this.props.params.tab);
+    if (this.props.params.ladderId) {
+      path += '-'+this.props.params.ladderId
+    }
+    if (this.props.params.playerId) {
+      path += '-'+this.props.params.playerId
+    }
+    Fbase.log(path, 'visit')
     return (
       <div className="container">
         <div className="page-header">

@@ -253,6 +253,23 @@ var RatingCalculator = React.createClass({
           Rating.users = eval("(" + json + ')');
           Rating.users = Rating.users.web.data.users;
           console.log("bingo")
+          Rating.cities = {};
+          for (let i in Rating.users) {
+            if (Rating.users[i].residence) {
+              let r = Rating.users[i].residence.toLowerCase()
+              if (!Rating.cities[r]) {
+                Rating.cities[r] = 1
+              } else {
+                Rating.cities[r]++;
+              }
+            }
+          }
+          for (let c in Rating.cities) {
+            try {
+              Fbase.set("web/data/cities/"+c, Rating.cities[c]);
+            } catch (error) {
+            }
+          }
           break;
       }
     };

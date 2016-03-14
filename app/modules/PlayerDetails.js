@@ -2,6 +2,7 @@ import React from 'react';
 import MatchBrief from './MatchBrief';
 import PlayerSelect from './PlayerSelect';
 import TeamName from "./TeamName";
+import City from "./City"
 var ReactFireMixin = require('reactfire');
 var LineChart = require("react-chartjs").Line;
 
@@ -354,7 +355,9 @@ var PlayerDetails = React.createClass({
                 null
               }
               <td className="rightalign"><b>City:</b></td>
-              {this.state.player.residence && <td  className="leftalign">{this.state.player.residence}</td>}
+              {this.state.player.residence &&
+                <td className="leftalign">{this.state.player.residence}<City city={this.state.player.residence} /></td>
+              }
             </tr>
             <tr>
               <td className="rightalign topalign smallpercent"><b>Teams / Ladders:</b></td>
