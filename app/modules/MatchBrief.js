@@ -165,24 +165,32 @@ var MatchBrief = React.createClass({
     var self = this;
     if (typeof(window.Caching.matches[this.props.matchId]) == "object") {
       var match = window.Caching.matches[this.props.matchId];
-      this.setState({
-        loading: false,
-        match: match
-      })
+      if (this.isMounted()) {
+        this.setState({
+          loading: false,
+          match: match
+        })
+      }
       if (match.tmId) {
         var r = window.Fbase.getRef("web/data/teammatches/"+match.tmId+"/teams");
         r.once("value", function(snapshot) {
           // console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
           var teams = snapshot.val();
           if (teams) {
-            self.setState({teams:teams})
+            if (self.isMounted()) {
+              self.setState({teams:teams})
+            }
             let t0 = window.Fbase.getRef("web/data/teams/"+teams[0]);
             t0.once("value", function(t) {
-              self.setState({team0: t.val()});
+              if (self.isMounted()) {
+                self.setState({team0: t.val()});
+              }
             })
             let t1 = window.Fbase.getRef("web/data/teams/"+teams[1]);
             t1.once("value", function(t) {
-              self.setState({team1: t.val()});
+              if (self.isMounted()) {
+                self.setState({team1: t.val()});
+              }
             })
           }
         })

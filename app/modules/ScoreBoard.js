@@ -69,25 +69,24 @@ var ScoreBoard = React.createClass({
     var index = 0;
     var scores = this.props.scores.map(function(score) {
       index += 2;
-      if (this.props.editable) {
+      if (this.props.editable && this.props.status != "completed") {
         return (
           <td key={"score"+index}>
             {this.getScoreCell(index - 2, score[0])}
             {this.getScoreCell(index - 1, score[1])}
           </td>
         );
+      } else if (score[0] + score[1] > 0) {
+        return (
+          <td key={"score"+index}>
+            <div>{score[0]}</div>
+            <div>{score[1]}</div>
+          </td>
+        );
       } else {
-        if (this.props.status != "completed" || score[0] + score[1] > 0) {
-          return (
-            <td key={"score"+index}>
-              <div>{score[0]}</div>
-              <div>{score[1]}</div>
-            </td>
-          );
-        } else {
-          return null;
-        }
+        return null;
       }
+
     }, this);
     return (
       <td>

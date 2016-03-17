@@ -226,6 +226,11 @@ var NorcalSync = React.createClass({
       }
       // create match
       var players = field[5].split(",");
+      for (let i in players) {
+        if (players[i] < 0) {
+          players[i] = 0;
+        }
+      }
       var match = {
         line: field[3],
         tmId: "ntm:"+field[0],
@@ -468,7 +473,7 @@ var NorcalSync = React.createClass({
           self.updateTeamMatch(lines, 1);
           break;
         case "score":
-          self.updateScores(lines, 1);
+          self.updateScores(lines, 43812);
           break;
         case "TLS":
           self.parseTLS(lines);
