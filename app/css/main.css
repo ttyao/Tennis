@@ -654,6 +654,16 @@ h6,
   padding: 5px;
   margin: 5px;
 }
+.loginText {
+  float: right;
+  margin: -15px 5px;
+  color: blue;
+  padding: 4px;
+  border-radius: 2px;
+  background-color: rgba(225, 26, 255, 0.1);
+  border: 1px solid rgba(0, 126, 255, 0.03);
+  box-shadow: 1px 1px 1px #888888;
+}
 /*
 
 // include these styles to test normal form fields

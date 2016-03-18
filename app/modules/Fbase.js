@@ -275,7 +275,7 @@ window.Fbase = {
     try {
       var id = Caching.getDisplayName(this.authUid);
       if (!id) {
-        this.setSessionId();
+        // this.setSessionId();
         id = this.sessionId;
       }
       if (id.slice(0,8) == "visitor:") {

@@ -9,9 +9,10 @@ var LineChart = require("react-chartjs").Line;
 var PlayerDetails = React.createClass({
   getInitialState () {
     var playerId = window.Fbase.authUid || window.Fbase.Henry;
-    if (this.props.playerId) {
+    if (this.props.playerId && parseInt(this.props.playerId) != -1) {
       playerId = window.Caching.getPlayerId(this.props.playerId);
     }
+    console.log(playerId)
     return {playerId: playerId, win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
@@ -287,25 +288,63 @@ var PlayerDetails = React.createClass({
       }
     }
 
+    for (var i in this.state.player.ratings) {
+      let year = parseInt(i)
+      if (!labels[year]) {
+        if (startingYear > year) {
+          startingYear = year;
+        }
+        labels[year] = {};
+      }
+      labels[year].tdb = this.state.player.ratings[year];
+    }
+    for (let m = 0; m < this.state.merges; m++) {
+      if (this.state["merge"+m]) {
+        for (var i in this.state["merge"+m].ratings) {
+          let year = parseInt(i)
+          if (!labels[year]) {
+            if (startingYear > year) {
+              startingYear = year;
+            }
+            labels[year] = {};
+          }
+          labels[year].tdb = this.state["merge"+m].ratings[year];
+        }
+      }
+    }
+
     var l = [];
     var ntrps = [];
     var tls = [];
     var teams = [];
+    var tdb = [];
     while (startingYear <= new Date().getFullYear()) {
       if (labels[startingYear]) {
         ntrps.push(parseFloat(labels[startingYear].ntrp) || null);
         tls.push(parseFloat(labels[startingYear].tls) || null);
+        let r = parseFloat(labels[startingYear].tdb).toFixed(2);
+        if (r > 0) {
+          tdb.push(r);
+        } else {
+          tdb.push(null);
+        }
         teams.push(labels[startingYear].teams || null);
       } else {
         ntrps.push(null);
         tls.push(null);
+        tdb.push(null);
         teams.push(null);
       }
       l.push(startingYear++);
     }
     let teamColor = "131,237,195";
     let ntrpColor = "151,187,205";
+    let tdbColor = "20,20,60";
     let tlsColor = "220,120,160";
+    console.log(tdb)
+    if (Fbase.authUid != Fbase.Henry) {
+      tdb = []
+    }
     return {
       labels: l,
       datasets: [
@@ -339,6 +378,16 @@ var PlayerDetails = React.createClass({
           pointHighlightStroke: "rgba("+tlsColor+",1)",
           data: tls
         },
+        {
+          label: "TDB Rating",
+          fillColor: "rgba("+tdbColor+",0.2)",
+          strokeColor: "rgba("+tdbColor+",1)",
+          pointColor: "rgba("+tdbColor+",1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba("+tdbColor+",1)",
+          data: tdb
+        },
       ]
     };
   },
@@ -367,7 +416,8 @@ var PlayerDetails = React.createClass({
             <LineChart redraw={true} data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="280" height="150"/>
             <div>
               <span style={{color:"rgba(151,187,205,1)"}}> &#x25cf; NTRP </span>
-              <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TLS </span>
+              <span style={{color:"rgba(220,120,16,1)"}}> &#x25cf; TLS </span>
+              <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TDB Rating </span>
               <span style={{color:"rgba(131,237,195,1)"}}> &#x25cf; Team played </span>
             </div>
             </td>

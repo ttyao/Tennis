@@ -29,7 +29,3 @@ function main() {
     document.getElementById('app')
   );
 }
-
-var appElement = document.getElementById('modal');
-
-ReactDOM.render(<Login/>, appElement);

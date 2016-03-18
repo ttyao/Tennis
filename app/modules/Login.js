@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Modal from 'react-modal';
 import Tabs from './Tabs';
+import { Link } from 'react-router'
 
 var appElement = document.getElementById('modal');
 
@@ -14,7 +15,7 @@ var Login = React.createClass({
     if (!authData) {
       window.Fbase.setSessionId();
     }
-    return { unauthed: !authData };
+    return { isOpen: false };
   },
 
   handleRegisterClicked() {
@@ -108,11 +109,27 @@ var Login = React.createClass({
     });
   },
   handleModalCloseRequest() {
-    this.setState({unauthed:false});
+    this.setState({isOpen:false});
   },
   fblogin() {
     // <button type="button" className="btn btn-primary loginButton fbLogin" onClick={this.handleFacebookLoginClicked}>.</button>
     return null;
+  },
+  onLoginClick() {
+    if (!Fbase.authUid) {
+      this.setState({isOpen:true})
+    } else {
+      var ref = window.Fbase.getRef();
+      ref.unauth();
+      location.reload();
+    }
+  },
+  getLink() {
+    if (Fbase.authUid) {
+      return (<Link className="loginText" to={"/player/0/"+Fbase.authUid}>{Caching.getDisplayName(Fbase.authUid).split(" ")[0]}</Link>);
+    } else {
+      return(<a className="loginText" onClick={this.onLoginClick}>Login</a>);
+    }
   },
   render: function() {
     var modelStyle = {
@@ -126,10 +143,11 @@ var Login = React.createClass({
     }
     return (
       <div>
+        {this.getLink()}
         <Modal
           className="Modal__Bootstrap modal-dialog"
           closeTimeoutMS={150}
-          isOpen={this.state.unauthed}
+          isOpen={this.state.isOpen}
           style={modelStyle}
           onRequestClose={this.handleModalCloseRequest}
         >

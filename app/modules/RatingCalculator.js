@@ -233,6 +233,32 @@ getCurrentRating(uid, date) {
   correctStay: 0,
   print(uid) {
     console.log(this.users[uid] || this.users["n:"+uid]);
+  },
+  updateRating(ratings, year, start) {
+    var requested = 0;
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("rating starting:", start);
+    var keys = Object.keys(ratings);
+    for (let i = 0; i < batch && start+i < keys.length; i++) {
+      var rating = ratings[keys[i+start]];
+      // update teammatch info
+      // console.log(rating, keys[i+start]);
+
+      var ref = Fbase.getRef("web/data/users/"+keys[i+start]+"/ratings/"+year);
+      requested++;
+
+      ref.set(rating, function(err) {
+        if (!err) {
+          completed++;
+          if (completed == requested) {
+            self.updateRating(ratings, year, start + batch);
+          }
+        }
+      });
+
+    }
   }
 };
 var RatingCalculator = React.createClass({
@@ -247,6 +273,10 @@ var RatingCalculator = React.createClass({
         case "score":
           Rating.lines = lines;
           Rating.calculate();
+          break;
+        case "rating":
+          var ratings = eval("("+lines[2]+")")
+          Rating.updateRating(ratings, lines[1], 1)
           break;
         default:
           var json = lines.join("");
@@ -278,6 +308,7 @@ var RatingCalculator = React.createClass({
   render() {
     return (
       <Dropzone onDrop={this.onUpload}>
+        <div>Calculate rating...</div>
         <div>Select score file.</div>
       </Dropzone>
     )

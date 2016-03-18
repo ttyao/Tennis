@@ -7,6 +7,7 @@ import LadderOverview from './LadderOverview';
 import NorcalSync from "./NorcalSync";
 import Profile from "./Profile";
 import RatingCalculator from "./RatingCalculator"
+import Login from "./Login"
 
 var Dropzone = require('react-dropzone');
 
@@ -75,6 +76,7 @@ export default class Menu extends React.Component {
     return (
       <div className="container">
         <div className="page-header">
+          <Login {...this.props} />
           <h2 className="titleText">Tennis Database</h2>
         </div>
         <Tabs tabActive={this.getTabIndex(this.props.params.tab)} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
