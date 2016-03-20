@@ -21,29 +21,24 @@ def saveobject(object, year):
   with open('ratings/ratings'+str(year)+'.js', 'w') as myfile:
     json.dump(object, myfile)
 
-def loadscores():
-  # with open('app/ratings/score_440000_439900.csv', 'r') as myfile:
-  # with open('ratings/score_440000_390000.csv', 'r') as myfile:
-  with open('ratings/score_00_03.csv', 'r') as myfile:
-  # with open('ratings/score_440000_200000.csv', 'r') as myfile:
-  # with open('app/ratings/score_447000_1.csv', 'r') as myfile:
-    l = myfile.read().split('\n')
+# coef = [ 0.93037204,  0.06999837,  0.00362762, -0.00351017,  0.00357539, -0.00338988,
+#   0.02418462, -0.02357576]
+# coef1 = [ 0.92987406,  0.07054873 , 0.00360352, -0.00347879,  0.00354079, -0.00336223,
+#   0.02418141, -0.02343821]
+# coef = [ 0.93922659,  0.06106969,  0.0035625,  -0.00335637,  0.00350843, -0.0032451,
+#   0.0241516,  -0.02328441]
+# coef1 = [ 0.94225702,  0.0581411,   0.00338391, -0.00328093,  0.00332774 ,-0.0031677,
+#   0.02388952, -0.0230163 ]
 
-  print "done loading scores"
-  return l
+coef = [ 0.95901972,  0.04050983,  0.00328731, -0.00302277,  0.00323712, -0.00291493,
+  0.02392157, -0.02288396]
+coef1 = [ 0.94450729,  0.05571966,  0.00334849 ,-0.00323746,  0.00329587, -0.00313299,
+  0.02380847, -0.02301775]
+def getCurrentRating(uid, year):
+  thisYear = getYearEndRating(uid, year - 1)
+  lastYear = getYearEndRating(uid, year - 2)
 
-users = loadusers()
-lines = loadscores()
-
-coef = [ 0.93037204,  0.06999837,  0.00362762, -0.00351017,  0.00357539, -0.00338988,
-  0.02418462, -0.02357576]
-coef1 = [ 0.92987406,  0.07054873 , 0.00360352, -0.00347879,  0.00354079, -0.00336223,
-  0.02418141, -0.02343821]
-def getCurrentRating(uid, date):
-  thisYear = getYearEndRating(uid, date.year - 1)
-  lastYear = getYearEndRating(uid, date.year - 2)
-
-  users[uid]['currentYear'] = date.year
+  users[uid]['currentYear'] = year
   if (thisYear == lastYear):
     users[uid]['currentRating'] = thisYear - 0.25
   else:
@@ -78,8 +73,6 @@ def adjustRating(players, matchDate, score):
   for p in range(len(players)):
     if (not players[p] in users):
       return
-    if (users[players[p]]['currentRating'] == 0):
-      getCurrentRating(players[p], matchDate)
 
   currentRatingA = users[players[0]]['currentRating']
   currentRatingB = users[players[1]]['currentRating']
@@ -195,7 +188,7 @@ def adjustRating(players, matchDate, score):
 
 def getRatingFromString(ratingString):
   try:
-    if (type(ratingString) is 'float'):
+    if (type(ratingString) == type(3.5) or type(ratingString) == type(3)):
       return ratingString
     if len(ratingString) < 3 or ratingString[1:2] != '.':
       return 3.25
@@ -233,7 +226,9 @@ def getYearEndRating(uid, year, official=False):
     return rating
   if (year < 2016):
     return getYearEndRating(uid, year+1, official)
-  return 3.25
+  if ('r' in users[uid]):
+    return users[uid]['r'];
+  return 3.25;
 
 def verifyRating(players, matchDate, year):
   for p in range(len(players)):
@@ -245,38 +240,43 @@ def verifyRating(players, matchDate, year):
       #   continue
 
       if (r < users[players[p]]['currentRating'] or r - 0.5 > users[players[p]]['currentRating']):
-        if (players[p] in yr[year]):
-          if (players[p] in found):
-            continue
-          found[players[p]] = True
-        a = ((r-0.45)+users[players[p]]['currentRating'])/2/users[players[p]]['currentRating']
+
+        tmp = 0 * users[players[p]]['startRating']
+        # if (tmp > 0):
+        a = (((r-0.45)+users[players[p]]['currentRating'])/2 - tmp)/(users[players[p]]['currentRating']-tmp)
         if (r < users[players[p]]['currentRating']):
-          a = ((r-0.05)+users[players[p]]['currentRating'])/2/users[players[p]]['currentRating']
+          a = (((r-0.05)+users[players[p]]['currentRating'])/2 - tmp)/(users[players[p]]['currentRating'] - tmp)
+        # else:
+        #   tmp
+        if (a > 0):
+          if (players[p] in yr[year]):
+            if (players[p] in found):
+              yr[users[players[p]]['currentYear']][players[p]] = {"c":users[players[p]]['currentRating'], "r":r, "l":l}
+              continue
+            found[players[p]] = True
 
-        tmp = 0
-        tmp1 = 0
-        if ('ratings' in users[players[p]]):
-          tmp = users[players[p]]['ratings'][0]['r']
-          for i in range(len(users[players[p]]['ratings'])):
-            users[players[p]]['ratings'][i]['r'] = users[players[p]]['ratings'][i]['r'] * a
-            users[players[p]]['ratings'][i]['old'] = users[players[p]]['ratings'][i]['old'] * a
-            users[players[p]]['ratings'][i]['new'] = users[players[p]]['ratings'][i]['new'] * a
-          tmp1 = users[players[p]]['ratings'][0]['r']
+          tmp1 = 0
+          if ('ratings' in users[players[p]]):
+            for i in range(len(users[players[p]]['ratings'])):
+              users[players[p]]['ratings'][i]['r'] = (users[players[p]]['ratings'][i]['r'] - tmp) * a + tmp
+              users[players[p]]['ratings'][i]['old'] = (users[players[p]]['ratings'][i]['old'] - tmp) * a + tmp
+              users[players[p]]['ratings'][i]['new'] = (users[players[p]]['ratings'][i]['new'] - tmp) * a + tmp
+            tmp1 = users[players[p]]['ratings'][0]['r']
 
-        if (users[players[p]]['currentYear'] == year):
-          if (r > l):
-            params['missedUp'] += 1
-          elif (r < l):
-            params['missedDown'] += 1
+          if (users[players[p]]['currentYear'] == year):
+            if (r > l):
+              params['missedUp'] += 1
+            elif (r < l):
+              params['missedDown'] += 1
 
-          if (users[players[p]]['currentRating'] > r):
-            params['falseUp'] += 1
-          else:
-            # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
-            params['falseDown'] += 1
+            if (users[players[p]]['currentRating'] > r):
+              params['falseUp'] += 1
+            else:
+              # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
+              params['falseDown'] += 1
 
-        # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
-        users[players[p]]['currentRating'] *= a #2 * users[players[p]]['currentRating'] / a - users[players[p]]['currentRating'] / a / a
+          # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
+          users[players[p]]['currentRating'] *= a #2 * users[players[p]]['currentRating'] / a - users[players[p]]['currentRating'] / a / a
       else:
         if (users[players[p]]['currentYear'] == year):
           if (r > l):
@@ -297,6 +297,13 @@ def printRatings():
         params['missedDown'], params['caughtDown'])
 
 def calculate(year, fromYear):
+  for i in users:
+    if ('ratings' in users[i]):
+      users[i]['currentRating'] = users[i]['ratings'][0]['r']
+    else:
+      getCurrentRating(i, fromYear)
+
+    users[i]['startRating'] = users[i]['currentRating']
 
   for i in reversed(range(len(lines))):
     # if (i % 100000 == 0):
@@ -315,18 +322,39 @@ def calculate(year, fromYear):
     for p in range(len(players)):
       players[p] = "n:"+ str(players[p])
 
-    if (matchDate.year >= fromYear):
+    if (matchDate.year > fromYear):
       adjustRating(players, matchDate, scores)
 
   printRatings()
 
+def loadscores():
+  # with open('app/ratings/score_440000_439900.csv', 'r') as myfile:
+  # with open('ratings/score_440000_390000.csv', 'r') as myfile:
+  # with open('ratings/score_00_03.csv', 'r') as myfile:
+  with open('ratings/score_01_11.csv', 'r') as myfile:
+  # with open('ratings/score_440000_200000.csv', 'r') as myfile:
+  # with open('app/ratings/score_447000_1.csv', 'r') as myfile:
+    l = myfile.read().split('\n')
+
+  print "done loading scores"
+  return l
+
+users = loadusers()
+lines = loadscores()
+
 yr = {}
-fromYear = 2000
-year = 2001
+fromYear = 2008
+year = 2009
+print("from", fromYear, " to ", year)
 with open('ratings/ratings'+str(fromYear)+'.js', 'r') as myfile:
   data=myfile.read().replace('\n', '')
 
 ra = json.loads(data)
+for user in users:
+  if (user in ra):
+    users[user]['currentRating'] = ra[user]
+  else:
+    users[user]['currentRating'] = 0
 
 for i in range(27):
   params = {
@@ -355,14 +383,9 @@ for i in range(27):
   yr = {}
   for r in range(40):
     yr[r+1998] = {}
-
   for user in users:
     if (user in ra):
-      users[user]['currentRating'] = ra[user]
-    else:
-      users[user]['currentRating'] = 0
-    users[user]['currentYear'] = fromYear
-
+      yr[year][user] = {"c": ra[user]}
 
   calculate(year, fromYear)
   userIds = users.keys()
@@ -377,26 +400,42 @@ for i in range(27):
           dataset1.append([user['ratings'][j]['old'],user['ratings'][j]['opp']]+user['ratings'][j]['s'])
           result1.append(user['ratings'][j]['new'])
 
-  # clf = linear_model.LinearRegression()
-  # clf.fit(dataset, result)
-  # # coef=clf.coef_
-  # print(clf.coef_)
-  # clf = linear_model.LinearRegression()
-  # clf.fit(dataset1, result1)
-  # # coef=clf.coef_
-  # print(clf.coef_)
+  clf = linear_model.LinearRegression()
+  clf.fit(dataset, result)
+  # coef=clf.coef_
+  print(clf.coef_)
+  clf = linear_model.LinearRegression()
+  clf.fit(dataset1, result1)
+  # coef=clf.coef_
+  print(clf.coef_)
   yearRating = {}
   high = 0
   low = 0
   correct = 0
+  missing = 0
+  lasthigh = 0
+  lastlow = 0
+  lastcorrect = 0
   userIds = yr[year].keys()
   for i in range(len(userIds)):
     yearRating[userIds[i]] = yr[year][userIds[i]]['c']
-    if (yr[year][userIds[i]]['r'] < yr[year][userIds[i]]['c']):
-      high += 1
-    elif (yr[year][userIds[i]]['r'] - 0.5 > yr[year][userIds[i]]['c']):
-      low += 1
+    if ('r' in yr[year][userIds[i]]):
+      if (yr[year][userIds[i]]['r'] < yr[year][userIds[i]]['c']):
+        high += 1
+      elif (yr[year][userIds[i]]['r'] - 0.5 > yr[year][userIds[i]]['c']):
+        low += 1
+      else:
+        correct += 1
     else:
-      correct += 1
-  print(low, correct, high)
+      missing += 1
+    if ('l' in yr[year][userIds[i]]):
+      if (yr[year][userIds[i]]['l'] < users[userIds[i]]['ratings'][0]['r']):
+        lasthigh += 1
+      elif (yr[year][userIds[i]]['l'] - 0.5 > users[userIds[i]]['ratings'][0]['r']):
+        lastlow += 1
+      else:
+        lastcorrect += 1
+    else:
+      missing += 1
+  print(low, correct, high, missing, lastlow, lastcorrect, lasthigh)
   saveobject(yearRating, year)
