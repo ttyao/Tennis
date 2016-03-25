@@ -241,42 +241,54 @@ def verifyRating(players, matchDate, year):
 
       if (r < users[players[p]]['currentRating'] or r - 0.5 > users[players[p]]['currentRating']):
 
-        tmp = 0 * users[players[p]]['startRating']
-        # if (tmp > 0):
+        if (players[p] in ra):
+          tmp = users[players[p]]['startRating'] * 0
+        else:
+          tmp = 0
         a = (((r-0.45)+users[players[p]]['currentRating'])/2 - tmp)/(users[players[p]]['currentRating']-tmp)
         if (r < users[players[p]]['currentRating']):
           a = (((r-0.05)+users[players[p]]['currentRating'])/2 - tmp)/(users[players[p]]['currentRating'] - tmp)
         # else:
         #   tmp
-        if (a > 0):
-          if (players[p] in yr[year]):
-            if (players[p] in found):
-              yr[users[players[p]]['currentYear']][players[p]] = {"c":users[players[p]]['currentRating'], "r":r, "l":l}
-              continue
-            found[players[p]] = True
+        # if (a > 0):
+        if (players[p] in yr[year]):
+          if (players[p] in found):
+            yr[users[players[p]]['currentYear']][players[p]] = {"c":users[players[p]]['currentRating'], "r":r, "l":l}
+            continue
+          found[players[p]] = True
 
-          tmp1 = 0
-          if ('ratings' in users[players[p]]):
-            for i in range(len(users[players[p]]['ratings'])):
-              users[players[p]]['ratings'][i]['r'] = (users[players[p]]['ratings'][i]['r'] - tmp) * a + tmp
-              users[players[p]]['ratings'][i]['old'] = (users[players[p]]['ratings'][i]['old'] - tmp) * a + tmp
-              users[players[p]]['ratings'][i]['new'] = (users[players[p]]['ratings'][i]['new'] - tmp) * a + tmp
-            tmp1 = users[players[p]]['ratings'][0]['r']
+        tmp1 = 0
+        if ('ratings' in users[players[p]]):
+          # if (players[p] == 'n:145343'):
+          #   print (a,r,l,tmp,users[players[p]]['ratings'],users[players[p]]['currentYear'],users[players[p]]['startRating'],users[players[p]]['currentRating'])
+          for i in range(len(users[players[p]]['ratings'])):
+            rr = users[players[p]]['ratings'][i]
+            old1 = 2 * rr['old'] - rr['r']
+            new1 = 2 * rr['new'] - rr['r']
+            rr['r'] = (rr['r'] - tmp) * a + tmp
+            rr['old'] = (old1 + rr['r']) / 2
+            rr['new'] = (new1 + rr['r']) / 2
+          tmp1 = users[players[p]]['ratings'][0]['r']
 
-          if (users[players[p]]['currentYear'] == year):
-            if (r > l):
-              params['missedUp'] += 1
-            elif (r < l):
-              params['missedDown'] += 1
+        if (users[players[p]]['currentYear'] == year):
+          if (r > l):
+            params['missedUp'] += 1
+          elif (r < l):
+            params['missedDown'] += 1
 
-            if (users[players[p]]['currentRating'] > r):
-              params['falseUp'] += 1
-            else:
-              # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
-              params['falseDown'] += 1
+          if (users[players[p]]['currentRating'] > r):
+            params['falseUp'] += 1
+          else:
+            # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
+            params['falseDown'] += 1
 
-          # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
-          users[players[p]]['currentRating'] *= a #2 * users[players[p]]['currentRating'] / a - users[players[p]]['currentRating'] / a / a
+        # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
+        users[players[p]]['currentRating'] = (users[players[p]]['currentRating'] - tmp) * a + tmp #2 * users[players[p]]['currentRating'] / a - users[players[p]]['currentRating'] / a / a
+
+        # if ('ratings' in users[players[p]] and len(users[players[p]]['ratings']) == 3):
+        #   print(players[p])
+        #   for i in range(len(users[players[p]]['ratings'])):
+        #     print users[players[p]]['ratings'][i]
       else:
         if (users[players[p]]['currentYear'] == year):
           if (r > l):
@@ -286,20 +298,13 @@ def verifyRating(players, matchDate, year):
           params['correctStay'] += 1
 
     # if (matchDate.year > users[players[p]]['currentYear'] or not players[p] in found):
-    yr[users[players[p]]['currentYear']][players[p]] = {"c":users[players[p]]['currentRating'], "r":r, "l":l}
-
-def printRatings():
-  print(#(params['falseUp'] + params['falseDown'])/float(params['correctStay']),
-        params['falseUp'], params['falseDown'], params['correctStay'],
-        "Up", #params['missedUp']/float(params['missedUp'] + params['caughtUp']),
-        params['missedUp'], params['caughtUp'],
-        "Down", #params['missedDown']/float(params['missedDown'] + params['caughtDown']),
-        params['missedDown'], params['caughtDown'])
+    yr[users[players[p]]['currentYear']][players[p]] = {"c": users[players[p]]['currentRating'], "r": r, "l": l}
 
 def calculate(year, fromYear):
   for i in users:
     if ('ratings' in users[i]):
       users[i]['currentRating'] = users[i]['ratings'][0]['r']
+      users[i]['ratings'] = []
     else:
       getCurrentRating(i, fromYear)
 
@@ -325,13 +330,11 @@ def calculate(year, fromYear):
     if (matchDate.year > fromYear):
       adjustRating(players, matchDate, scores)
 
-  printRatings()
-
 def loadscores():
   # with open('app/ratings/score_440000_439900.csv', 'r') as myfile:
   # with open('ratings/score_440000_390000.csv', 'r') as myfile:
   # with open('ratings/score_00_03.csv', 'r') as myfile:
-  with open('ratings/score_01_11.csv', 'r') as myfile:
+  with open('ratings/score_08_11.csv', 'r') as myfile:
   # with open('ratings/score_440000_200000.csv', 'r') as myfile:
   # with open('app/ratings/score_447000_1.csv', 'r') as myfile:
     l = myfile.read().split('\n')
@@ -356,7 +359,7 @@ for user in users:
   else:
     users[user]['currentRating'] = 0
 
-for i in range(27):
+for i in range(15):
   params = {
     'weakWin' : 0.06,
     'strongWin' : 0.01,
@@ -416,6 +419,7 @@ for i in range(27):
   lasthigh = 0
   lastlow = 0
   lastcorrect = 0
+  lastmissing = 0
   userIds = yr[year].keys()
   for i in range(len(userIds)):
     yearRating[userIds[i]] = yr[year][userIds[i]]['c']
@@ -430,12 +434,18 @@ for i in range(27):
       missing += 1
     if ('l' in yr[year][userIds[i]]):
       if (yr[year][userIds[i]]['l'] < users[userIds[i]]['ratings'][0]['r']):
+        # print(userIds[i], yr[year][userIds[i]], users[userIds[i]]['ratings'][0], users[userIds[i]]['startRating'])
         lasthigh += 1
       elif (yr[year][userIds[i]]['l'] - 0.5 > users[userIds[i]]['ratings'][0]['r']):
         lastlow += 1
       else:
         lastcorrect += 1
     else:
-      missing += 1
-  print(low, correct, high, missing, lastlow, lastcorrect, lasthigh)
+      lastmissing += 1
+  print(low, correct, high, missing, 'last', lastlow, lastcorrect, lasthigh, 'falseUp', params['falseUp'], params['falseDown'], params['correctStay'],
+        "Up", #params['missedUp']/float(params['missedUp'] + params['caughtUp']),
+        params['missedUp'], params['caughtUp'],
+        "Down", #params['missedDown']/float(params['missedDown'] + params['caughtDown']),
+        params['missedDown'], params['caughtDown'])
+
   saveobject(yearRating, year)

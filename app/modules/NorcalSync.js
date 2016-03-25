@@ -24,9 +24,21 @@ var NorcalSync = React.createClass({
         requested++;
         if (requested % 100 == 0) {
           console.log("requested: ", requested);
-         // console.log(lines[line])
         }
         var ref = window.Fbase.getRef("web/data/users/n:"+field[0]);
+        ref.update(player, function(error) {
+          if (error) {
+            console.log(error);
+          } else {
+            completed++;
+            if (completed % 100 == 0) console.log("complete:" + completed)
+          }
+        });
+        requested++;
+        if (requested % 100 == 0) {
+          console.log("requested: ", requested);
+        }
+        ref = new Firebase("https://blistering-torch-8342.firebaseio.com/web/data/users/n:"+field[0]);
         ref.update(player, function(error) {
           if (error) {
             console.log(error);
@@ -473,7 +485,7 @@ var NorcalSync = React.createClass({
           self.updateTeamMatch(lines, 1);
           break;
         case "score":
-          self.updateScores(lines, 43812);
+          self.updateScores(lines, 1);
           break;
         case "TLS":
           self.parseTLS(lines);
