@@ -76,7 +76,18 @@ var TeamStats = React.createClass({
           }
         }
       }
+      for (let i in stats) {
+        let player = window.Caching.getSimplePlayer(i);
+        if (typeof(player) == 'object') {
+          stats[i].rating = player.tdb ? player.tdb.toFixed(2) : player.ntrp || "";
+        } else if (this.props.team.stats && this.props.team.stats[i].rating) {
+          stats[i].rating = this.props.team.stats[i].rating;
+        } else {
+          stats[i].rating = "";
+        }
         //
+      }
+      console.log(stats)
       // }
       stats.found = found;
       if (!this.props.team.stats || this.props.team.stats.found <= found) {
@@ -94,11 +105,7 @@ var TeamStats = React.createClass({
             let best = null;
             for (let j in stats) {
               if (typeof(stats[j]) == "object" && !used[j] &&
-                  (!best ||
-                    (stats[j].totalWin > stats[best].totalWin ||
-                    (stats[j].totalWin == stats[best].totalWin &&
-                      (stats[j].totalMatch < stats[best].totalMatch ||
-                        (stats[j].totalMatch == stats[best].totalMatch && stats[j].setWin > stats[best].setWin)))))) {
+                  (!best || stats[best].rating < stats[j].rating)) {
                 best = j;
               }
             }
@@ -127,11 +134,11 @@ var TeamStats = React.createClass({
           <table className="wholerow rightalign shadowedBox notablespacing">
             <tbody>
               <tr className="headerRow">
-                <th>Player</th>
-                <th>NTRP</th>
-                <th>Single</th>
-                <th>Double</th>
-                <th>Total</th>
+                <th>Name</th>
+                <th>TDB</th>
+                <th>Sgl</th>
+                <th>Dbl</th>
+                <th>Tot</th>
                 <th>Win%</th>
               </tr>
               {this.getStats()}

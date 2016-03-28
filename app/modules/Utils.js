@@ -103,14 +103,16 @@ window.Caching = {
             if (i == Fbase.authUid) {
               Fbase.getRef("web/data/users/"+i).update({visits: data.visits ? data.visits + 1 : 1, loggedInAt: window.now()});
             }
-            if (typeof(self.simplePlayers[i]) != "object") {
-              self.simplePlayers[i] = {
-                displayName: data.displayName,
-                ntrp: data.ntrp,
-                ntrpType: data.ntrpType,
-                claimerId: data.claimerId
-              }
-            }
+            // if (typeof(self.simplePlayers[i]) != "object") {
+            //   self.simplePlayers[i] = {
+            //     displayName: data.displayName,
+            //     ntrp: data.ntrp,
+            //     ntrpType: data.ntrpType,
+            //     claimerId: data.claimerId,
+            //     tdb: data.ratings ? data.ratings['2015'] : "",
+            //   }
+            //   console.log(i,data)
+            // }
             for (let m in data.matches) {
               self.matches[m] = "pending";
             }
@@ -198,33 +200,49 @@ window.Caching = {
         ref.once('value', function(snap) {
           var user = snap.val();
           if (user) {
-            if (user.claimerId) {
-              ref = window.Fbase.getRef("web/data/users/"+user.claimerId);
-              ref.once('value', function(snap) {
-                var claimer = snap.val();
-                if (claimer) {
-                  window.Caching.simplePlayers[uid] = {
-                    claimerId: user.claimerId,
-                    displayName: claimer.displayName,
-                    ntrp: claimer.ntrp || "",
-                    ntrpType: claimer.ntrpType || "",
-                  };
-                  window.Fbase.getRef("web/data/simpleusers/"+uid).update(window.Caching.simplePlayers[uid]);
-                  if (callback) {
-                    callback(window.Caching.simplePlayers[uid]);
-                  }
-                } else {
-                  window.Caching.simplePlayers[uid] = "not found";
-                  if (callback) {
-                    callback(window.Caching.simplePlayers[uid]);
-                  }
+            if (user.merges) {
+              let mergerId = null;
+              for (let id in user.merges) {
+                if (id.indexOf("n:") == 0) {
+                  mergerId = id;
+                  break;
                 }
-              });
+              }
+              if (mergerId) {
+                ref = window.Fbase.getRef("web/data/users/"+mergerId);
+                ref.once('value', function(snap) {
+                  var merger = snap.val();
+                  if (merger) {
+                    window.Caching.simplePlayers[uid] = {
+                      mergerId: mergerId,
+                      displayName: merger.displayName || "",
+                      ntrp: merger.ntrp || "",
+                      ntrpType: merger.ntrpType || "",
+                      claimerId: user.claimerId || "",
+                      tdb: merger.ratings ? merger.ratings['2015'] : "",
+                    };
+
+                    window.Fbase.getRef("web/data/simpleusers/"+uid).update(window.Caching.simplePlayers[uid]);
+                    if (callback) {
+                      callback(window.Caching.simplePlayers[uid]);
+                    }
+                  } else {
+                    window.Caching.simplePlayers[uid] = "not found";
+                    if (callback) {
+                      callback(window.Caching.simplePlayers[uid]);
+                    }
+                  }
+                });
+              }
+
             } else {
               let s = {
-                displayName: user.displayName,
+                displayName: user.displayName || "",
                 ntrp: user.ntrp || "",
                 ntrpType: user.ntrpType || "",
+                claimerId: user.claimerId || "",
+                // hard code to 2015 rating
+                tdb: user.ratings ? user.ratings['2015'] : "",
               }
               window.Caching.simplePlayers[uid] = s;
               window.Fbase.getRef("web/data/simpleusers/"+uid).update(s);

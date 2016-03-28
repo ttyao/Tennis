@@ -36,6 +36,12 @@ var PlayerName = React.createClass({
   getNTRP() {
     if (this.props.showNTRP) {
       var ntrp = this.state.player.ntrp;
+      if (this.state.player.tdb) {
+        if (this.props.format == "none") {
+          return (<span>{this.state.player.tdb.toFixed(2)}</span>);
+        }
+        return (<span>({this.state.player.tdb.toFixed(2)})</span>);
+      }
       if (ntrp) {
         if (ntrp.toString().length == 1) {
           ntrp=ntrp+".0";

@@ -17,23 +17,10 @@ def saveratings():
   with open('ratings/users_output1.js', 'w') as myfile:
     json.dump(yr, myfile)
 
-def saveobject(object, year):
-  with open('ratings/ratings'+str(year)+'.js', 'w') as myfile:
+def saveobject(object, year, i):
+  with open('ratings/ratings'+str(year)+'_'+str(i)+'.js', 'w') as myfile:
     json.dump(object, myfile)
 
-# coef = [ 0.93037204,  0.06999837,  0.00362762, -0.00351017,  0.00357539, -0.00338988,
-#   0.02418462, -0.02357576]
-# coef1 = [ 0.92987406,  0.07054873 , 0.00360352, -0.00347879,  0.00354079, -0.00336223,
-#   0.02418141, -0.02343821]
-# coef = [ 0.93922659,  0.06106969,  0.0035625,  -0.00335637,  0.00350843, -0.0032451,
-#   0.0241516,  -0.02328441]
-# coef1 = [ 0.94225702,  0.0581411,   0.00338391, -0.00328093,  0.00332774 ,-0.0031677,
-#   0.02388952, -0.0230163 ]
-
-coef = [ 0.95901972,  0.04050983,  0.00328731, -0.00302277,  0.00323712, -0.00291493,
-  0.02392157, -0.02288396]
-coef1 = [ 0.94450729,  0.05571966,  0.00334849 ,-0.00323746,  0.00329587, -0.00313299,
-  0.02380847, -0.02301775]
 def getCurrentRating(uid, year):
   thisYear = getYearEndRating(uid, year - 1)
   lastYear = getYearEndRating(uid, year - 2)
@@ -212,7 +199,6 @@ def getYearEndRating(uid, year, official=False):
   rating = 0
   for t in reversed(range(len(teams))):
     if (datetime.strptime(users[uid]['teams'][str(teams[t])]['d'], '%m/%d/%y').year <= year):
-    # print(str(teams[t]),users[uid]['teams'][str(teams[t])],datetime.strptime(users[uid]['teams'][str(teams[t])]['d'], '%m/%d/%y'), year)
       if (t < len(teams) - 1):
         rating = getRatingFromString(users[uid]['teams'][str(teams[t + 1])]['r'][:3])
       else:
@@ -285,10 +271,6 @@ def verifyRating(players, matchDate, year):
         # print(players[p], l, r, users[players[p]]['currentRating'], a, users[players[p]]['currentRating']*a, tmp, tmp1, users[players[p]]['currentYear'], matchDate)
         users[players[p]]['currentRating'] = (users[players[p]]['currentRating'] - tmp) * a + tmp #2 * users[players[p]]['currentRating'] / a - users[players[p]]['currentRating'] / a / a
 
-        # if ('ratings' in users[players[p]] and len(users[players[p]]['ratings']) == 3):
-        #   print(players[p])
-        #   for i in range(len(users[players[p]]['ratings'])):
-        #     print users[players[p]]['ratings'][i]
       else:
         if (users[players[p]]['currentYear'] == year):
           if (r > l):
@@ -298,14 +280,21 @@ def verifyRating(players, matchDate, year):
           params['correctStay'] += 1
 
     # if (matchDate.year > users[players[p]]['currentYear'] or not players[p] in found):
+    # if ('ratings' in users[players[p]] and len(users[players[p]]['ratings']) > 0 and players[p] == "n:165839"):
+    #   print(players[p])
+    #   for i in range(len(users[players[p]]['ratings'])):
+    #     print users[players[p]]['ratings'][i]
     yr[users[players[p]]['currentYear']][players[p]] = {"c": users[players[p]]['currentRating'], "r": r, "l": l}
 
 def calculate(year, fromYear):
+
+  if ('ratings' in users['n:165839']):
+    print(users['n:165839']['ratings'])
   for i in users:
     if ('ratings' in users[i]):
       users[i]['currentRating'] = users[i]['ratings'][0]['r']
       users[i]['ratings'] = []
-    else:
+    elif ('currentRating' not in users[i] or users[i]['currentRating'] < 2):
       getCurrentRating(i, fromYear)
 
     users[i]['startRating'] = users[i]['currentRating']
@@ -334,7 +323,7 @@ def loadscores():
   # with open('app/ratings/score_440000_439900.csv', 'r') as myfile:
   # with open('ratings/score_440000_390000.csv', 'r') as myfile:
   # with open('ratings/score_00_03.csv', 'r') as myfile:
-  with open('ratings/score_08_11.csv', 'r') as myfile:
+  with open('ratings/score_14_15.csv', 'r') as myfile:
   # with open('ratings/score_440000_200000.csv', 'r') as myfile:
   # with open('app/ratings/score_447000_1.csv', 'r') as myfile:
     l = myfile.read().split('\n')
@@ -346,20 +335,33 @@ users = loadusers()
 lines = loadscores()
 
 yr = {}
-fromYear = 2008
-year = 2009
+fromYear = 2014
+year = fromYear+1
+
+coef = [ 0.95901972,  0.04050983,  0.00328731, -0.00302277,  0.00323712, -0.00291493,
+  0.02392157, -0.02288396]
+coef1 = [ 0.94450729,  0.05571966,  0.00334849 ,-0.00323746,  0.00329587, -0.00313299,
+  0.02380847, -0.02301775]
+
+# coef = [ 0.94662671,  0.04475683,  0.00351767, -0.00311004,  0.00311138, -0.00313252,
+#   0.02454381, -0.02225803]
+# coef1 = [ 0.94755751,  0.04844204,  0.00345528, -0.00317332,  0.00349949, -0.00278539,
+#   0.02284449, -0.0229589 ]
+
 print("from", fromYear, " to ", year)
 with open('ratings/ratings'+str(fromYear)+'.js', 'r') as myfile:
   data=myfile.read().replace('\n', '')
 
 ra = json.loads(data)
 for user in users:
+  # print("http://www.tennis-db.com/#/player/0/"+user)
   if (user in ra):
     users[user]['currentRating'] = ra[user]
   else:
     users[user]['currentRating'] = 0
+  users[user]['currentYear'] = fromYear
 
-for i in range(15):
+for round in range(9):
   params = {
     'weakWin' : 0.06,
     'strongWin' : 0.01,
@@ -448,4 +450,4 @@ for i in range(15):
         "Down", #params['missedDown']/float(params['missedDown'] + params['caughtDown']),
         params['missedDown'], params['caughtDown'])
 
-  saveobject(yearRating, year)
+  saveobject(yearRating, year, round)

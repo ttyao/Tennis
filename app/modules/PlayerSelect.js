@@ -51,8 +51,8 @@ var PlayerSelect = React.createClass({
       this.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
       return;
     }
-    var userRef = window.Fbase.getRef("web/data/users");
-    userRef.orderByChild("displayName_").startAt(input.toLowerCase()).limitToFirst(10).once("value", function(snapshot) {
+    var userRef = window.Fbase.getRef("web/data/usersIndex/"+input.toLowerCase().replace(" ","_").split("").join("/")+"/users");
+    userRef.limitToFirst(20).once("value", function(snapshot) {
       var object = snapshot.val();
       for (var key in object) {
         if (object[key] && typeof(window.Caching.simplePlayers[key]) != "object" && !object[key].claimerId) {

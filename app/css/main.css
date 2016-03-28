@@ -644,6 +644,9 @@ h6,
 .smallpercent {
   width: 2%;
 }
+.tenpercent {
+  width: 10%;
+}
 .notablespacing {
   border-spacing: 0;
 }

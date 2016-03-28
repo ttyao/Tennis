@@ -125,6 +125,9 @@ window.Fbase = {
         return new Firebase("https://tennismatches.firebaseio.com" + path);
       }
     }
+    if (path.indexOf("/web/data/usersIndex") == 0) {
+      return new Firebase("https://tennismatches.firebaseio.com" + path);
+    }
     return new Firebase(this.baseUrl+path);
   },
 

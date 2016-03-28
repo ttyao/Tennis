@@ -177,6 +177,60 @@ getCurrentRating(uid, date) {
     console.log("swm",this.ratingParams.strongWinMultiplier,"wwm", this.ratingParams.weakWinMultiplier, (this.falseUp + this.falseDown)/this.correctStay, this.falseUp, this.falseDown, this.correctStay,
       "Up", this.missedUp/(this.missedUp + this.caughtUp), this.missedUp, this.caughtUp, "Down", this.missedDown/(this.missedDown + this.caughtDown), this.missedDown, this.caughtDown)
   },
+  createUsersIndex(start) {
+    var requested = 0;
+    var completed = 0;
+    var batch = 100;
+    var self = this;
+    console.log("userIndex starting:", start);
+    for (let i = 0; i < batch && start+i < Rating.userKeys.length; i++) {
+      var user = Rating.users[this.userKeys[i + start]];
+      if (user && user.displayName_ && !user.claimerId) {
+        user.displayName_ = user.displayName_.replace(".","")
+        var simple = {}
+        simple.displayName = user.displayName;
+        simple.ntrp = user.ntrp || 0;
+        simple.ntrpType = user.ntrpType || "";
+        var ref = window.Fbase.getRef("web/data/usersIndex");
+        var names = user.displayName_.split(' ');
+        if (names[0] == 'henry') {
+          console.log(simple)
+        }
+        var fullname = user.displayName_.replace(" ","_");
+        for (let j = 0; j < fullname.length && j < 25; j++) {
+          ref = ref.child(fullname[j]);
+          if (j > 1) {
+            requested++;
+            ref.child("users/"+Rating.userKeys[i + start]).set(simple, function(err) {
+              if (!err) {
+                completed++;
+                if (completed == requested) {
+                  self.createUsersIndex(start + batch);
+                }
+              }
+            })
+          }
+        }
+        var ref = window.Fbase.getRef("web/data/usersIndex");
+        // console.log(user, names[0], names[names.length-1])
+        for (let j = 0; j < names[names.length - 1].length; j++) {
+          ref = ref.child(names[names.length - 1][j]);
+          if (j > 1) {
+            requested++;
+            ref.child("users/"+Rating.userKeys[i + start]).set(simple, function(err) {
+              if (!err) {
+                completed++;
+                if (completed == requested) {
+                  self.createUsersIndex(start + batch);
+                }
+              }
+            })
+          }
+        }
+      }
+    }
+  },
+
   calculate(start, end = 1) {
     if (!start) {
       start = this.lines.length - 2;
@@ -283,23 +337,25 @@ var RatingCalculator = React.createClass({
           Rating.users = eval("(" + json + ')');
           Rating.users = Rating.users.web.data.users;
           console.log("bingo")
-          Rating.cities = {};
-          for (let i in Rating.users) {
-            if (Rating.users[i].residence) {
-              let r = Rating.users[i].residence.toLowerCase()
-              if (!Rating.cities[r]) {
-                Rating.cities[r] = 1
-              } else {
-                Rating.cities[r]++;
-              }
-            }
-          }
-          for (let c in Rating.cities) {
-            try {
-              Fbase.set("web/data/cities/"+c, Rating.cities[c]);
-            } catch (error) {
-            }
-          }
+          Rating.userKeys = Object.keys(Rating.users);
+          Rating.createUsersIndex(1)
+          // Rating.cities = {};
+          // for (let i in Rating.users) {
+          //   if (Rating.users[i].residence) {
+          //     let r = Rating.users[i].residence.toLowerCase()
+          //     if (!Rating.cities[r]) {
+          //       Rating.cities[r] = 1
+          //     } else {
+          //       Rating.cities[r]++;
+          //     }
+          //   }
+          // }
+          // for (let c in Rating.cities) {
+          //   try {
+          //     Fbase.set("web/data/cities/"+c, Rating.cities[c]);
+          //   } catch (error) {
+          //   }
+          // }
           break;
       }
     };

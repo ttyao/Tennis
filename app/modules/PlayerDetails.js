@@ -225,9 +225,9 @@ var PlayerDetails = React.createClass({
     }
     return ntrp;
   },
-  getNTRPData() {
+  getLineChart() {
     if (!this.state.player) {
-      return;
+      return null;
     }
     var labels = {};
     var startingYear = 3000;
@@ -239,7 +239,7 @@ var PlayerDetails = React.createClass({
         }
         labels[date.getFullYear()] = this.state.player.teams[i];
         labels[date.getFullYear()].teams = 0;
-      } else if (this.state.player.teams[i].date > labels[date.getFullYear()].date) {
+      } else if (this.state.player.teams[i].date < labels[date.getFullYear()].date) {
         labels[date.getFullYear()].date = this.state.player.teams[i].date;
         labels[date.getFullYear()].ntrp = this.state.player.teams[i].ntrp;
       }
@@ -255,7 +255,7 @@ var PlayerDetails = React.createClass({
             }
             labels[date.getFullYear()] = this.state["merge"+m].teams[i];
             labels[date.getFullYear()].teams = 0;
-          } else if (this.state["merge"+m].teams[i].date > labels[date.getFullYear()].date) {
+          } else if (this.state["merge"+m].teams[i].date < labels[date.getFullYear()].date) {
             labels[date.getFullYear()].date = this.state["merge"+m].teams[i].date;
             labels[date.getFullYear()].ntrp = this.state["merge"+m].teams[i].ntrp;
           }
@@ -320,7 +320,11 @@ var PlayerDetails = React.createClass({
     var tdb = [];
     while (startingYear <= new Date().getFullYear()) {
       if (labels[startingYear]) {
-        ntrps.push(parseFloat(labels[startingYear].ntrp) || null);
+        let n = parseFloat(labels[startingYear].ntrp) || null;
+        if (n && labels[startingYear+1] && labels[startingYear+1].ntrp) {
+          n = parseFloat(labels[startingYear+1].ntrp)
+        }
+        ntrps.push(n);
         tls.push(parseFloat(labels[startingYear].tls) || null);
         let r = parseFloat(labels[startingYear].tdb).toFixed(2);
         if (r > 0) {
@@ -339,13 +343,13 @@ var PlayerDetails = React.createClass({
     }
     let teamColor = "131,237,195";
     let ntrpColor = "151,187,205";
-    let tdbColor = "20,20,60";
-    let tlsColor = "220,120,160";
-    console.log(tdb)
-    if (Fbase.authUid != Fbase.Henry) {
-      tdb = []
-    }
-    return {
+    let tdbColor = "220,120,160";
+    let tlsColor = "120,120,120";
+    // console.log(tdb)
+    // if (Fbase.authUid != Fbase.Henry) {
+    //   tdb = []
+    // }
+    let data = {
       labels: l,
       datasets: [
         {
@@ -390,6 +394,25 @@ var PlayerDetails = React.createClass({
         },
       ]
     };
+    let tlsLegend = <span style={{color:"rgba(120,120,120,1)"}}> &#x25cf; TLS </span>;
+
+    return (
+      <div>
+        <LineChart
+          redraw={true}
+          data={data}
+          options={{scaleShowVerticalLines: false}}
+          width="280"
+          height={160}
+        />
+        <div>
+          <span style={{color:"rgba(151,187,205,1)"}}> &#x25cf; NTRP </span>
+          {tls && tlsLegend}
+          <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TDB Rating </span>
+          <span style={{color:"rgba(131,237,195,1)"}}> &#x25cf; Team played </span>
+        </div>
+      </div>
+    );
   },
   getPlayerDetails() {
     if (this.state.player) {
@@ -397,9 +420,9 @@ var PlayerDetails = React.createClass({
         <div className="matchBriefBody">
           <table className="wholerow"><tbody>
             <tr>
-              <td className="rightalign"><b>NTRP:</b></td>
+              <td className="rightalign"><b>USTA:</b></td>
               {this.state.player.ntrp ?
-                <td className="leftalign">{this.getNTRP(this.state.player.ntrp)}{this.state.player.ntrpType}</td> :
+                <td className="leftalign"><a href={"https://www.ustanorcal.com/playermatches.asp?id="+this.state.player.norcal} target="_blank">{this.getNTRP(this.state.player.ntrp)}{this.state.player.ntrpType}</a></td> :
                 null
               }
               <td className="rightalign"><b>City:</b></td>
@@ -409,18 +432,12 @@ var PlayerDetails = React.createClass({
             </tr>
             <tr>
               <td className="rightalign topalign smallpercent"><b>Teams / Ladders:</b></td>
-              <td className="leftalign" colSpan="3">{this.getCurrentTeams()}</td>
+              <td className="leftalign tenpercent" colSpan="3">{this.getCurrentTeams()}</td>
             </tr>
             <tr>
-            <td colSpan="4">
-            <LineChart redraw={true} data={this.getNTRPData()} options={{scaleShowVerticalLines: false}} width="280" height="150"/>
-            <div>
-              <span style={{color:"rgba(151,187,205,1)"}}> &#x25cf; NTRP </span>
-              <span style={{color:"rgba(220,120,16,1)"}}> &#x25cf; TLS </span>
-              <span style={{color:"rgba(220,120,160,1)"}}> &#x25cf; TDB Rating </span>
-              <span style={{color:"rgba(131,237,195,1)"}}> &#x25cf; Team played </span>
-            </div>
-            </td>
+              <td colSpan="4">
+                {this.getLineChart()}
+              </td>
             </tr>
           </tbody></table>
           {window.Fbase.authUid == window.Fbase.Henry && !this.state.player.norcal &&
