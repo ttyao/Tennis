@@ -208,8 +208,28 @@ var PlayerDetails = React.createClass({
     }
     return ntrp;
   },
+  getUSTAMergeSection() {
+    if (!this.state.player) {
+      return null;
+    }
+    if (this.state.player.norcal || this.state.player.merges) {
+      return null;
+    }
+    return (
+      <div>
+        <div>
+          Enter USTA number to load your data:
+        </div>
+        <input ref="norcalIdInput" onKeyPress={this.onNorcalIdEntered}/>
+        <button style={{margin: "0 5px"}} onClick={this.onNorcalIdEntered}>Load</button>
+      </div>
+    );
+  },
   getLineChart() {
     if (!this.state.player) {
+      return null;
+    }
+    if (!this.state.player.norcal && !this.state.player.merges) {
       return null;
     }
     var labels = {};
@@ -328,10 +348,11 @@ var PlayerDetails = React.createClass({
     let ntrpColor = "151,187,205";
     let tdbColor = "220,120,160";
     let tlsColor = "120,120,120";
-    // console.log(tdb)
-    // if (Fbase.authUid != Fbase.Henry) {
-    //   tdb = []
-    // }
+
+    if (Fbase.authUid != Fbase.Henry) {
+      tls = null;
+    }
+
     let data = {
       labels: l,
       datasets: [
@@ -423,9 +444,7 @@ var PlayerDetails = React.createClass({
               </td>
             </tr>
           </tbody></table>
-          {window.Fbase.authUid == window.Fbase.Henry && !this.state.player.norcal &&
-            <input ref="norcalIdInput" onKeyPress={this.onNorcalIdEntered}/>
-          }
+          {this.getUSTAMergeSection()}
         </div>
       );
     }

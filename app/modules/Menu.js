@@ -8,6 +8,7 @@ import NorcalSync from "./NorcalSync";
 import Profile from "./Profile";
 import RatingCalculator from "./RatingCalculator"
 import Login from "./Login"
+import Help from "./Help"
 
 var Dropzone = require('react-dropzone');
 
@@ -50,7 +51,7 @@ export default class Menu extends React.Component {
   getTabIndex(value) {
     const tab_maps = {
       "ladder" : 1,
-      "recent" : 3,
+      "help" : 3,
       "player" : 2,
       "profile" : 4
     }
@@ -85,6 +86,9 @@ export default class Menu extends React.Component {
           </Tabs.Panel>
           <Tabs.Panel title="Player">
             <PlayerDetails playerId={this.props.params.playerId} {...this.props} />
+          </Tabs.Panel>
+          <Tabs.Panel title="Help">
+            <Help {...this.props} />
           </Tabs.Panel>
           {(window.Fbase.authUid == window.Fbase.Henry) &&
             <Tabs.Panel title="Ad">
