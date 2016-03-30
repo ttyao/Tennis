@@ -12,7 +12,6 @@ var PlayerDetails = React.createClass({
     if (this.props.playerId && parseInt(this.props.playerId) != -1) {
       playerId = window.Caching.getPlayerId(this.props.playerId);
     }
-    console.log(playerId)
     return {playerId: playerId, win1: 0, win2: 0};
   },
   mixins: [ReactFireMixin],
@@ -61,9 +60,13 @@ var PlayerDetails = React.createClass({
   },
   componentWillUpdate(nextProps, nextState) {
     if (this.state.playerId == nextState.playerId && this.props.playerId != nextProps.playerId) {
-      this.setState({playerId: nextProps.playerId});
+      var nextPlayerId = nextProps.playerId;
+      if (!nextPlayerId) {
+        nextPlayerId = window.Fbase.authUid || window.Fbase.Henry;
+      }
+      this.setState({playerId: nextPlayerId});
       this.unbindPlayer();
-      this.bindPlayer(nextProps.playerId);
+      this.bindPlayer(nextPlayerId);
     }
   },
   shouldComponentUpdate(nextProps, nextState) {
@@ -72,27 +75,7 @@ var PlayerDetails = React.createClass({
     return true;
   },
   onMatchBriefLoad(matchId, match) {
-    // var players = match.players;
-    // var qualified = false;
 
-    // if (!this.state.player1 || !this.state.player0) {
-    //   return;
-    // }
-
-    // if (!players) {
-    //   console.log("players not found "+matchId);
-    // } else if (this.state.player0 == players[0] || this.state.player0 == players[2]) {
-    //   qualified = (this.state.player1 == players[1] || this.state.player1 == players[3]);
-    // } else if (this.state.player0 == players[1] || this.state.player0 == players[3]) {
-    //   qualified = (this.state.player1 == players[0] || this.state.player1 == players[2]);
-    // }
-
-    // if (this.state["qualified"+matchId] != qualified) {
-    //   var newState = {};
-    //   newState["qualified"+matchId] = qualified;
-    //   // this.setState(newState);
-    //   this.calculateWinLoss();
-    // }
   },
   calculateWinLoss() {
     var matchWin = 0;
@@ -521,13 +504,15 @@ var PlayerDetails = React.createClass({
     return result;
   },
   render() {
+    console.log(this.props)
     if (this.state.player) {
+      console.log(this.state.player, this.state.playerId)
       return (
         <div>
           <table className="wholerow">
             <tbody><tr>
               <td>
-                <PlayerSelect player={this.state.player} playerId={this.state.playerId} onChange={this.onPlayerChange} />
+                <PlayerSelect player={this.state.player} playerId={this.state.player['.key']} onChange={this.onPlayerChange} />
               </td>
             </tr>
             <tr>

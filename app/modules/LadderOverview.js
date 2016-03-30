@@ -44,7 +44,7 @@ var LadderOverview = React.createClass({
     }
     this.loadLadder(ladderId, this.props.teamId);
   },
-  componentDidUpdate(nextProps, nextState) {
+  componentWillUpdate(nextProps, nextState) {
     if (nextProps.teamId != this.props.teamId &&
         JSON.stringify(nextState) == JSON.stringify(this.state)) {
       this.loadLadder(nextProps.ladderId, nextProps.teamId);
@@ -341,7 +341,6 @@ var LadderOverview = React.createClass({
     return null;
   },
   render () {
-    // console.log(this.state.teamId, this.state.team)
     if (!this.state.ladder) {
       return (<div style={{height:"80vh",background:"url(/images/roundPreloader.gif) no-repeat center center"}}/>);
     }

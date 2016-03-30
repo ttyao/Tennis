@@ -12,42 +12,34 @@ var PlayerSelect = React.createClass({
     player: React.PropTypes.object,
   },
   getInitialState () {
-    return { player: this.props.player, playerId: this.props.playerId};
+    return {}; //player: this.props.player, playerId: this.props.playerId};
   },
   handleSelectChange (value, values) {
-    this.setState({ player: value });
+    // this.setState({ player: value });
     this.props.onChange(value);
   },
   componentDidMount() {
-    window.Caching.getDisplayName(this.state.playerId);
   },
 
   mixins: [TimerMixin, ReactFireMixin],
-  shouldComponentUpdate(nextProps, nextState) {
 
-    var result = JSON.stringify(nextState) != JSON.stringify(this.state) ||
-                 JSON.stringify(nextProps) != JSON.stringify(this.props)
-    if (result) {
-      console.log("updating player select: " + this.props.playerId, window.now().slice(10))
-    }
-    return result;
-  },
   loadOptions(input, callback) {
     var ops = [];
-    if (!input) {
+    if (!input || input == this.props.playerId) {
       ops.push({label:"Type in name to search for player ...", value:-1})
     }
-    ops.push({value: this.state.playerId, label: this.state.player.displayName});
+    ops.push({value: this.props.playerId, label: this.props.player.displayName});
     for (let i in window.Caching.simplePlayers) {
-      if (typeof(window.Caching.simplePlayers[i]) == "object" && !window.Caching.simplePlayers[i].claimerId && i != this.state.playerId) {
+      if (typeof(window.Caching.simplePlayers[i]) == "object" && !window.Caching.simplePlayers[i].claimerId && i != this.props.playerId) {
         ops.push({
           value: i,
           label: window.Caching.getDisplayName(i)
         });
       }
     }
-    if (!input) {
-      console.log("loading player select options: " + this.props.playerId, window.now().slice(10))
+    // I don't quite understand why selecting the logged in user, the input will be non-empty...
+    if (!input || input == this.props.playerId) {
+      var self = this;
       this.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
       return;
     }
@@ -68,8 +60,7 @@ var PlayerSelect = React.createClass({
   },
 
   render () {
-    console.log("rendering player select: " + this.props.playerId, window.now().slice(10))
-
+    // console.log("rendering player select: " + this.props.playerId, window.now().slice(10))
     return (
       <table className="wholerow">
         <tbody><tr>

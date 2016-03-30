@@ -80,14 +80,13 @@ var TeamStats = React.createClass({
         let player = window.Caching.getSimplePlayer(i);
         if (typeof(player) == 'object') {
           stats[i].rating = player.tdb ? player.tdb.toFixed(2) : player.ntrp || "";
-        } else if (this.props.team.stats && this.props.team.stats[i].rating) {
+        } else if (this.props.team.stats && this.props.team.stats[i] && this.props.team.stats[i].rating) {
           stats[i].rating = this.props.team.stats[i].rating;
         } else {
           stats[i].rating = "";
         }
         //
       }
-      console.log(stats)
       // }
       stats.found = found;
       if (!this.props.team.stats || this.props.team.stats.found <= found) {
