@@ -38,9 +38,9 @@ var PlayerName = React.createClass({
       var ntrp = this.state.player.ntrp;
       if (this.state.player.tdb) {
         if (this.props.format == "none") {
-          return (<span>{this.state.player.tdb.toFixed(2)}</span>);
+          return (<span>{this.state.player.tdb}</span>);
         }
-        return (<span>({this.state.player.tdb.toFixed(2)})</span>);
+        return (<span>({this.state.player.tdb})</span>);
       }
       if (ntrp) {
         if (ntrp.toString().length == 1) {
@@ -65,7 +65,7 @@ var PlayerName = React.createClass({
       if (names.length <= 1) {
         return this.state.player.displayName;
       } else {
-        return names[0][0]+" "+names[names.length - 1];
+        return names[0]+" "+names[names.length - 1];
       }
     } else if (this.props.format == "none") {
       return null;

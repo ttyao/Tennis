@@ -102,6 +102,9 @@ window.Caching = {
             self.players[i] = data;
             if (i == Fbase.authUid) {
               Fbase.getRef("web/data/users/"+i).update({visits: data.visits ? data.visits + 1 : 1, loggedInAt: window.now()});
+              for (let m in data.merges) {
+                Fbase.authUids.push(m);
+              }
             }
             // if (typeof(self.simplePlayers[i]) != "object") {
             //   self.simplePlayers[i] = {
@@ -219,7 +222,7 @@ window.Caching = {
                       ntrp: merger.ntrp || "",
                       ntrpType: merger.ntrpType || "",
                       claimerId: user.claimerId || "",
-                      tdb: merger.ratings ? merger.ratings['2015'] : "",
+                      tdb: merger.ratings ? merger.ratings['2015'].toFixed(2) : "",
                     };
 
                     window.Fbase.getRef("web/data/simpleusers/"+uid).update(window.Caching.simplePlayers[uid]);
@@ -242,7 +245,7 @@ window.Caching = {
                 ntrpType: user.ntrpType || "",
                 claimerId: user.claimerId || "",
                 // hard code to 2015 rating
-                tdb: user.ratings ? user.ratings['2015'] : "",
+                tdb: user.ratings ? user.ratings['2015'].toFixed(2) : "",
               }
               window.Caching.simplePlayers[uid] = s;
               window.Fbase.getRef("web/data/simpleusers/"+uid).update(s);
@@ -287,6 +290,17 @@ window.Caching = {
   },
   setSimplePlayer: function(uid, player) {
     this.simplePlayers[uid] = player;
+  },
+  getNameAndRating: function(uid) {
+    // assume it is loaded.
+    if (typeof(this.simplePlayers[uid]) != 'object') {
+      return "loading...";
+    }
+    let rating = this.simplePlayers[uid].tdb;
+    if (!rating) {
+      rating = this.simplePlayers[uid].ntrp + this.simplePlayers[uid].ntrpType;
+    }
+    return this.simplePlayers[uid].displayName + " (" + rating + ")";
   },
   getDisplayName: function(uid, callback) {
     if (!uid || uid == "n:0" || uid == "n:") {

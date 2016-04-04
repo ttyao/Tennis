@@ -15,7 +15,7 @@ var Dropzone = require('react-dropzone');
 export default class Menu extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {authData: null};
+    this.state = {visits: 0};
     this.onTestButtonClick = this.onTestButtonClick.bind(this);
     this.onBeforeChange = this.onBeforeChange.bind(this);
   }
@@ -64,6 +64,15 @@ export default class Menu extends React.Component {
     }
     return 2;
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    var ret = JSON.stringify(nextProps) != JSON.stringify(this.props)
+    if (ret) {
+      if (this.state.visits < 10) {
+        this.setState({visits: this.state.visits + 1})
+      }
+    }
+    return ret;
+  }
   render() {
     window.GoogleAnalytics();
     var path = this.getTabIndex(this.props.params.tab);
@@ -77,7 +86,7 @@ export default class Menu extends React.Component {
     return (
       <div className="container">
         <div className="page-header">
-          <Login {...this.props} />
+          <Login {...this.props} visits={this.state.visits} />
           <h2 className="titleText">Tennis Database</h2>
         </div>
         <Tabs tabActive={this.getTabIndex(this.props.params.tab)} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>

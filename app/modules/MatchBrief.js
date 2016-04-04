@@ -118,10 +118,16 @@ var MatchBrief = React.createClass({
         // console.log("got tmid for match: " + self.props.matchId, window.now().slice(10))
         var data = snapshot.val();
         if (self.isMounted()) {
-          self.setState({
-            loading: false,
-            match: data
-          });
+          if (data) {
+            self.setState({
+              loading: false,
+              match: data
+            });
+          } else {
+            self.setState({
+              loading: false
+            });
+          }
         }
         if (data && data.tmId) {
           var r = window.Fbase.getRef("web/data/teammatches/"+data.tmId+"/teams");
@@ -166,12 +172,19 @@ var MatchBrief = React.createClass({
     if (typeof(window.Caching.matches[this.props.matchId]) == "object") {
       var match = window.Caching.matches[this.props.matchId];
       if (this.isMounted()) {
-        this.setState({
-          loading: false,
-          match: match
-        })
+        if (!match) {
+          this.setState({
+            loading: false
+          });
+          return;
+        } else {
+          this.setState({
+            loading: false,
+            match: match
+          })
+        }
       }
-      if (match.tmId) {
+      if (match && match.tmId) {
         var r = window.Fbase.getRef("web/data/teammatches/"+match.tmId+"/teams");
         r.once("value", function(snapshot) {
           // console.log("got team names for match: " + self.props.matchId, window.now().slice(10))
@@ -195,7 +208,7 @@ var MatchBrief = React.createClass({
           }
         })
       }
-      if (match.ladderId) {
+      if (match && match.ladderId) {
         let l = window.Fbase.getRef("web/data/ladders/"+match.ladderId);
           l.once("value", function(ladder) {
             self.setState({ladder: ladder.val(), ladderId:match.ladderId});

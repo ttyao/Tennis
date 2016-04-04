@@ -523,9 +523,7 @@ var PlayerDetails = React.createClass({
     return result;
   },
   render() {
-    console.log(this.props)
     if (this.state.player) {
-      console.log(this.state.player, this.state.playerId)
       return (
         <div>
           <table className="wholerow">

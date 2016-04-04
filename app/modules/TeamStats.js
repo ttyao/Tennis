@@ -79,7 +79,7 @@ var TeamStats = React.createClass({
       for (let i in stats) {
         let player = window.Caching.getSimplePlayer(i);
         if (typeof(player) == 'object') {
-          stats[i].rating = player.tdb ? player.tdb.toFixed(2) : player.ntrp || "";
+          stats[i].rating = player.tdb ? player.tdb : player.ntrp || "";
         } else if (this.props.team.stats && this.props.team.stats[i] && this.props.team.stats[i].rating) {
           stats[i].rating = this.props.team.stats[i].rating;
         } else {

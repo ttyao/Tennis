@@ -47,7 +47,12 @@ var LadderOverview = React.createClass({
   componentWillUpdate(nextProps, nextState) {
     if (nextProps.teamId != this.props.teamId &&
         JSON.stringify(nextState) == JSON.stringify(this.state)) {
-      this.loadLadder(nextProps.ladderId, nextProps.teamId);
+      let ladderId = nextProps.ladderId;
+      if (!ladderId) {
+        this.loadLadder(this.props.ladderId, this.props.teamId);
+      } else {
+        this.loadLadder(ladderId, nextProps.teamId);
+      }
     }
   },
   loadTeam(ladderId, ladder, playerId) {
@@ -130,7 +135,6 @@ var LadderOverview = React.createClass({
       });
     }
 
-
     if (teamId && teamId != this.state.teamId) {
       // console.log(teamId, this.state.teamId,isDefaultTeam)
       // // default team means the user isn't found in current ladder, so showing first team of the ladder.
@@ -150,7 +154,7 @@ var LadderOverview = React.createClass({
           }
         }
       });
-    } else {
+    } else if (!teamId) {
       if (self.isMounted()) {
         self.setState({team: null, teamId: null, area: null})
       }
@@ -208,38 +212,13 @@ var LadderOverview = React.createClass({
           result.push(
             <TeamMatches key={teamMatchId} teamMatchId={teamMatchId} type={this.state.ladder.type} ladder={this.state.ladder}  onAfterLoad={this.onMatchBriefLoad} />);
         }
+        return (<div>{result}</div>);
       }
       return (<div>{result.reverse()}</div>);
     }
   },
   AddPlayerClick() {
     this.setState({showAddPlayerModal: true});
-  },
-  getFilter() {
-    var players = [];
-    for (let matchId in this.state.loadedMatches) {
-      for (let player in this.state.loadedMatches[matchId].players) {
-        if (players.indexOf(window.Caching.getDisplayName(this.state.loadedMatches[matchId].players[player])) < 0) {
-          players.push(window.Caching.getDisplayName(this.state.loadedMatches[matchId].players[player]));
-        }
-      }
-    }
-    // console.log(this.state.loadedMatches);
-    players.sort();
-    var options = [];
-    for (let i in players) {
-      options.push(<option key={window.Caching.getPlayerId(players[i])} value={window.Caching.getPlayerId(players[i])} label={players[i]} />);
-    }
-
-    return (
-      <select>
-        <option label="Show All" value="all"/>
-        <option label="Show Completed" value="completed"/>
-        <option label="Show Uncompleted" value="uncompleted" />
-        <option label="----------------" value="none" />
-        {options}
-      </select>
-    );
   },
   loadOptions(input, callback) {
     var userRef = window.Fbase.getRef("web/data/users");
@@ -289,7 +268,7 @@ var LadderOverview = React.createClass({
     this.setState({showCreateMatchModal: true});
   },
   onMatchCreated() {
-    this.setState({showCreateMatchModal: false});
+    location.reload();
   },
   onTeamChange(event) {
     this.loadLadder(this.state.ladderId, event.target.value);
@@ -328,36 +307,26 @@ var LadderOverview = React.createClass({
     }
   },
   getMegaphone() {
-    if (this.state.ladderId.indexOf("l:") == 0) {
-      return (
-        <div>
-          <div className="megaphone">
-            Welcome to 2016 BAT spring tournaments! Please checkout the rules at <a href="https://mp.weixin.qq.com/s?__biz=MzI2NzE1NjQ1Ng==&mid=401965328&idx=1&sn=9bf99f400aaa8aff83795941d55f798c&scene=1&srcid=0228XdIqgfah57Cggw84fVLb&key=710a5d99946419d972692065f8c94e47ac942a141495f02ca051abfb6cc0e7850c2012c7145124cc3ecd0b6ab1219f59&ascene=0&uin=MTM5MjA0NzU1&devicetype=iMac+MacBookPro11%2C2+OSX+OSX+10.10.5+build(14F1021)&version=11020201&pass_ticket=XBF7q%2F%2BdaypV3wdo8xaofxu2eGotnh9vZVwVtfB8Mso%3D">here</a>.
-            The draw will be out soon, check back regularly to see who your next opponent will be. Good luck and have fun!
-          </div>
-        </div>
-      );
-    }
     return null;
   },
   render () {
     if (!this.state.ladder) {
       return (<div style={{height:"80vh",background:"url(/images/roundPreloader.gif) no-repeat center center"}}/>);
     }
+    let max = 500;
     var modalStyle = {
       content: {
         padding: "20px 0",
         top: "10px",
         bottom: "10px",
-        left: "10px",
-        right: "10px"
+        left: window.innerWidth > max ? ((innerWidth-max)/2)+"px" : "10px",
+        right: "10px",
+        maxWidth: max+"px"
       }
     }
-
     return (
       <div>
         <div>
-          {false && <span> Filter: {this.getFilter()}</span>}
           {this.state.players && Fbase.authUid && this.state.players.indexOf(Fbase.authUid) >=0 &&
             <div>
               <button onClick={this.createMatchClick} style={{margin: "0 5px"}}>Create Match</button>

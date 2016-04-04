@@ -10,7 +10,8 @@ import Progress from './Progress';
 import moment from 'moment';
 import PlayersSelect from './PlayersSelect';
 import MatchBrief from './MatchBrief';
-import { Link } from 'react-router'
+import { Link } from 'react-router';
+import TeamMatchCreator from './TeamMatchCreator';
 
 import Modal from 'react-modal';
 
@@ -238,64 +239,18 @@ var TeamMatches = React.createClass({
       });
     }
   },
-  shouldComponentUpdate: function(nextProps, nextState) {
-    return true;
-  },
   canEditMatch() {
-    return this.state.match.creator == window.Fbase.authUid;
-  },
-  handlePlayerChange(id, value, line) {
-    var matches = this.state.matches;
-    var players = value.split(",");
-    if (id == "player0") {
-      matches[line].players[0] = players[0] || null;
-      matches[line].players[2] = players[1] || null;
-    } else {
-      matches[line].players[1] = players[0] || null;
-      matches[line].players[3] = players[1] || null;
-    }
-    console.log(matches)
-    this.setState({matches:matches});
-  },
-  getPlayersSelects(count) {
-    var result = [];
-    for (let i=0; i< count; i++) {
-      result.push(
-        <PlayersSelect key={"playersSelect"+i} line={i} onChange={this.handlePlayerChange} ladder={this.props.ladder} teamIds={this.props.teamIds} />
-      )
-    }
-    return result;
-  },
-  onConfirmPlayers() {
-    var matches = this.state.matches;
-    if (this.props.type == "usta combo") {
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 4; j++) {
-          if (!matches[i].players[j]) {
-            alert("Missing player");
-            return;
-          }
-        }
-      }
-    }
-    var matches = {}
-    for (let i = 0; i < 5; i++) {
-      if (matches[i].players[0]) {
-        let match = {
-          message: "",
-          scores: [{scores:[0,0]},{scores:[0,0]},{scores:[0,0]}],
-          creator: window.Fbase.authUid,
-          ladder: this.props.ladder,
-          tmId: this.props.teamMatchId,
-          status: "active",
-          players: matches[i].players,
-          matchMoment: moment(),
-        };
-        var matchId = window.Fbase.createMatch(match);
-        matches[matchId] = match;
-      }
-    }
-    window.Fbase.updateTeamMatchStatus(this.props.teamMatchId, "active");
+    // for (let i in this.state.team0.players) {
+    //   if (Fbase.authUids.indexOf(i) >= 0) {
+    //     return true;
+    //   }
+    // }
+    // for (let i in this.state.team1.players) {
+    //   if (Fbase.authUids.indexOf(i) >= 0) {
+    //     return true;
+    //   }
+    // }
+    return Fbase.authUid == Fbase.Henry;
   },
   onAfterLoad(matchId, match) {
     var setWin = 0;
@@ -317,14 +272,17 @@ var TeamMatches = React.createClass({
       this.props.onAfterLoad(matchId, match)
     }
   },
+  onEnterLineup() {
+    this.setState({
+      show: true,
+    });
+  },
   getMatches() {
-    // console.log(this.state.teamMatch.matches)
     if (this.state.teamMatch.status == "pending") {
-      if (this.props.type == "usta combo") {
+      if (this.props.type == 'Adult' && this.canEditMatch()) {
         return (
-          <div>
-            {this.getPlayersSelects(3)}
-            <button className="centerContainer" onClick={this.onConfirmPlayers}>Confirm</button>
+          <div className="centerContainer">
+            <button onClick={this.onEnterLineup}>Enter lineup</button>
           </div>
         );
       }
@@ -367,11 +325,17 @@ var TeamMatches = React.createClass({
             <div>Video Title:</div>
             <input ref="newVideoTitle" />
             <button className='floatright' onClick={this.onNewCommentsBoxSendClick}>Save</button>
-            <button className='floatright' onClick={this.onNewCommentsBoxCloseClick}>Cancel</button>
+            <button className='floatright' onClick={this.handleModalCloseRequest}>Cancel</button>
           </Modal>
         </div>
       </div>
     );
+  },
+  handleModalCloseRequest() {
+    this.setState({
+      showNewCommentsBox: false,
+      show: false
+    })
   },
   getTeamScores() {
     var a=0, b=0;
@@ -383,10 +347,42 @@ var TeamMatches = React.createClass({
         b++;
       }
     }
-    return <div>{a} : {b} </div>;
+    return <div> {a} : {b} </div>;
+  },
+  onLineupConfirm(matches) {
+    for (let i = 0; i < 5; i++) {
+      if (matches[i][0]) {
+        let match = {
+          message: "",
+          scores: [{scores:[0,0]}, {scores:[0,0]}, {scores:[0,0]}],
+          creator: window.Fbase.authUid,
+          ladder: this.props.ladder,
+          tmId: this.props.teamMatchId,
+          status: "active",
+          players: matches[i],
+          matchMoment: moment(),
+        };
+        var matchId = window.Fbase.createMatch(match);
+        matches[matchId] = match;
+      }
+    }
+    window.Fbase.updateTeamMatchStatus(this.props.teamMatchId, "active");
+    location.reload();
   },
   render() {
     if (this.state.teamMatch && this.state.team0 && this.state.team1 && this.state.teamMatch.status != "merged") {
+
+      let max = 500;
+      var modalStyle = {
+        content: {
+          padding: "20px 0",
+          top: "10px",
+          bottom: "10px",
+          left: window.innerWidth > max ? ((innerWidth-max)/2)+"px" : "10px",
+          right: "10px",
+          maxWidth: max+"px"
+        }
+      }
       return (
         <div className="matchBriefBody">
           <div>
@@ -409,6 +405,15 @@ var TeamMatches = React.createClass({
           </div>
           {this.getMatches()}
           {this.getComments()}
+          <Modal
+            className="Modal__Bootstrap modal-dialog"
+            closeTimeoutMS={150}
+            style={modalStyle}
+            isOpen={this.state.show}
+            onRequestClose={this.handleModalCloseRequest}
+          >
+            <TeamMatchCreator teams={[this.state.team0, this.state.team1]} onCancel={this.handleModalCloseRequest} onConfirm={this.onLineupConfirm}/>
+          </Modal>
         </div>
       );
     }

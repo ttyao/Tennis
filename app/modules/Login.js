@@ -131,14 +131,21 @@ var Login = React.createClass({
       return(<a className="loginText" onClick={this.onLoginClick}>Login</a>);
     }
   },
+  componentWillUpdate() {
+    if (this.props.visits && this.props.visits % 5 == 0) {
+      this.setState({isOpen: true})
+    }
+  },
   render: function() {
-    var modelStyle = {
+    let max = 500;
+    var modalStyle = {
       content: {
         padding: "20px 0",
         top: "20px",
         bottom: "20px",
-        left: "20px",
-        right: "20px"
+        left: window.innerWidth > max ? ((innerWidth-max)/2)+"px" : "20px",
+        right: "20px",
+        maxWidth: max+"px"
       }
     }
     return (
@@ -148,7 +155,7 @@ var Login = React.createClass({
           className="Modal__Bootstrap modal-dialog"
           closeTimeoutMS={150}
           isOpen={this.state.isOpen}
-          style={modelStyle}
+          style={modalStyle}
           onRequestClose={this.handleModalCloseRequest}
         >
           <div className="modal-content">
@@ -157,25 +164,6 @@ var Login = React.createClass({
             </div>
             <div className="modal-body centerContainer">
             <Tabs tabActive={1} onBeforeChange={this.onBeforeChange} onAfterChange={this.onAfterChange} onMount={this.onMount}>
-              <Tabs.Panel title='Login'>
-                <table className="wholerow">
-                  <tbody><tr>
-                    <td className="rightalign"> Email: </td>
-                    <td>
-                      <input key="email" onChange={this.onEmailChange} />
-                    </td>
-                    </tr><tr>
-                    <td className="rightalign"> Password: </td>
-                    <td>
-                      <input key="password" type="password" onChange={this.onPasswordChange} />
-                    </td>
-                  </tr></tbody>
-                </table>
-                <div className="modal-footer centerContainer">
-                  <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
-                  <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visit as guest</button>
-                </div>
-              </Tabs.Panel>
               <Tabs.Panel title="Sign up">
                 <table className="wholerow">
                   <tbody><tr>
@@ -199,6 +187,26 @@ var Login = React.createClass({
                   <button type="button" className="btn btn-primary loginButton" onClick={this.handleRegisterClicked}>Register</button>
                 </div>
               </Tabs.Panel>
+              <Tabs.Panel title='Login'>
+                <table className="wholerow">
+                  <tbody><tr>
+                    <td className="rightalign"> Email: </td>
+                    <td>
+                      <input key="email" onChange={this.onEmailChange} />
+                    </td>
+                    </tr><tr>
+                    <td className="rightalign"> Password: </td>
+                    <td>
+                      <input key="password" type="password" onChange={this.onPasswordChange} />
+                    </td>
+                  </tr></tbody>
+                </table>
+                <div className="modal-footer centerContainer">
+                  <button type="button" className="btn btn-primary loginButton" onClick={this.handleLoginClicked}>Login</button>
+                  <button type="button" className="btn btn-primary nologinButton" onClick={this.handleModalCloseRequest}>Visit as guest</button>
+                </div>
+              </Tabs.Panel>
+
             </Tabs>
             </div>
 

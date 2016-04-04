@@ -9,6 +9,7 @@ window.Fbase = {
   init: function(callback) {
     this.startTime = new Date();
     this.authUid = this.getAuthUid();
+    this.authUids = [this.authUid];
     window.Caching.players[this.authUid || this.Henry] = "pending";
     window.Caching.loadPlayers();
     Caching.initLadders(Fbase.authUid);
@@ -202,10 +203,13 @@ window.Fbase = {
       });
     }
   },
-  createMatch: function(match) {
+  createMatch: function(match, line) {
     var m = {};
     var createdTime = window.now();
     var matchId = "match:"+createdTime+":"+this.authUid;
+    if (line && match.tmId) {
+      matchId = match.tmId.replace("ntm:", "nm:") + ":" + line;
+    }
     m["time"] = window.now(match.matchMoment.unix()*1000);
 
     // There is no transaction support...
@@ -295,17 +299,21 @@ window.Fbase = {
         type: type,
       };
       if (type == "visit") {
-        if (this.authUid == this.Henry) {
-          return;
-        }
+        // if (this.authUid == this.Henry) {
+        //   return;
+        // }
         var ref = new Firebase('https://tennisladders.firebaseio.com/web/data/logs/daily/'+now(new Date(), true)+"/"+id);
         var obj = {}
         var time = now().slice(11)
+        var name = true
         if (message == 'init') {
           obj[time+'-'+message] = {creator:this.authUid || "visitor"}
           obj[time+'-'+message].userAgent = navigator.userAgent;
         } else {
-          obj[time+"-"+message] = true;
+          if (typeof(message) == 'string' && message.slice(0,4) == '2-0-' && Caching.getDisplayName(message.slice(4)) != 'pending') {
+            name = Caching.getDisplayName(message.slice(4));
+          }
+          obj[time+"-"+message] = name;
         }
         ref.update(obj);
         return;
