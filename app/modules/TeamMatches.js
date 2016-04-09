@@ -240,16 +240,16 @@ var TeamMatches = React.createClass({
     }
   },
   canEditMatch() {
-    // for (let i in this.state.team0.players) {
-    //   if (Fbase.authUids.indexOf(i) >= 0) {
-    //     return true;
-    //   }
-    // }
-    // for (let i in this.state.team1.players) {
-    //   if (Fbase.authUids.indexOf(i) >= 0) {
-    //     return true;
-    //   }
-    // }
+    for (let i in this.state.team0.players) {
+      if (Fbase.authUids.indexOf(i) >= 0) {
+        return true;
+      }
+    }
+    for (let i in this.state.team1.players) {
+      if (Fbase.authUids.indexOf(i) >= 0) {
+        return true;
+      }
+    }
     return Fbase.authUid == Fbase.Henry;
   },
   onAfterLoad(matchId, match) {
@@ -362,7 +362,7 @@ var TeamMatches = React.createClass({
           players: matches[i],
           matchMoment: moment(),
         };
-        var matchId = window.Fbase.createMatch(match);
+        var matchId = window.Fbase.createMatch(match, i + 1);
         matches[matchId] = match;
       }
     }

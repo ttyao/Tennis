@@ -457,11 +457,11 @@ var MatchBrief = React.createClass({
   canEditMatch() {
     var match = this.state.match;
     if (match.status == "active" || match.status == "pending") {
-      if (this.state.ladder && this.state.ladder.users[Fbase.authUid]) {
+      if (this.state.ladder && this.state.ladder.users && Fbase.isAuthUser(this.state.ladder.users)) {
         return true;
-      } else if (this.state.team0 && this.state.team0.users[Fbase.authUid]) {
+      } else if (this.state.team0 && this.state.team0.players && Fbase.isAuthUser(this.state.team0.players)) {
         return true;
-      } else if (this.state.team1 && this.state.team1.users[Fbase.authUid]) {
+      } else if (this.state.team1 && this.state.team1.players && Fbase.isAuthUser(this.state.team1.players)) {
         return true;
       }
     }

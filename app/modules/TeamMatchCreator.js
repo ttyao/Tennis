@@ -24,8 +24,7 @@ var TeamMatchCreator = React.createClass({
         Caching.getSimplePlayer(i);
       }
     }
-    return {
-    };
+    return { disabled: []};
   },
   checkPlayersLoading() {
     var self = this;
@@ -82,35 +81,53 @@ var TeamMatchCreator = React.createClass({
       </td>
     ];
   },
+  disableLine(e) {
+    var disabled = [];
+    for (let l=1; l<6; l++) {
+      disabled.push(this.refs["disable"+l].checked);
+    }
+    this.setState({disabled:disabled});
+  },
   getLine(line, single) {
+    var style = {"display": this.state.disabled[line - 1] ? "none" : "block"}
     if (single) {
       return [
-        <tr key={"tr1"+line} style={{"textAlign": "left", "margin": "0 5px"}}><td>Line {line}:</td></tr>,
-        <tr key={"tr2"+line}>{this.getPlayerSelects(line, 0)}</tr>
+        <tr key={"tr1"+line} style={{"textAlign": "left", "margin": "0 5px"}} >
+          <td colSpan="3">
+            Singles Line {line}:
+            <input type="checkbox" ref={"disable"+line} name={"disable"+line} value="disable" onClick={this.disableLine}> Disable</input>
+          </td>
+        </tr>,
+        <tr key={"tr2"+line} style={style}>{this.getPlayerSelects(line, 0)}</tr>
       ];
     } else {
       return [
-        <tr key={"tr3"+line} style={{"textAlign": "left", "margin": "0 5px"}}><td>Line {line}:</td></tr>,
-        <tr key={"tr4"+line}>{this.getPlayerSelects(line, 0)}</tr>,
-        <tr key={"tr5"+line}>{this.getPlayerSelects(line, 1)}</tr>
+        <tr key={"tr3"+line} style={{"textAlign": "left", "margin": "0 5px"}} >
+          <td colSpan="3">
+            Doubles Line {line - 2}:
+            <input type="checkbox" ref={"disable"+line} name={"disable"+line} value="disable" onClick={this.disableLine}> Disable</input>
+          </td>
+        </tr>,
+        <tr key={"tr4"+line} style={style}>{this.getPlayerSelects(line, 0)}</tr>,
+        <tr key={"tr5"+line} style={style}>{this.getPlayerSelects(line, 1)}</tr>
       ];
     }
   },
   onConfirm() {
     var matches = [];
-    console.log(this.refs)
     var players;
     for (let i = 1; i < 6; i++) {
-      players = [];
-      players.push(this.refs["player0"+i+"0"] ? this.refs["player0"+i+"0"].value : 0);
-      players.push(this.refs["player1"+i+"0"] ? this.refs["player1"+i+"0"].value : 0);
-      if (i > 2) {
-        players.push(this.refs["player0"+i+"1"] ? this.refs["player0"+i+"1"].value : 0);
-        players.push(this.refs["player1"+i+"1"] ? this.refs["player1"+i+"1"].value : 0);
+      if (!this.refs["disable"+i].checked) {
+        players = [];
+        players.push(this.refs["player0"+i+"0"] ? this.refs["player0"+i+"0"].value : 0);
+        players.push(this.refs["player1"+i+"0"] ? this.refs["player1"+i+"0"].value : 0);
+        if (i > 2) {
+          players.push(this.refs["player0"+i+"1"] ? this.refs["player0"+i+"1"].value : 0);
+          players.push(this.refs["player1"+i+"1"] ? this.refs["player1"+i+"1"].value : 0);
+        }
+        matches.push(players)
       }
-      matches.push(players)
     }
-    console.log(matches)
     if (this.props.onConfirm) {
       this.props.onConfirm(matches)
     }

@@ -20,6 +20,12 @@ window.Fbase = {
       }
     })
   },
+  isAuthUser: function(array) {
+    for (let id in this.authUids) {
+      if (array[this.authUids[id]]) return true;
+    }
+    return false;
+  },
   isDebug: function() {
     return window.location.hostname == 'localhost';
   },

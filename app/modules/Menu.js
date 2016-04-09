@@ -66,10 +66,8 @@ export default class Menu extends React.Component {
   }
   shouldComponentUpdate(nextProps, nextState) {
     var ret = JSON.stringify(nextProps) != JSON.stringify(this.props)
-    if (ret) {
-      if (this.state.visits < 10) {
-        this.setState({visits: this.state.visits + 1})
-      }
+    if (ret && !Fbase.authUid) {
+      this.setState({visits: this.state.visits + 1})
     }
     return ret;
   }
