@@ -39,7 +39,7 @@ var LadderOverview = React.createClass({
       if (Caching.simplePlayers[Fbase.authUid] && Caching.simplePlayers[Fbase.authUid].ladders && Caching.simplePlayers[Fbase.authUid].ladders.length > 0) {
         ladderId = Caching.simplePlayers[Fbase.authUid].ladders[0].ladderId;
       } else {
-        ladderId = "l:1";
+        ladderId = "nl:1813";
       }
     }
     this.loadLadder(ladderId, this.props.teamId);

@@ -9,7 +9,8 @@ export default class Help extends React.Component {
   render() {
     return(
       <div style={{margin: '10px'}}>
-        Tennis Database is an online website to store tennis ladder and league player stats. It also calculates each individual player's dynamic rating after new matches are completed.
+        Tennis Database is an online website to store tennis ladder and league player stats.
+        It collects each individual player's match records and use machine learning algorithm to calculate dynamic based these records.
         <br/>
         <br/>
         Currently Tennis database imports data from USTA northern California section, so that all the past match results can be found in the system. If you are a registered USTA player in northern California, you can enter your USTA number to have your account connected with your USTA data.

@@ -170,7 +170,7 @@ var PlayerDetails = React.createClass({
         }
       }
     }
-    var max = 3;
+    var max = 5;
     var visited = {};
     var result = []
     for (let i in t) {
@@ -500,7 +500,7 @@ var PlayerDetails = React.createClass({
     var result = [];
     var visited = {};
     var keys = {}
-    var max = 10;
+    var max = 20;
     for (let i in m) {
       let candidate = -1;
       for (let j in m) {

@@ -24,10 +24,18 @@ def saveobject(object, year, i):
 def getCurrentRating(uid, year):
   thisYear = getYearEndRating(uid, year - 1)
   lastYear = getYearEndRating(uid, year - 2)
+  nextYear = getYearEndRating(uid, year)
 
+  # if (uid == "n:207062"):
+  #   print("currentrating", thisYear, lastYear, nextYear)
   users[uid]['currentYear'] = year
   if (thisYear == lastYear):
-    users[uid]['currentRating'] = thisYear - 0.25
+    if (thisYear == nextYear):
+      users[uid]['currentRating'] = thisYear - 0.25
+    elif (thisYear < nextYear):
+      users[uid]['currentRating'] = thisYear - 0.1
+    else:
+      users[uid]['currentRating'] = thisYear - 0.4
   else:
     if (lastYear < thisYear):
       users[uid]['currentRating'] = thisYear - 0.4
@@ -54,7 +62,7 @@ def adjustRating(players, matchDate, score):
   s = list(map((lambda x: int(x)), score.replace(",","-").split("-")))
   if (len(s) == 4):
     s = s+[0,0]
-  if (len(s) < 6):
+  if (len(s) < 6 or gameWin >= 12 or gameWin <= -12):
     return
 
   for p in range(len(players)):
@@ -280,22 +288,19 @@ def verifyRating(players, matchDate, year):
           params['correctStay'] += 1
 
     # if (matchDate.year > users[players[p]]['currentYear'] or not players[p] in found):
-    # if ('ratings' in users[players[p]] and len(users[players[p]]['ratings']) > 0 and players[p] == "n:165839"):
+    # if ('ratings' in users[players[p]] and len(users[players[p]]['ratings']) > 0 and players[p] == "n:207062"):
     #   print(players[p])
     #   for i in range(len(users[players[p]]['ratings'])):
     #     print users[players[p]]['ratings'][i]
     yr[users[players[p]]['currentYear']][players[p]] = {"c": users[players[p]]['currentRating'], "r": r, "l": l}
 
 def calculate(year, fromYear):
-
-  if ('ratings' in users['n:165839']):
-    print(users['n:165839']['ratings'])
   for i in users:
     if ('ratings' in users[i]):
       users[i]['currentRating'] = users[i]['ratings'][0]['r']
       users[i]['ratings'] = []
     elif ('currentRating' not in users[i] or users[i]['currentRating'] < 2):
-      getCurrentRating(i, fromYear)
+      getCurrentRating(i, fromYear + 1)
 
     users[i]['startRating'] = users[i]['currentRating']
 

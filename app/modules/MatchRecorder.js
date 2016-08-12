@@ -103,10 +103,18 @@ export default class MatchRecorder extends React.Component {
     var players = value.split(",");
     if (id == "player0") {
       newState.players[0] = players[0] || null;
-      newState.players[2] = players[1] || null;
-    } else {
+      if (players.length > 1) {
+        newState.players[2] = players[1] || null;
+      }
+    } else if (id == 'player1') {
       newState.players[1] = players[0] || null;
-      newState.players[3] = players[1] || null;
+      if (players.length > 1) {
+        newState.players[3] = players[1] || null;
+      }
+    } else if (id == 'player2') {
+      newState.players[2] = players[0] || null;
+    } else if (id == 'player3') {
+      newState.players[3] = players[0] || null;
     }
     this.setState(newState);
   }

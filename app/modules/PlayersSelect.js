@@ -24,6 +24,20 @@ var PlayersSelect = React.createClass({
       this.props.onChange("player1", value, this.props.line);
     }
   },
+
+  handleSelectChange2 (value, values) {
+    this.setState({ player2: value });
+    if (this.props.onChange) {
+      this.props.onChange("player2", value, this.props.line);
+    }
+  },
+  handleSelectChange3 (value, values) {
+    this.setState({ player3: value });
+    if (this.props.onChange) {
+      this.props.onChange("player3", value, this.props.line);
+    }
+  },
+
   loadOptions(input, callback) {
     var userRef = window.Fbase.getRef("web/data/users");
     if (!input) {
@@ -81,7 +95,6 @@ var PlayersSelect = React.createClass({
     return result;
   },
   onSelectChange0 (event) {
-    console.log(event.target)
     this.setState({ player0: event.target.value });
     if (this.props.onChange) {
       this.props.onChange("player0", event.target.value, this.props.line);
@@ -93,8 +106,20 @@ var PlayersSelect = React.createClass({
       this.props.onChange("player1", event.target.value, this.props.line);
     }
   },
+  onSelectChange2 (event) {
+    this.setState({ player2: event.target.value });
+    if (this.props.onChange) {
+      this.props.onChange("player2", event.target.value, this.props.line);
+    }
+  },
+  onSelectChange3 (event) {
+    this.setState({ player3: event.target.value });
+    if (this.props.onChange) {
+      this.props.onChange("player3", event.target.value, this.props.line);
+    }
+  },
   getSelects() {
-    // console.log(this.props.ladder)
+    console.log(this.props.ladder)
     if (this.props.ladder) {
       if (!this.props.ladder.type || this.props.ladder.type == "normal") {
         return (
@@ -105,11 +130,23 @@ var PlayersSelect = React.createClass({
                   {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
                 </select>
               </span>
+              <br/>
+              <span className="section">
+                <select key="player2" value={this.state.player2} onChange={this.onSelectChange2}>
+                  {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
+                </select>
+              </span>
             </td>
             <td className="divider">vs</td>
             <td className="playerselect centerContainer">
               <span className="section">
                 <select key="player1" value={this.state.player1} onChange={this.onSelectChange1}>
+                  {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
+                </select>
+              </span>
+              <br/>
+              <span className="section">
+                <select key="player3" value={this.state.player3} onChange={this.onSelectChange3}>
                   {this.getOptions(this.props.ladder.type, this.props.ladder.id)}
                 </select>
               </span>

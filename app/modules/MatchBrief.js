@@ -395,13 +395,13 @@ var MatchBrief = React.createClass({
   getFooter() {
     var match = this.state.match;
     if (match.tmId) {
-      if (this.canEditMatch()) {
-        if (match.status == "active") {
-          return (<button onClick={this.completeMatch} >Complete</button>);
-        } else {
-          return (<button onClick={this.editMatch} >Edit</button>);
-        }
-      }
+      // if (this.canEditMatch()) {
+      //   if (match.status == "active") {
+      //     return (<button onClick={this.completeMatch} >Complete</button>);
+      //   } else {
+      //     return (<button onClick={this.editMatch} >Edit</button>);
+      //   }
+      // }
     } else {
       var progressStyle = {
         // position: 'relative',
@@ -477,7 +477,7 @@ var MatchBrief = React.createClass({
     if (this.canEditMatch() && (match.status == "active" || match.status == "pending")) {
       return <button onClick={this.completeMatch} >Complete</button>;
     }
-    if (this.canEditMatch() && match.status == "completed") {
+    if (this.canEditMatch() && match.status == "completed" && !this.state.teams) {
       return <button onClick={this.editMatch} >Edit</button>;
     }
     return null;

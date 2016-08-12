@@ -58,6 +58,7 @@ var LadderSelect = React.createClass({
     }
     var userRef = window.Fbase.getRef("web/data/ladders");
     if (!input) {
+      ops.push({value: 0, label: "Type in year and level to search ..."})
       window.setTimeout(function() {callback(null, {options: ops, complete: false});}, 0);
       return;
     }
